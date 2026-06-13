@@ -257,12 +257,14 @@
     .messages { padding: 12px 14px; }
     .bubble { font-size: 15px; }
     .stages-bar { padding: 0 12px; }
+    #desktop-stages { display: none !important; }
   }
 
   @media (min-width: 641px) {
     .stages-bar { display: none; }
     .mobile-panel { display: none !important; }
     .bottom-nav { display: none !important; }
+    #desktop-stages { display: flex; gap: 6px; align-items: center; }
   }
 </style>
 </head>
@@ -275,7 +277,7 @@
     <span class="case-badge">Кейс №1 · 2026</span>
   </div>
   <!-- desktop stages -->
-  <div class="header-right" style="display:flex;gap:6px;align-items:center;" id="desktop-stages">
+  <div class="header-right" id="desktop-stages">
     <span class="stage-pill done" id="stage-anamnez-d">Анамнез</span>
     <span class="stage-pill" id="stage-exam-d">Осмотр</span>
     <span class="stage-pill" id="stage-labs-d">Анализы</span>
