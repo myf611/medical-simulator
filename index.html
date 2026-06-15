@@ -111,9 +111,119 @@
     .bubble { font-size: 15px; }
     .result-card { font-size: 13px; }
   }
+
+  /* INTRO SCREEN */
+  .intro-screen {
+    position: fixed; inset: 0; background: var(--bg);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    z-index: 200; padding: 24px; overflow-y: auto;
+  }
+  .intro-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 20px; padding: 32px 28px;
+    max-width: 480px; width: 100%;
+    display: flex; flex-direction: column; gap: 20px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.08);
+  }
+  .intro-header { text-align: center; display: flex; flex-direction: column; gap: 8px; }
+  .intro-logo { font-size: 40px; }
+  .intro-title { font-size: 22px; font-weight: 700; color: var(--text); letter-spacing: -0.4px; }
+  .intro-subtitle { font-size: 14px; color: var(--text2); }
+  .intro-case-info {
+    background: var(--accent-light); border: 1px solid #b5d4f4;
+    border-radius: 12px; padding: 16px;
+    display: flex; gap: 14px; align-items: center;
+  }
+  .intro-case-avatar {
+    width: 52px; height: 52px; border-radius: 50%;
+    background: var(--amber-light); border: 2px solid #fac775;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; flex-shrink: 0;
+  }
+  .intro-case-name { font-size: 16px; font-weight: 600; color: var(--accent); }
+  .intro-case-meta { font-size: 13px; color: var(--text2); margin-top: 2px; }
+  .intro-timer-block {
+    background: var(--surface2); border-radius: 12px; padding: 14px 18px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .intro-timer-label { font-size: 13px; color: var(--text2); font-weight: 500; }
+  .intro-timer-val { font-size: 28px; font-weight: 700; color: var(--accent); letter-spacing: -1px; }
+  .intro-rules { display: flex; flex-direction: column; gap: 10px; }
+  .intro-rules-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--text3); }
+  .rule-item { display: flex; gap: 10px; align-items: flex-start; }
+  .rule-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .rule-text { font-size: 13px; color: var(--text2); line-height: 1.5; }
+  .rule-text b { color: var(--text); }
+  .intro-start-btn {
+    width: 100%; padding: 14px; background: var(--accent); color: #fff;
+    border: none; border-radius: 12px; font-size: 16px; font-weight: 600;
+    cursor: pointer; font-family: var(--font); transition: background 0.15s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .intro-start-btn:hover { background: #15407a; }
+  .intro-start-btn:active { transform: scale(0.98); }
+
 </style>
 </head>
 <body>
+
+
+<!-- INTRO SCREEN -->
+<div class="intro-screen" id="intro-screen">
+  <div class="intro-card">
+    <div class="intro-header">
+      <div class="intro-logo">🩺</div>
+      <div class="intro-title">AI Patient Simulator</div>
+      <div class="intro-subtitle">Клинический экзамен · Кейс №1</div>
+    </div>
+
+    <div class="intro-case-info">
+      <div class="intro-case-avatar">👨</div>
+      <div>
+        <div class="intro-case-name">Жасур Омонов</div>
+        <div class="intro-case-meta">20 лет · Мужчина · Приёмный покой</div>
+        <div class="intro-case-meta" style="margin-top:4px;color:var(--accent);font-weight:500;">Средняя сложность · Эндокринология</div>
+      </div>
+    </div>
+
+    <div class="intro-timer-block">
+      <div>
+        <div class="intro-timer-label">⏱ Время на выполнение</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:2px;">Предупреждение за 5 минут до конца</div>
+      </div>
+      <div class="intro-timer-val">30:00</div>
+    </div>
+
+    <div class="intro-rules">
+      <div class="intro-rules-title">Правила экзамена</div>
+      <div class="rule-item">
+        <div class="rule-icon">💬</div>
+        <div class="rule-text"><b>Свободное общение</b> — задавайте вопросы пациенту в произвольной форме, как в реальном приёме</div>
+      </div>
+      <div class="rule-item">
+        <div class="rule-icon">🩺</div>
+        <div class="rule-text"><b>Запрашивайте данные явно</b> — осмотр, анализы и инструментальные исследования выдаются только по вашему запросу</div>
+      </div>
+      <div class="rule-item">
+        <div class="rule-icon">📋</div>
+        <div class="rule-text"><b>Поставьте диагноз</b> — напишите ваш диагноз и план лечения в чат в свободной форме</div>
+      </div>
+      <div class="rule-item">
+        <div class="rule-icon">📝</div>
+        <div class="rule-text"><b>Разбор по запросу</b> — напишите <b>«оценить»</b> когда будете готовы получить разбор и оценку</div>
+      </div>
+      <div class="rule-item">
+        <div class="rule-icon">⚠️</div>
+        <div class="rule-text"><b>Пациент не подсказывает</b> — он отвечает только на то, о чём вы спросили</div>
+      </div>
+    </div>
+
+    <button class="intro-start-btn" onclick="startExam()">
+      Начать экзамен →
+    </button>
+  </div>
+</div>
 
 <div class="header">
   <div class="header-left">
@@ -550,7 +660,15 @@ const inp = document.getElementById('chat-input');
 inp.addEventListener('keydown', e => { if (e.key==='Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
 inp.addEventListener('input', () => { inp.style.height='auto'; inp.style.height=Math.min(inp.scrollHeight,120)+'px'; });
 
-startTimer();
+
+function startExam() {
+  document.getElementById('intro-screen').style.display = 'none';
+  startTimer();
+  // Focus input
+  setTimeout(() => document.getElementById('chat-input').focus(), 100);
+}
+// Don't auto-start timer
+
 </script>
 </body>
 </html>
