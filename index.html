@@ -16,8 +16,13 @@
     --red: #a32d2d; --red-light: #fcebeb;
     --font: 'Inter', system-ui, sans-serif;
   }
-  html, body { height: 100%; overflow: hidden; }
-  body { font-family: var(--font); background: var(--bg); color: var(--text); display: flex; flex-direction: column; }
+  html { height: 100%; }
+  body {
+    font-family: var(--font); background: var(--bg); color: var(--text);
+    display: flex; flex-direction: column;
+    height: 100%; height: 100dvh;
+    overflow: hidden;
+  }
 
   /* HEADER */
   .header {
@@ -47,6 +52,7 @@
     flex: 1; overflow-y: auto; padding: 16px 20px;
     display: flex; flex-direction: column; gap: 14px;
     scroll-behavior: smooth; -webkit-overflow-scrolling: touch;
+    min-height: 0;
   }
   .msg { display: flex; gap: 8px; max-width: 600px; }
   .msg.student { align-self: flex-end; flex-direction: row-reverse; }
@@ -81,7 +87,12 @@
   @keyframes bounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-5px)} }
 
   /* INPUT */
-  .input-area { padding: 12px 16px; background: var(--surface); border-top: 1px solid var(--border); flex-shrink: 0; }
+  .input-area {
+    padding: 12px 16px;
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+    background: var(--surface); border-top: 1px solid var(--border);
+    flex-shrink: 0;
+  }
   .input-row { display: flex; gap: 8px; align-items: flex-end; }
   .chat-input { flex: 1; resize: none; border: 1px solid var(--border2); border-radius: 22px; padding: 10px 16px; font-family: var(--font); font-size: 15px; color: var(--text); background: var(--surface2); outline: none; line-height: 1.45; max-height: 120px; min-height: 42px; -webkit-appearance: none; transition: border-color .15s; }
   .chat-input:focus { border-color: var(--accent); background: var(--surface); }
@@ -654,6 +665,19 @@ inp.addEventListener('input', () => { inp.style.height='auto'; inp.style.height=
 function startExam() {
   document.getElementById('intro-screen').style.display = 'none';
   startTimer();
+
+// Fix iOS keyboard pushing content up
+if (window.visualViewport) {
+  const onResize = () => {
+    const vh = window.visualViewport.height;
+    document.body.style.height = vh + 'px';
+    // Scroll messages to bottom when keyboard opens
+    const msgs = document.getElementById('messages');
+    if (msgs) setTimeout(() => { msgs.scrollTop = msgs.scrollHeight; }, 50);
+  };
+  window.visualViewport.addEventListener('resize', onResize);
+  window.visualViewport.addEventListener('scroll', onResize);
+}
   // Focus input
   setTimeout(() => document.getElementById('chat-input').focus(), 100);
 }
