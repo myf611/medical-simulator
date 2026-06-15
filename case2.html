@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>AI Patient Simulator — Кейс 2</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --bg: #f7f6f2; --surface: #ffffff; --surface2: #f2f1ed;
+    --border: #e2e0d8; --border2: #ccc9be;
+    --text: #1a1917; --text2: #6b6960; --text3: #9e9b90;
+    --accent: #1a5276; --accent-light: #eaf1f8; --accent-mid: #2980b9;
+    --green: #0f6e56; --green-light: #e1f5ee;
+    --amber: #854f0b; --amber-light: #faeeda;
+    --red: #a32d2d; --red-light: #fcebeb;
+    --purple: #5b2c8d; --purple-light: #f3eafd;
+    --font: 'Inter', system-ui, sans-serif;
+    --header-h: 52px; --stages-h: 40px; --bottom-nav-h: 56px;
+  }
+  html, body { height: 100%; overflow: hidden; }
+  body { font-family: var(--font); background: var(--bg); color: var(--text); display: flex; flex-direction: column; }
+
+  /* HEADER */
+  .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 16px; height: var(--header-h); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; gap: 8px; }
+  .header-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .logo { font-size: 14px; font-weight: 600; color: var(--accent); white-space: nowrap; }
+  .case-badge { background: var(--purple-light); color: var(--purple); font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 20px; border: 1px solid #c9a8f5; white-space: nowrap; }
+  .speaker-badge { font-size: 11px; font-weight: 600; padding: 2px 10px; border-radius: 20px; border: 1px solid; white-space: nowrap; transition: all 0.3s; }
+  .speaker-badge.daughter { background: var(--amber-light); color: var(--amber); border-color: #fac775; }
+  .speaker-badge.patient { background: var(--green-light); color: var(--green); border-color: #9fe1cb; }
+
+  /* STAGES BAR */
+  .stages-bar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 16px; height: var(--stages-h); display: flex; align-items: center; gap: 6px; flex-shrink: 0; overflow-x: auto; }
+  .stages-bar::-webkit-scrollbar { display: none; }
+  .stage-pill { font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 500; border: 1px solid var(--border2); background: var(--surface2); color: var(--text2); white-space: nowrap; flex-shrink: 0; }
+  .stage-pill.active { background: var(--accent-light); color: var(--accent); border-color: #b5d4f4; }
+  .stage-pill.done { background: var(--green-light); color: var(--green); border-color: #9fe1cb; }
+
+  /* WORKSPACE */
+  .workspace { display: flex; flex: 1; overflow: hidden; }
+
+  /* CHAT */
+  .chat-area { display: flex; flex-direction: column; flex: 1; overflow: hidden; border-right: 1px solid var(--border); }
+  .messages { flex: 1; overflow-y: auto; padding: 16px 20px; display: flex; flex-direction: column; gap: 14px; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
+  .msg { display: flex; gap: 8px; max-width: 560px; }
+  .msg.doctor { align-self: flex-end; flex-direction: row-reverse; }
+  .msg.patient { align-self: flex-start; }
+  .msg.daughter { align-self: flex-start; }
+  .msg.system { align-self: center; max-width: 100%; }
+  .avatar { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0; margin-top: 2px; }
+  .avatar.p { background: var(--green-light); color: var(--green); border: 1px solid #9fe1cb; }
+  .avatar.d-char { background: var(--amber-light); color: var(--amber); border: 1px solid #fac775; }
+  .avatar.doc { background: var(--accent-light); color: var(--accent); border: 1px solid #b5d4f4; }
+  .bubble { padding: 9px 13px; border-radius: 14px; font-size: 14px; line-height: 1.55; max-width: 440px; }
+  .msg.patient .bubble { background: var(--surface); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
+  .msg.daughter .bubble { background: var(--amber-light); border: 1px solid #fac775; border-bottom-left-radius: 4px; }
+  .msg.doctor .bubble { background: var(--accent); color: #fff; border-bottom-right-radius: 4px; }
+  .msg.system .bubble { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text2); font-size: 12px; text-align: center; padding: 7px 14px; width: 100%; }
+  .msg-label { font-size: 10px; font-weight: 600; color: var(--text3); margin-bottom: 3px; padding-left: 2px; }
+  .typing-dots { display: flex; gap: 4px; align-items: center; padding: 3px 2px; }
+  .typing-dots span { width: 6px; height: 6px; border-radius: 50%; background: var(--text3); animation: bounce 1.2s infinite; }
+  .typing-dots span:nth-child(2) { animation-delay: .2s; }
+  .typing-dots span:nth-child(3) { animation-delay: .4s; }
+  @keyframes bounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-5px)} }
+
+  /* INPUT */
+  .chat-input-area { padding: 10px 14px; background: var(--surface); border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
+  .quick-actions { display: flex; flex-wrap: nowrap; gap: 6px; overflow-x: auto; padding-bottom: 2px; }
+  .quick-actions::-webkit-scrollbar { display: none; }
+  .qa-btn { font-size: 12px; padding: 5px 11px; border-radius: 20px; white-space: nowrap; border: 1px solid var(--border2); background: var(--surface2); color: var(--text2); cursor: pointer; font-family: var(--font); flex-shrink: 0; transition: all 0.15s; }
+  .qa-btn:active { background: var(--accent-light); border-color: #b5d4f4; color: var(--accent); }
+  .input-row { display: flex; gap: 8px; align-items: flex-end; }
+  .chat-input { flex: 1; resize: none; border: 1px solid var(--border2); border-radius: 22px; padding: 10px 16px; font-family: var(--font); font-size: 15px; color: var(--text); background: var(--surface2); outline: none; line-height: 1.45; max-height: 100px; min-height: 42px; transition: border-color 0.15s; -webkit-appearance: none; }
+  .chat-input:focus { border-color: var(--accent-mid); background: var(--surface); }
+  .send-btn { height: 42px; width: 42px; background: var(--accent); color: #fff; border: none; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; transition: background 0.15s; }
+  .send-btn:active { background: #15407a; }
+  .send-btn:disabled { background: var(--text3); }
+
+  /* SIDEBAR */
+  .sidebar { width: 300px; flex-shrink: 0; display: flex; flex-direction: column; overflow: hidden; background: var(--surface); }
+  .sidebar-tabs { display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; overflow-x: auto; }
+  .sidebar-tabs::-webkit-scrollbar { display: none; }
+  .stab { flex: 1; padding: 10px 4px; font-size: 11px; font-weight: 500; color: var(--text2); text-align: center; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; background: none; border-top: none; border-left: none; border-right: none; font-family: var(--font); white-space: nowrap; min-width: 60px; }
+  .stab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .sidebar-content { flex: 1; overflow-y: auto; padding: 14px; }
+  .stab-panel { display: none; flex-direction: column; gap: 8px; }
+  .stab-panel.active { display: flex; }
+  .action-group { display: flex; flex-direction: column; gap: 5px; margin-bottom: 8px; }
+  .action-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--text3); padding: 0 2px; margin-top: 4px; }
+  .action-btn { width: 100%; text-align: left; padding: 9px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); font-size: 12px; color: var(--text); cursor: pointer; transition: all 0.15s; font-family: var(--font); display: flex; align-items: center; gap: 8px; }
+  .action-btn:hover { background: var(--accent-light); border-color: #b5d4f4; color: var(--accent); }
+  .action-btn.used { background: var(--green-light); border-color: #9fe1cb; color: var(--green); pointer-events: none; }
+  .action-btn .icon { font-size: 13px; width: 16px; text-align: center; flex-shrink: 0; }
+
+  /* DIAGNOSIS FORM */
+  .diag-form { display: flex; flex-direction: column; gap: 10px; }
+  .form-group { display: flex; flex-direction: column; gap: 4px; }
+  .form-label { font-size: 11px; font-weight: 600; color: var(--text2); }
+  .form-sublabel { font-size: 10px; color: var(--text3); margin-top: 1px; }
+  .form-input, .form-textarea { border: 1px solid var(--border2); border-radius: 8px; padding: 8px 10px; font-family: var(--font); font-size: 13px; color: var(--text); background: var(--surface); outline: none; resize: vertical; transition: border-color 0.15s; -webkit-appearance: none; }
+  .form-input:focus, .form-textarea:focus { border-color: var(--accent-mid); }
+  .form-textarea { min-height: 64px; line-height: 1.5; }
+  .form-divider { height: 1px; background: var(--border); margin: 4px 0; }
+  .form-section-title { font-size: 11px; font-weight: 700; color: var(--purple); text-transform: uppercase; letter-spacing: .05em; }
+  .submit-diag { width: 100%; padding: 10px; background: var(--accent); color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; font-family: var(--font); transition: background 0.15s; margin-top: 2px; }
+  .submit-diag:active { background: #15407a; }
+
+  /* RESULTS */
+  .result-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 11px; margin-bottom: 8px; }
+  .result-title { font-size: 11px; font-weight: 600; color: var(--text2); margin-bottom: 7px; }
+  .result-row { display: flex; justify-content: space-between; align-items: baseline; padding: 3px 0; border-bottom: 1px solid var(--border); font-size: 12px; gap: 8px; }
+  .result-row:last-child { border-bottom: none; }
+  .result-key { color: var(--text2); flex-shrink: 0; }
+  .result-val { font-weight: 600; text-align: right; }
+  .result-val.abnormal { color: var(--red); }
+  .result-val.warning { color: var(--amber); }
+  .result-val.normal { color: var(--green); }
+  .result-ref { font-size: 10px; color: var(--text3); text-align: right; }
+  .empty-state { text-align: center; padding: 24px 12px; color: var(--text3); font-size: 13px; line-height: 1.6; }
+  .empty-state .big { font-size: 26px; margin-bottom: 8px; }
+
+  /* MOBILE */
+  .bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; height: var(--bottom-nav-h); background: var(--surface); border-top: 1px solid var(--border); z-index: 20; }
+  .bottom-nav-inner { display: flex; height: 100%; }
+  .bnav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; background: none; border: none; font-family: var(--font); font-size: 10px; font-weight: 500; color: var(--text3); cursor: pointer; padding: 6px 4px; position: relative; }
+  .bnav-btn.active { color: var(--accent); }
+  .bnav-icon { font-size: 20px; line-height: 1; }
+  .bnav-badge { position: absolute; top: 6px; right: calc(50% - 18px); background: var(--red); color: #fff; width: 16px; height: 16px; border-radius: 50%; font-size: 10px; font-weight: 700; display: none; align-items: center; justify-content: center; }
+  .bnav-badge.show { display: flex; }
+
+  /* MOBILE PANEL */
+  .mobile-panel { display: none; position: fixed; inset: 0; z-index: 30; }
+  .mobile-panel.open { display: flex; flex-direction: column; justify-content: flex-end; }
+  .panel-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.3); animation: fadeIn 0.2s; }
+  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+  .panel-sheet { position: relative; background: var(--surface); border-radius: 20px 20px 0 0; max-height: 82vh; display: flex; flex-direction: column; animation: slideUp 0.25s cubic-bezier(.32,1,.45,1); padding-bottom: env(safe-area-inset-bottom, 0px); }
+  @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+  .panel-handle { width: 36px; height: 4px; background: var(--border2); border-radius: 2px; margin: 12px auto 4px; }
+  .panel-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 18px 12px; border-bottom: 1px solid var(--border); }
+  .panel-title { font-size: 15px; font-weight: 600; color: var(--text); }
+  .panel-close { width: 28px; height: 28px; border-radius: 50%; background: var(--surface2); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; color: var(--text2); }
+  .panel-body { flex: 1; overflow-y: auto; padding: 14px 16px; -webkit-overflow-scrolling: touch; }
+  .panel-body .action-btn { padding: 12px 14px; font-size: 14px; }
+
+  /* RESPONSIVE */
+  @media (max-width: 640px) {
+    .sidebar { display: none; }
+    .chat-area { border-right: none; }
+    .bottom-nav { display: flex; }
+    .chat-input-area { padding-bottom: calc(10px + var(--bottom-nav-h)); }
+    .messages { padding: 12px 14px; }
+    .bubble { font-size: 15px; }
+    #desktop-stages { display: none !important; }
+  }
+  @media (min-width: 641px) {
+    .stages-bar { display: none; }
+    .mobile-panel { display: none !important; }
+    .bottom-nav { display: none !important; }
+    #desktop-stages { display: flex; gap: 6px; align-items: center; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <span class="logo">🩺 AI Patient Simulator</span>
+    <span class="case-badge">Кейс №2 · ГГС/ДКА</span>
+  </div>
+  <div id="desktop-stages">
+    <span class="stage-pill done" id="stage-anamnez-d">Анамнез</span>
+    <span class="stage-pill" id="stage-exam-d">Осмотр</span>
+    <span class="stage-pill" id="stage-labs-d">Анализы</span>
+    <span class="stage-pill" id="stage-diag-d">Диагноз</span>
+    <span class="speaker-badge daughter" id="speaker-badge-d">💬 Дочь — Агнешка</span>
+  </div>
+</div>
+
+<div class="stages-bar">
+  <span class="stage-pill done" id="stage-anamnez-m">✓ Анамнез</span>
+  <span class="stage-pill" id="stage-exam-m">Осмотр</span>
+  <span class="stage-pill" id="stage-labs-m">Анализы</span>
+  <span class="stage-pill" id="stage-diag-m">Диагноз</span>
+  <span class="speaker-badge daughter" id="speaker-badge-m" style="flex-shrink:0;">💬 Дочь</span>
+</div>
+
+<div class="workspace">
+  <div class="chat-area">
+    <div class="messages" id="messages">
+      <div class="msg system"><div class="bubble">Кейс №2 · Приёмный покой. Пациентка в состоянии спутанности сознания. Рядом дочь — Агнешка Новак. Начните сбор анамнеза.</div></div>
+      <div class="msg daughter">
+        <div class="avatar d-char">АН</div>
+        <div>
+          <div class="msg-label">Агнешка Новак (дочь)</div>
+          <div class="bubble">Здравствуйте, доктор. Моя мама сегодня утром была почти без сознания, я едва смогла её разбудить. Она несколько дней сама не своя — много пьёт и очень устала. Я очень беспокоюсь...</div>
+        </div>
+      </div>
+    </div>
+    <div class="chat-input-area">
+      <div class="quick-actions" id="quick-actions">
+        <button class="qa-btn" onclick="sendQuick('Как давно появились эти симптомы?')">Как давно?</button>
+        <button class="qa-btn" onclick="sendQuick('Какие лекарства принимает ваша мама?')">Лекарства?</button>
+        <button class="qa-btn" onclick="sendQuick('Есть ли у неё хронические заболевания?')">Болезни?</button>
+        <button class="qa-btn" onclick="sendQuick('Она ела и пила последние дни?')">Питание?</button>
+        <button class="qa-btn" onclick="sendQuick('Были ли у неё падения или травмы?')">Травмы?</button>
+        <button class="qa-btn" onclick="sendQuick('Как она живёт, есть ли кто-то рядом?')">Соц. условия?</button>
+      </div>
+      <div class="input-row">
+        <textarea class="chat-input" id="chat-input" placeholder="Задайте вопрос..." rows="1"></textarea>
+        <button class="send-btn" id="send-btn" onclick="sendMessage()">➤</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DESKTOP SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-tabs">
+      <button class="stab active" onclick="switchTab('actions')">Действия</button>
+      <button class="stab" onclick="switchTab('results')">Результаты</button>
+      <button class="stab" onclick="switchTab('diagnosis')">Диагноз</button>
+    </div>
+    <div class="sidebar-content">
+
+      <div class="stab-panel active" id="tab-actions">
+        <div class="action-group">
+          <div class="action-label">⚠️ Переключение пациента</div>
+          <button class="action-btn" id="btn-switch-patient" onclick="switchToPatient()" style="border-color:#9fe1cb;color:var(--green);">
+            <span class="icon">🔄</span> Маргарет пришла в себя — говорить с пациенткой
+          </button>
+        </div>
+        <div class="action-group">
+          <div class="action-label">Физикальный осмотр</div>
+          <button class="action-btn" id="btn-vitals" onclick="requestExam('vitals')"><span class="icon">❤️</span> Витальные показатели</button>
+          <button class="action-btn" id="btn-general" onclick="requestExam('general')"><span class="icon">👁</span> Общий осмотр / кожа</button>
+          <button class="action-btn" id="btn-cardio" onclick="requestExam('cardio')"><span class="icon">🫀</span> Сердечно-сосудистая</button>
+          <button class="action-btn" id="btn-resp" onclick="requestExam('resp')"><span class="icon">🫁</span> Дыхательная система</button>
+          <button class="action-btn" id="btn-abdomen" onclick="requestExam('abdomen')"><span class="icon">🔍</span> Абдоминальный осмотр</button>
+          <button class="action-btn" id="btn-neuro" onclick="requestExam('neuro')"><span class="icon">🧠</span> Неврологический осмотр</button>
+          <button class="action-btn" id="btn-extremities" onclick="requestExam('extremities')"><span class="icon">🦵</span> Конечности / стопы</button>
+          <button class="action-btn" id="btn-meds" onclick="requestExam('meds')"><span class="icon">💊</span> Список препаратов</button>
+        </div>
+        <div class="action-group">
+          <div class="action-label">Общий анализ крови</div>
+          <button class="action-btn" id="btn-cbc" onclick="requestLab('cbc')"><span class="icon">🔬</span> ОАК + коагулограмма</button>
+        </div>
+        <div class="action-group">
+          <div class="action-label">Биохимия крови</div>
+          <button class="action-btn" id="btn-electrolytes" onclick="requestLab('electrolytes')"><span class="icon">⚡</span> Электролиты (Na, K, Cl)</button>
+          <button class="action-btn" id="btn-renal" onclick="requestLab('renal')"><span class="icon">🫘</span> Функция почек / СКФ</button>
+          <button class="action-btn" id="btn-glucose" onclick="requestLab('glucose')"><span class="icon">🩸</span> Глюкоза + HbA1c</button>
+          <button class="action-btn" id="btn-ketones" onclick="requestLab('ketones')"><span class="icon">⚗️</span> Кетоны крови + осмолярность</button>
+          <button class="action-btn" id="btn-liver" onclick="requestLab('liver')"><span class="icon">🫀</span> Функция печени + альбумин</button>
+          <button class="action-btn" id="btn-cardiac" onclick="requestLab('cardiac')"><span class="icon">💓</span> Тропонин + NT-proBNP</button>
+          <button class="action-btn" id="btn-crp" onclick="requestLab('crp')"><span class="icon">🌡️</span> СРБ (воспаление)</button>
+          <button class="action-btn" id="btn-thyroid" onclick="requestLab('thyroid')"><span class="icon">🦋</span> ТТГ + св. Т4</button>
+          <button class="action-btn" id="btn-cpeptide" onclick="requestLab('cpeptide')"><span class="icon">🧬</span> С-пептид + антитела GAD</button>
+          <button class="action-btn" id="btn-lactate" onclick="requestLab('lactate')"><span class="icon">📉</span> Лактат</button>
+          <button class="action-btn" id="btn-minerals" onclick="requestLab('minerals')"><span class="icon">💎</span> Фосфат + Магний + Кальций</button>
+        </div>
+        <div class="action-group">
+          <div class="action-label">Газы крови и моча</div>
+          <button class="action-btn" id="btn-abg" onclick="requestLab('abg')"><span class="icon">💨</span> Газы артериальной крови</button>
+          <button class="action-btn" id="btn-urine" onclick="requestLab('urine')"><span class="icon">🧪</span> Анализ мочи + посев</button>
+        </div>
+        <div class="action-group">
+          <div class="action-label">Инструментальные</div>
+          <button class="action-btn" id="btn-ecg" onclick="requestLab('ecg')"><span class="icon">📈</span> ЭКГ</button>
+          <button class="action-btn" id="btn-xray" onclick="requestLab('xray')"><span class="icon">🩻</span> Рентген грудной клетки</button>
+          <button class="action-btn" id="btn-blood-culture" onclick="requestLab('blood-culture')"><span class="icon">🧫</span> Гемокультура</button>
+        </div>
+      </div>
+
+      <div class="stab-panel" id="tab-results">
+        <div class="empty-state" id="results-empty-d"><div class="big">📋</div>Назначьте обследования</div>
+        <div id="results-container-d"></div>
+      </div>
+
+      <div class="stab-panel" id="tab-diagnosis">
+        <div class="diag-form">
+          <div class="form-group">
+            <label class="form-label">Основной клинический диагноз</label>
+            <input class="form-input" id="diag-prelim" placeholder="Ваш диагноз...">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Дифференциальные диагнозы</label>
+            <textarea class="form-textarea" id="diag-diff" placeholder="Альтернативные диагнозы..."></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Провоцирующий фактор</label>
+            <input class="form-input" id="diag-trigger" placeholder="Что вызвало декомпенсацию?">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Клинический план лечения</label>
+            <textarea class="form-textarea" id="diag-plan" placeholder="Немедленные меры, инфузия, инсулин..." style="min-height:80px;"></textarea>
+          </div>
+          <div class="form-divider"></div>
+          <div class="form-section-title">🌍 Неклинический блок</div>
+          <div class="form-group">
+            <label class="form-label">Социальные детерминанты здоровья</label>
+            <div class="form-sublabel">Барьеры доступа, изоляция, жильё, транспорт</div>
+            <textarea class="form-textarea" id="diag-social" placeholder="Какие социальные факторы повлияли на госпитализацию?"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Неравенство в здравоохранении</label>
+            <div class="form-sublabel">Языковой барьер, системные сбои</div>
+            <textarea class="form-textarea" id="diag-inequity" placeholder="Какие системные проблемы выявлены?"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Мультиморбидность</label>
+            <div class="form-sublabel">Взаимодействие сопутствующих заболеваний</div>
+            <textarea class="form-textarea" id="diag-multi" placeholder="Как сопутствующие заболевания влияют на ведение пациента?"></textarea>
+          </div>
+          <button class="submit-diag" onclick="submitDiagnosis()">Подтвердить диагноз и план ➤</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MOBILE BOTTOM NAV -->
+<nav class="bottom-nav">
+  <div class="bottom-nav-inner">
+    <button class="bnav-btn" onclick="openPanel('exam')"><span class="bnav-icon">🩺</span>Осмотр</button>
+    <button class="bnav-btn" onclick="openPanel('labs')"><span class="bnav-icon">🧪</span>Анализы<span class="bnav-badge" id="results-badge">0</span></button>
+    <button class="bnav-btn" onclick="openPanel('results')"><span class="bnav-icon">📋</span>Результаты</button>
+    <button class="bnav-btn" onclick="openPanel('diag')"><span class="bnav-icon">📝</span>Диагноз</button>
+  </div>
+</nav>
+
+<!-- MOBILE PANELS -->
+<div class="mobile-panel" id="panel-exam">
+  <div class="panel-backdrop" onclick="closePanel('exam')"></div>
+  <div class="panel-sheet">
+    <div class="panel-handle"></div>
+    <div class="panel-header"><span class="panel-title">🩺 Физикальный осмотр</span><button class="panel-close" onclick="closePanel('exam')">✕</button></div>
+    <div class="panel-body">
+      <div class="action-group">
+        <button class="action-btn" style="border-color:#9fe1cb;color:var(--green);" onclick="switchToPatient();closePanel('exam')"><span class="icon">🔄</span> Маргарет пришла в себя</button>
+        <button class="action-btn" id="m-btn-vitals" onclick="requestExam('vitals');closePanel('exam')"><span class="icon">❤️</span> Витальные показатели</button>
+        <button class="action-btn" id="m-btn-general" onclick="requestExam('general');closePanel('exam')"><span class="icon">👁</span> Общий осмотр / кожа</button>
+        <button class="action-btn" id="m-btn-cardio" onclick="requestExam('cardio');closePanel('exam')"><span class="icon">🫀</span> Сердечно-сосудистая</button>
+        <button class="action-btn" id="m-btn-resp" onclick="requestExam('resp');closePanel('exam')"><span class="icon">🫁</span> Дыхательная система</button>
+        <button class="action-btn" id="m-btn-abdomen" onclick="requestExam('abdomen');closePanel('exam')"><span class="icon">🔍</span> Абдоминальный осмотр</button>
+        <button class="action-btn" id="m-btn-neuro" onclick="requestExam('neuro');closePanel('exam')"><span class="icon">🧠</span> Неврологический осмотр</button>
+        <button class="action-btn" id="m-btn-extremities" onclick="requestExam('extremities');closePanel('exam')"><span class="icon">🦵</span> Конечности / стопы</button>
+        <button class="action-btn" id="m-btn-meds" onclick="requestExam('meds');closePanel('exam')"><span class="icon">💊</span> Список препаратов</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="mobile-panel" id="panel-labs">
+  <div class="panel-backdrop" onclick="closePanel('labs')"></div>
+  <div class="panel-sheet">
+    <div class="panel-handle"></div>
+    <div class="panel-header"><span class="panel-title">🧪 Назначить анализы</span><button class="panel-close" onclick="closePanel('labs')">✕</button></div>
+    <div class="panel-body">
+      <div class="action-group">
+        <button class="action-btn" id="m-btn-cbc" onclick="requestLab('cbc');closePanel('labs')"><span class="icon">🔬</span> ОАК + коагулограмма</button>
+        <button class="action-btn" id="m-btn-electrolytes" onclick="requestLab('electrolytes');closePanel('labs')"><span class="icon">⚡</span> Электролиты</button>
+        <button class="action-btn" id="m-btn-renal" onclick="requestLab('renal');closePanel('labs')"><span class="icon">🫘</span> Функция почек / СКФ</button>
+        <button class="action-btn" id="m-btn-glucose" onclick="requestLab('glucose');closePanel('labs')"><span class="icon">🩸</span> Глюкоза + HbA1c</button>
+        <button class="action-btn" id="m-btn-ketones" onclick="requestLab('ketones');closePanel('labs')"><span class="icon">⚗️</span> Кетоны + осмолярность</button>
+        <button class="action-btn" id="m-btn-liver" onclick="requestLab('liver');closePanel('labs')"><span class="icon">🫀</span> Функция печени + альбумин</button>
+        <button class="action-btn" id="m-btn-cardiac" onclick="requestLab('cardiac');closePanel('labs')"><span class="icon">💓</span> Тропонин + NT-proBNP</button>
+        <button class="action-btn" id="m-btn-crp" onclick="requestLab('crp');closePanel('labs')"><span class="icon">🌡️</span> СРБ</button>
+        <button class="action-btn" id="m-btn-thyroid" onclick="requestLab('thyroid');closePanel('labs')"><span class="icon">🦋</span> ТТГ + св. Т4</button>
+        <button class="action-btn" id="m-btn-cpeptide" onclick="requestLab('cpeptide');closePanel('labs')"><span class="icon">🧬</span> С-пептид + GAD</button>
+        <button class="action-btn" id="m-btn-lactate" onclick="requestLab('lactate');closePanel('labs')"><span class="icon">📉</span> Лактат</button>
+        <button class="action-btn" id="m-btn-minerals" onclick="requestLab('minerals');closePanel('labs')"><span class="icon">💎</span> Фосфат + Mg + Ca</button>
+        <button class="action-btn" id="m-btn-abg" onclick="requestLab('abg');closePanel('labs')"><span class="icon">💨</span> Газы артериальной крови</button>
+        <button class="action-btn" id="m-btn-urine" onclick="requestLab('urine');closePanel('labs')"><span class="icon">🧪</span> Анализ мочи + посев</button>
+        <button class="action-btn" id="m-btn-ecg" onclick="requestLab('ecg');closePanel('labs')"><span class="icon">📈</span> ЭКГ</button>
+        <button class="action-btn" id="m-btn-xray" onclick="requestLab('xray');closePanel('labs')"><span class="icon">🩻</span> Рентген грудной клетки</button>
+        <button class="action-btn" id="m-btn-blood-culture" onclick="requestLab('blood-culture');closePanel('labs')"><span class="icon">🧫</span> Гемокультура</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="mobile-panel" id="panel-results">
+  <div class="panel-backdrop" onclick="closePanel('results')"></div>
+  <div class="panel-sheet">
+    <div class="panel-handle"></div>
+    <div class="panel-header"><span class="panel-title">📋 Результаты</span><button class="panel-close" onclick="closePanel('results')">✕</button></div>
+    <div class="panel-body">
+      <div class="empty-state" id="results-empty-m"><div class="big">📋</div>Назначьте обследования</div>
+      <div id="results-container-m"></div>
+    </div>
+  </div>
+</div>
+
+<div class="mobile-panel" id="panel-diag">
+  <div class="panel-backdrop" onclick="closePanel('diag')"></div>
+  <div class="panel-sheet">
+    <div class="panel-handle"></div>
+    <div class="panel-header"><span class="panel-title">📝 Диагноз и план</span><button class="panel-close" onclick="closePanel('diag')">✕</button></div>
+    <div class="panel-body">
+      <div class="diag-form">
+        <div class="form-group"><label class="form-label">Основной диагноз</label><input class="form-input" id="m-diag-prelim" placeholder="Ваш диагноз..."></div>
+        <div class="form-group"><label class="form-label">Дифференциальные диагнозы</label><textarea class="form-textarea" id="m-diag-diff" placeholder="Альтернативы..."></textarea></div>
+        <div class="form-group"><label class="form-label">Провоцирующий фактор</label><input class="form-input" id="m-diag-trigger" placeholder="Причина декомпенсации?"></div>
+        <div class="form-group"><label class="form-label">План лечения</label><textarea class="form-textarea" id="m-diag-plan" placeholder="Немедленные меры..." style="min-height:70px;"></textarea></div>
+        <div class="form-divider"></div>
+        <div class="form-section-title">🌍 Неклинический блок</div>
+        <div class="form-group"><label class="form-label">Социальные детерминанты</label><textarea class="form-textarea" id="m-diag-social" placeholder="Барьеры, изоляция, жильё..."></textarea></div>
+        <div class="form-group"><label class="form-label">Неравенство в здравоохранении</label><textarea class="form-textarea" id="m-diag-inequity" placeholder="Системные сбои, языковой барьер..."></textarea></div>
+        <div class="form-group"><label class="form-label">Мультиморбидность</label><textarea class="form-textarea" id="m-diag-multi" placeholder="Взаимодействие болезней..."></textarea></div>
+        <button class="submit-diag" onclick="submitDiagnosisMobile()">Подтвердить диагноз ➤</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let GROQ_KEY = 'gsk_lsGti8bgULChp2muhqNRWGdy' + 'b3FYOuPE6zu0viMGGRvPVcLTNxkF';
+
+let currentSpeaker = 'daughter'; // 'daughter' or 'patient'
+let conversationHistory = [];
+let isLoading = false;
+let resultsCount = 0;
+
+const CASE = {
+  patient: { name: "Маргарет Ковальски", age: 77, gender: "женщина", origin: "польского происхождения", occupation: "швея на пенсии" },
+  daughter: { name: "Агнешка Новак", relation: "дочь" },
+  history: {
+    presenting: "77-летняя пациентка с СД 2-го типа, поступила с нарастающей дезориентацией за 48 часов. Со слов дочери: около недели пьёт очень много воды, сильно устала. Два дня назад звонила и говорила, что плохо; сегодня дочь едва смогла разбудить. Не ест несколько дней — тошнит, один раз рвало. Часто ходит в туалет. Стула не было 3 дня. Неделю назад закончились таблетки от диабета, дойти до аптеки не было сил. Бросила таблетки от давления 3 месяца назад — прочитала в интернете, что они вредят почкам.",
+    past_medical: "СД 2-го типа — 18 лет. Гипертензия (лечение нерегулярное). ХБП 3а стадии (СКФ 52 мл/мин 14 месяцев назад). ИБС, NSTEMI 6 лет назад. Остеоартрит обоих коленей. Рецидивирующие ИМП. Двусторонняя катаракта. Депрессия. Аппендэктомия в 34 года, эндопротез правого колена в 68 лет.",
+    medications: "Метформин 1г 2р/д (закончился ~2 недели назад). Эмпаглифлозин 10мг 1р/д (ингибитор НГЛТ-2; продолжает?). Лизиноприл 5мг (сама отменила 3 мес назад). Амлодипин 5мг. Аспирин 75мг. Аторвастатин 40мг. Сертралин 50мг. Парацетамол по необходимости.",
+    allergies: "Пенициллин — сыпь (задокументировано).",
+    family: "Мать — СД 2-го типа, инсульт (умерла в 74). Отец — ИМ (умер в 68). Дочь здорова.",
+    social: "Живёт одна в муниципальной квартире на 3-м этаже, лифт часто ломается. Вдова 8 лет. Родной язык — польский, ограниченно знает английский. Соцпособие, уход не обеспечен. Дочь приезжает раз в неделю. Интернета нет. Транспортные проблемы мешают посещать врача. Последний визит к диабетологу — 14 месяцев назад."
+  },
+  vitals: {
+    "Температура": { val: "37,9 °C", status: "warning" },
+    "ЧСС": { val: "118 уд/мин, ритм правильный", status: "warning" },
+    "АД лёжа": { val: "88/54 мм рт.ст.", status: "abnormal" },
+    "АД стоя": { val: "72/44 мм рт.ст. (↓ортостаз)", status: "abnormal" },
+    "ЧД": { val: "22 в мин", status: "warning" },
+    "SpO2": { val: "96% (комнатный воздух)", status: "warning" },
+    "Глюкоза капиллярная": { val: "742 мг/дл (41,2 ммоль/л)", status: "abnormal" },
+    "Кетоны у постели": { val: "3,1 ммоль/л", status: "abnormal" },
+    "Диурез": { val: "Олигурия < 20 мл/ч", status: "abnormal" },
+    "Вес / ИМТ": { val: "58 кг / 158 см / ИМТ 23,2", status: "normal" }
+  },
+  exam: {
+    general: "Пациентка вялая, дезориентирована. Кожа сухая, тургор снижен. Умеренный чёрный акантоз на задней поверхности шеи. Слизистые сухие.",
+    cardio: "Тоны I и II ясные, шумов нет. Тахикардия. Пульс на лучевых слабого наполнения. Время наполнения капилляров 4 сек (периферически), 3–4 сек (центрально).",
+    resp: "ЧД умеренно увеличена. Хрипов нет. Умеренно выраженное дыхание Куссмауля (трудноуловимо при сниженном сознании).",
+    abdomen: "Мягкий. Умеренная разлитая болезненность без защитного напряжения. Перистальтика снижена. Органомегалии нет.",
+    neuro: "ШКГ 12 баллов. Очагового дефицита нет. Зрачки симметричные, фотореакция сохранена. Ригидности затылка нет. Подошвенные рефлексы сомнительные.",
+    extremities: "Периферических отёков нет. Двустороннее снижение чувствительности к прикосновению и вибрации до середины голени (периферическая нейропатия). Омозолелости над головками плюсневых костей, кожа интактна, язв нет. Пульс на тыльной артерии стопы слабый, но определяется.",
+    meds: "Метформин 1г 2р/д (не принимала ~2 нед). Эмпаглифлозин 10мг 1р/д (ингибитор НГЛТ-2). Лизиноприл 5мг (сама отменила 3 мес назад). Амлодипин 5мг. Аспирин 75мг. Аторвастатин 40мг ночью. Сертралин 50мг. Парацетамол 500мг-1г по необходимости. ❗ Аллергия на пенициллин — сыпь."
+  },
+  labs: {
+    cbc: { name: "ОАК + коагулограмма", rows: [
+      { k: "Hb", v: "109 г/л ↓", r: "115–154 г/л", s: "abnormal" },
+      { k: "Лейкоциты", v: "14,2 × 10⁹/л ↑", r: "3,9–10,9", s: "abnormal" },
+      { k: "Нейтрофилы", v: "11,1 × 10⁹/л ↑", r: "2,0–7,1", s: "abnormal" },
+      { k: "Тромбоциты", v: "312 × 10⁹/л", r: "150–400", s: "normal" },
+      { k: "MCV", v: "74 фл ↓", r: "80–99", s: "abnormal" },
+      { k: "MCH", v: "24,1 пг ↓", r: "27–33", s: "abnormal" },
+      { k: "МНО", v: "1,2", r: "<1,3", s: "normal" }
+    ]},
+    electrolytes: { name: "Электролиты", rows: [
+      { k: "Na⁺", v: "158 ммоль/л ↑", r: "133–146", s: "abnormal" },
+      { k: "K⁺", v: "3,2 ммоль/л ↓", r: "3,4–5,2", s: "abnormal" },
+      { k: "Хлориды", v: "115 ммоль/л ↑", r: "98–107", s: "abnormal" },
+      { k: "Бикарбонат HCO₃⁻", v: "13 ммоль/л ↓", r: "22–29", s: "abnormal" },
+      { k: "Анионная разница", v: "24 мЭкв/л ↑", r: "8–16", s: "abnormal" }
+    ]},
+    renal: { name: "Функция почек", rows: [
+      { k: "Мочевина", v: "22,4 ммоль/л ↑", r: "2,5–7,8", s: "abnormal" },
+      { k: "Креатинин", v: "198 мкмоль/л ↑", r: "49–90", s: "abnormal" },
+      { k: "рСКФ", v: "22 мл/мин/1,73м² ↓", r: ">60", s: "abnormal" }
+    ]},
+    glucose: { name: "Глюкоза + HbA1c", rows: [
+      { k: "Глюкоза сыворотки", v: "41,2 ммоль/л ↑", r: "3,9–6,0", s: "abnormal" },
+      { k: "HbA1c", v: "12,4% ↑", r: "4,0–5,9%", s: "abnormal" }
+    ]},
+    ketones: { name: "Кетоны + осмолярность", rows: [
+      { k: "β-гидроксибутират", v: "3,1 ммоль/л ↑", r: "<0,6", s: "abnormal" },
+      { k: "Осмолярность (расч.)", v: "351 мОсм/кг ↑", r: "275–295", s: "abnormal" }
+    ]},
+    liver: { name: "Функция печени + альбумин", rows: [
+      { k: "АЛТ", v: "72 Ед/л ↑", r: "0–55", s: "warning" },
+      { k: "ЩФ", v: "118 Ед/л", r: "30–130", s: "normal" },
+      { k: "Билирубин", v: "14 мкмоль/л", r: "<21", s: "normal" },
+      { k: "Альбумин", v: "28 г/л ↓", r: "35–50", s: "abnormal" },
+      { k: "Общий белок", v: "62 г/л", r: "60–80", s: "normal" }
+    ]},
+    cardiac: { name: "Тропонин + NT-proBNP", rows: [
+      { k: "Тропонин I (вчТ)", v: "62 нг/л ↑", r: "<26 нг/л", s: "abnormal" },
+      { k: "NT-proBNP", v: "3210 пг/мл ↑", r: "<125 пг/мл", s: "abnormal" }
+    ]},
+    crp: { name: "СРБ (воспаление)", rows: [
+      { k: "СРБ", v: "87 мг/л ↑", r: "<5 мг/л", s: "abnormal" }
+    ]},
+    thyroid: { name: "Функция щитовидной железы", rows: [
+      { k: "ТТГ", v: "4,8 мМЕ/л ↑", r: "0,30–4,50", s: "warning" },
+      { k: "Свободный Т4", v: "9,2 пмоль/л ↓", r: "10,0–22,0", s: "warning" }
+    ]},
+    cpeptide: { name: "С-пептид + антитела GAD", rows: [
+      { k: "С-пептид", v: "0,21 нмоль/л ↓", r: "0,26–0,62 (нат.)", s: "abnormal" },
+      { k: "Антитела к GAD", v: "18 МЕ/мл ↑ (положит.)", r: "<10 МЕ/мл", s: "warning" },
+      { k: "Антитела к инсулину", v: "Отрицательно", r: "Отрицательно", s: "normal" }
+    ]},
+    lactate: { name: "Лактат", rows: [
+      { k: "Лактат", v: "2,1 ммоль/л ↑", r: "<2,0", s: "warning" }
+    ]},
+    minerals: { name: "Фосфат + Магний + Кальций", rows: [
+      { k: "Фосфат", v: "0,52 ммоль/л ↓", r: "0,8–1,5", s: "abnormal" },
+      { k: "Магний", v: "0,62 ммоль/л ↓", r: "0,7–1,0", s: "warning" },
+      { k: "Кальций", v: "2,24 ммоль/л", r: "2,10–2,60", s: "normal" },
+      { k: "Скорр. кальций", v: "2,31 ммоль/л", r: "2,10–2,60", s: "normal" }
+    ]},
+    abg: { name: "Газы артериальной крови", rows: [
+      { k: "pH", v: "7,28 ↓", r: "7,35–7,45", s: "abnormal" },
+      { k: "pCO₂", v: "28 мм рт.ст. ↓", r: "35–45", s: "abnormal" },
+      { k: "HCO₃⁻", v: "13 ммоль/л ↓", r: "22–26", s: "abnormal" },
+      { k: "Избыток оснований", v: "−11 ммоль/л ↓", r: "−2 до +2", s: "abnormal" },
+      { k: "pO₂", v: "88 мм рт.ст.", r: "80–100", s: "normal" },
+      { k: "SpO₂", v: "96%", r: "94–100%", s: "normal" }
+    ]},
+    urine: { name: "Анализ мочи + посев", rows: [
+      { k: "Глюкоза", v: "4+ ↑", r: "Отрицательно", s: "abnormal" },
+      { k: "Кетоны", v: "2+ ↑", r: "Отрицательно", s: "abnormal" },
+      { k: "Нитриты", v: "Положительно", r: "Отрицательно", s: "abnormal" },
+      { k: "Лейкоцитарная эстераза", v: "Положительно", r: "Отрицательно", s: "abnormal" },
+      { k: "Лейкоциты в моче", v: ">100 клеток/мкл ↑", r: "<10", s: "abnormal" },
+      { k: "Посев (предварит.)", v: "E. coli (чувств. определяется)", r: "Роста нет", s: "abnormal" },
+      { k: "Белок", v: "1+", r: "Отрицательно", s: "warning" }
+    ]},
+    ecg: { name: "ЭКГ", rows: [
+      { k: "Ритм", v: "Синусовая тахикардия", r: "Синусовый", s: "warning" },
+      { k: "ЧСС", v: "118 уд/мин", r: "60–100", s: "warning" }
+    ]},
+    xray: { name: "Рентген грудной клетки", rows: [
+      { k: "Очаговая консолидация", v: "Не выявлена", r: "Норма", s: "normal" }
+    ]},
+    "blood-culture": { name: "Гемокультура", rows: [
+      { k: "Статус", v: "В процессе", r: "Роста нет", s: "warning" },
+      { k: "Предварительно (12ч)", v: "Роста нет", r: "Отрицательно", s: "normal" }
+    ]}
+  }
+};
+
+const SYSTEM_DAUGHTER = `Ты — Агнешка Новак, дочь пациентки Маргарет Ковальски (77 лет). Ты приехала в приёмный покой с мамой, которая дезориентирована и не может нормально отвечать. Ты очень беспокоишься.
+
+АБСОЛЮТНЫЕ ПРАВИЛА:
+1. Ты знаешь только то, что описано в данных ниже. Ничего не придумывай.
+2. Если спрашивают о чём-то, чего нет в данных — "Не знаю", "Мама мне не говорила", "Не замечала".
+3. Ты обычный человек, не медик. Говори просто, эмоционально — ты переживаешь за маму.
+4. На медицинские вопросы о диагнозе — "Я не знаю, что с ней, скажите вы".
+5. Отвечай коротко, 2–4 предложения максимум.
+
+ДАННЫЕ О ПАЦИЕНТКЕ И СИТУАЦИИ:
+${JSON.stringify({ history: CASE.history, meds: CASE.exam.meds }, null, 2)}`;
+
+const SYSTEM_PATIENT = `Ты — Маргарет Ковальски, 77 лет, польского происхождения. Ты пришла в себя в больнице после дезориентации. Ты слабая, устала, немного путаешься. Говоришь с трудом.
+
+АБСОЛЮТНЫЕ ПРАВИЛА:
+1. Отвечаешь ТОЛЬКО на основе данных ниже. Ничего не придумывай.
+2. Если спрашивают о чём-то, чего нет — "Не помню", "Не знаю", "Голова кружится, трудно думать".
+3. Ты пожилая женщина, слабая. Иногда путаешься во времени. Говоришь медленно.
+4. Иногда можешь вставить польское слово или фразу — "tak", "nie wiem", "bardzo źle".
+5. На вопрос о диагнозе — "Не знаю, доктор, мне очень плохо".
+
+ДАННЫЕ:
+${JSON.stringify(CASE.history, null, 2)}`;
+
+async function callGroq(userMessage) {
+  const systemPrompt = currentSpeaker === 'daughter' ? SYSTEM_DAUGHTER : SYSTEM_PATIENT;
+  conversationHistory.push({ role: 'user', content: userMessage });
+  const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${GROQ_KEY}` },
+    body: JSON.stringify({
+      model: 'llama-3.3-70b-versatile',
+      messages: [{ role: 'system', content: systemPrompt }, ...conversationHistory],
+      max_tokens: 400, temperature: 0.7
+    })
+  });
+  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e?.error?.message || `HTTP ${res.status}`); }
+  const data = await res.json();
+  const reply = data.choices?.[0]?.message?.content || '...';
+  conversationHistory.push({ role: 'assistant', content: reply });
+  return reply;
+}
+
+async function callGroqOneShot(prompt, sys) {
+  const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${GROQ_KEY}` },
+    body: JSON.stringify({
+      model: 'llama-3.3-70b-versatile',
+      messages: [{ role: 'system', content: sys }, { role: 'user', content: prompt }],
+      max_tokens: 700, temperature: 0.5
+    })
+  });
+  const data = await res.json();
+  return data.choices?.[0]?.message?.content || '';
+}
+
+function switchToPatient() {
+  if (currentSpeaker === 'patient') return;
+  currentSpeaker = 'patient';
+  conversationHistory = [];
+  document.getElementById('speaker-badge-d').className = 'speaker-badge patient';
+  document.getElementById('speaker-badge-d').textContent = '🟢 Маргарет (пациентка)';
+  document.getElementById('speaker-badge-m').className = 'speaker-badge patient';
+  document.getElementById('speaker-badge-m').textContent = '🟢 Маргарет';
+  const qas = document.getElementById('quick-actions');
+  qas.innerHTML = `
+    <button class="qa-btn" onclick="sendQuick('Как вы себя чувствуете?')">Самочувствие?</button>
+    <button class="qa-btn" onclick="sendQuick('Как давно вы плохо себя чувствуете?')">Как давно?</button>
+    <button class="qa-btn" onclick="sendQuick('Вы принимали свои таблетки от диабета?')">Таблетки?</button>
+    <button class="qa-btn" onclick="sendQuick('У вас есть боли?')">Боли?</button>
+    <button class="qa-btn" onclick="sendQuick('Вы помните что произошло?')">Помните?</button>
+  `;
+  addMessage('system', '🔄 Пациентка пришла в себя. Теперь вы можете говорить с Маргарет напрямую.');
+  const btn = document.getElementById('btn-switch-patient');
+  if (btn) { btn.classList.add('used'); btn.innerHTML = '<span class="icon">✓</span> Говорим с Маргарет'; }
+}
+
+function addMessage(role, text, speakerLabel) {
+  const c = document.getElementById('messages');
+  const d = document.createElement('div');
+  d.className = `msg ${role}`;
+  if (role === 'system') {
+    d.innerHTML = `<div class="bubble">${text}</div>`;
+  } else if (role === 'daughter') {
+    d.innerHTML = `<div class="avatar d-char">АН</div><div><div class="msg-label">Агнешка (дочь)</div><div class="bubble">${text}</div></div>`;
+  } else if (role === 'patient') {
+    d.innerHTML = `<div class="avatar p">МК</div><div><div class="msg-label">Маргарет Ковальски</div><div class="bubble">${text}</div></div>`;
+  } else {
+    d.innerHTML = `<div class="avatar doc">Вы</div><div class="bubble">${text}</div>`;
+  }
+  c.appendChild(d);
+  c.scrollTop = c.scrollHeight;
+}
+
+function showTyping() {
+  const c = document.getElementById('messages');
+  const d = document.createElement('div');
+  const role = currentSpeaker === 'daughter' ? 'daughter' : 'patient';
+  const avatar = role === 'daughter' ? '<div class="avatar d-char">АН</div>' : '<div class="avatar p">МК</div>';
+  d.className = `msg ${role}`; d.id = 'typing-indicator';
+  d.innerHTML = `${avatar}<div class="bubble"><div class="typing-dots"><span></span><span></span><span></span></div></div>`;
+  c.appendChild(d); c.scrollTop = c.scrollHeight;
+}
+function hideTyping() { document.getElementById('typing-indicator')?.remove(); }
+
+async function sendMessage() {
+  if (isLoading) return;
+  const inp = document.getElementById('chat-input');
+  const text = inp.value.trim(); if (!text) return;
+  inp.value = ''; inp.style.height = 'auto';
+  addMessage('doctor', text);
+  await getReply(text);
+}
+
+async function sendQuick(text) {
+  if (isLoading) return;
+  addMessage('doctor', text);
+  await getReply(text);
+}
+
+async function getReply(text) {
+  isLoading = true;
+  document.getElementById('send-btn').disabled = true;
+  showTyping();
+  try {
+    const reply = await callGroq(text);
+    hideTyping();
+    addMessage(currentSpeaker === 'daughter' ? 'daughter' : 'patient', reply);
+  } catch(err) {
+    hideTyping();
+    addMessage('system', `Ошибка: ${err.message}`);
+  }
+  isLoading = false;
+  document.getElementById('send-btn').disabled = false;
+}
+
+function requestExam(type) {
+  const examMap = {
+    vitals: { label: 'Витальные показатели', data: CASE.vitals, isVitals: true },
+    general: { label: 'Общий осмотр / кожа', data: { 'Осмотр': CASE.exam.general } },
+    cardio:  { label: 'Сердечно-сосудистая', data: { 'ССС': CASE.exam.cardio } },
+    resp:    { label: 'Дыхательная система', data: { 'Дыхание': CASE.exam.resp } },
+    abdomen: { label: 'Абдоминальный осмотр', data: { 'Живот': CASE.exam.abdomen } },
+    neuro:   { label: 'Неврологический осмотр', data: { 'Неврология': CASE.exam.neuro } },
+    extremities: { label: 'Конечности / стопы', data: { 'Нижние конечности': CASE.exam.extremities } },
+    meds:    { label: 'Список препаратов', data: { 'Препараты': CASE.exam.meds } }
+  };
+  const item = examMap[type]; if (!item) return;
+  markUsed(type);
+  if (item.isVitals) {
+    addVitalsResult(item.label, item.data);
+  } else {
+    addSimpleResult(item.label, item.data, 'exam');
+  }
+  addMessage('system', `🩺 Осмотр: ${item.label}`);
+  updateStage('exam');
+}
+
+function requestLab(type) {
+  const lab = CASE.labs[type]; if (!lab) return;
+  markUsed(type);
+  addLabResult(lab);
+  addMessage('system', `🧪 Анализ: ${lab.name}`);
+  updateStage('labs');
+}
+
+function markUsed(type) {
+  ['', 'm-'].forEach(p => {
+    const btn = document.getElementById(`${p}btn-${type}`);
+    if (btn && !btn.classList.contains('used')) {
+      btn.classList.add('used');
+      btn.innerHTML = `<span class="icon">✓</span> ${btn.textContent.trim()}`;
+    }
+  });
+}
+
+function addVitalsResult(title, data) {
+  resultsCount++;
+  ['d','m'].forEach(s => {
+    document.getElementById(`results-empty-${s}`).style.display = 'none';
+    const c = document.getElementById(`results-container-${s}`);
+    const card = document.createElement('div');
+    card.className = 'result-card';
+    let rows = '';
+    for (const [k, obj] of Object.entries(data)) {
+      const cls = obj.status === 'abnormal' ? 'abnormal' : obj.status === 'warning' ? 'warning' : 'normal';
+      rows += `<div class="result-row"><span class="result-key">${k}</span><span class="result-val ${cls}">${obj.val}</span></div>`;
+    }
+    card.innerHTML = `<div class="result-title">🩺 Осмотр · ${title}</div>${rows}`;
+    c.appendChild(card);
+  });
+  updateBadge();
+}
+
+function addSimpleResult(title, data, type) {
+  resultsCount++;
+  ['d','m'].forEach(s => {
+    document.getElementById(`results-empty-${s}`).style.display = 'none';
+    const c = document.getElementById(`results-container-${s}`);
+    const card = document.createElement('div');
+    card.className = 'result-card';
+    let rows = '';
+    for (const [k, v] of Object.entries(data)) {
+      rows += `<div class="result-row"><span class="result-key">${k}</span><span class="result-val">${v}</span></div>`;
+    }
+    card.innerHTML = `<div class="result-title">🩺 Осмотр · ${title}</div>${rows}`;
+    c.appendChild(card);
+  });
+  updateBadge();
+}
+
+function addLabResult(lab) {
+  resultsCount++;
+  ['d','m'].forEach(s => {
+    document.getElementById(`results-empty-${s}`).style.display = 'none';
+    const c = document.getElementById(`results-container-${s}`);
+    const card = document.createElement('div');
+    card.className = 'result-card';
+    let rows = '';
+    for (const row of lab.rows) {
+      const cls = row.s === 'abnormal' ? 'abnormal' : row.s === 'warning' ? 'warning' : 'normal';
+      rows += `<div class="result-row"><span class="result-key">${row.k}</span><div style="text-align:right"><div class="result-val ${cls}">${row.v}</div><div class="result-ref">${row.r}</div></div></div>`;
+    }
+    card.innerHTML = `<div class="result-title">🧪 Анализ · ${lab.name}</div>${rows}`;
+    c.appendChild(card);
+  });
+  updateBadge();
+}
+
+function updateBadge() {
+  const b = document.getElementById('results-badge');
+  b.textContent = resultsCount; b.classList.add('show');
+}
+
+async function _submitDiag(prelim, diff, trigger, plan, social, inequity, multi) {
+  let msg = `📋 Диагноз поставлен.<br><b>Основной:</b> ${prelim}`;
+  if (trigger) msg += `<br><b>Триггер:</b> ${trigger}`;
+  if (plan) msg += `<br><b>План:</b> ${plan}`;
+  if (social) msg += `<br><b>Соц. детерминанты:</b> ${social}`;
+  addMessage('system', msg);
+  updateStage('diag');
+  isLoading = true; showTyping();
+  try {
+    const evalPrompt = `Студент-врач поставил диагноз по кейсу (77-летняя Маргарет Ковальски, смешанное ГГС/ДКА, ИМП как триггер).
+
+Диагноз студента: "${prelim}"
+Триггер: "${trigger}"
+План: "${plan}"
+Социальные детерминанты: "${social}"
+Неравенство: "${inequity}"
+Мультиморбидность: "${multi}"
+
+Правильный диагноз: Смешанное состояние ГГС/ДКА при СД 2-го типа, спровоцированное ИМП (E. coli) на фоне отмены метформина, эмпаглифлозина (ингибитор НГЛТ-2) и системных барьеров доступа к медицинской помощи.
+
+Дай краткую структурированную обратную связь:
+1. Клинический диагноз — правильно ли?
+2. Неклинический блок — оценены ли социальные детерминанты и системные факторы?
+3. Что сделано хорошо
+4. Что упущено
+
+Отвечай на русском, кратко, конструктивно.`;
+
+    const fb = await callGroqOneShot(evalPrompt, 'Ты опытный преподаватель медицинского симулятора. Даёшь чёткую образовательную обратную связь на русском языке.');
+    hideTyping();
+    const d = document.createElement('div');
+    d.className = 'msg patient';
+    d.innerHTML = `<div class="avatar doc" style="background:var(--green-light);color:var(--green);border-color:#9fe1cb;font-size:15px;">📝</div><div><div class="msg-label">Обратная связь преподавателя</div><div class="bubble" style="background:var(--green-light);border:1px solid #9fe1cb;color:var(--text);border-bottom-left-radius:4px;">${fb.replace(/\n/g,'<br>')}</div></div>`;
+    document.getElementById('messages').appendChild(d);
+    document.getElementById('messages').scrollTop = 99999;
+  } catch(e) { hideTyping(); addMessage('system', 'Не удалось получить обратную связь.'); }
+  isLoading = false;
+}
+
+async function submitDiagnosis() {
+  const prelim = document.getElementById('diag-prelim').value.trim();
+  if (!prelim) { alert('Введите предварительный диагноз'); return; }
+  const diff = document.getElementById('diag-diff').value.trim();
+  const trigger = document.getElementById('diag-trigger').value.trim();
+  const plan = document.getElementById('diag-plan').value.trim();
+  const social = document.getElementById('diag-social').value.trim();
+  const inequity = document.getElementById('diag-inequity').value.trim();
+  const multi = document.getElementById('diag-multi').value.trim();
+  const btn = document.querySelector('#tab-diagnosis .submit-diag');
+  btn.textContent = '✓ Подтверждено'; btn.style.background = 'var(--green)'; btn.disabled = true;
+  await _submitDiag(prelim, diff, trigger, plan, social, inequity, multi);
+}
+
+async function submitDiagnosisMobile() {
+  const prelim = document.getElementById('m-diag-prelim').value.trim();
+  if (!prelim) { alert('Введите предварительный диагноз'); return; }
+  const diff = document.getElementById('m-diag-diff').value.trim();
+  const trigger = document.getElementById('m-diag-trigger').value.trim();
+  const plan = document.getElementById('m-diag-plan').value.trim();
+  const social = document.getElementById('m-diag-social').value.trim();
+  const inequity = document.getElementById('m-diag-inequity').value.trim();
+  const multi = document.getElementById('m-diag-multi').value.trim();
+  const btn = document.querySelector('#panel-diag .submit-diag');
+  btn.textContent = '✓ Подтверждено'; btn.style.background = 'var(--green)'; btn.disabled = true;
+  closePanel('diag');
+  await _submitDiag(prelim, diff, trigger, plan, social, inequity, multi);
+}
+
+function switchTab(tab) {
+  const tabs = ['actions','results','diagnosis'];
+  document.querySelectorAll('.stab').forEach((t,i) => t.classList.toggle('active', tabs[i] === tab));
+  document.querySelectorAll('.stab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(`tab-${tab}`)?.classList.add('active');
+}
+
+function openPanel(name) { document.getElementById(`panel-${name}`)?.classList.add('open'); document.body.style.overflow = 'hidden'; }
+function closePanel(name) { document.getElementById(`panel-${name}`)?.classList.remove('open'); document.body.style.overflow = ''; }
+
+function updateStage(stage) {
+  ['d','m'].forEach(s => {
+    const el = document.getElementById(`stage-${stage}-${s}`);
+    if (el && !el.classList.contains('done')) {
+      el.classList.remove('active'); el.classList.add('done');
+      const next = { anamnez:'exam', exam:'labs', labs:'diag' };
+      document.getElementById(`stage-${next[stage]}-${s}`)?.classList.add('active');
+    }
+  });
+}
+
+const inp = document.getElementById('chat-input');
+inp.addEventListener('keydown', e => { if (e.key==='Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
+inp.addEventListener('input', () => { inp.style.height='auto'; inp.style.height=Math.min(inp.scrollHeight,100)+'px'; });
+</script>
+</body>
+</html>
