@@ -241,7 +241,7 @@
 </div>
 
 <div class="messages" id="messages">
-  <div class="msg system"><div class="bubble">⏱ У вас 30 минут. Задавайте вопросы, запрашивайте осмотр и анализы, ставьте диагноз.</div></div>
+  <div class="msg system"><div class="bubble">⏱ У вас 30 минут. Задавайте вопросы, запрашивайте осмотр и анализы, ставьте диагноз — оценка выдастся автоматически.</div></div>
   <div class="msg patient">
     <div class="avatar p">ЖО</div>
     <div class="bubble">Здравствуйте, доктор. Меня зовут Жасур, мне 20 лет. Мне очень плохо — сильная слабость, тошнит, несколько раз вырвало, голова болит...</div>
@@ -253,7 +253,7 @@
     <textarea class="chat-input" id="chat-input" placeholder="Напишите вопрос или запрос..." rows="1"></textarea>
     <button class="send-btn" id="send-btn" onclick="sendMessage()">➤</button>
   </div>
-  <div class="input-hint">Пишите свободно: задавайте вопросы, запрашивайте осмотр, назначайте анализы, ставьте диагноз</div>
+  <div class="input-hint">Пишите свободно: задавайте вопросы, запрашивайте осмотр, назначайте анализы, ставьте диагноз — оценка выдаётся автоматически</div>
 </div>
 
 <!-- TIMEOUT OVERLAY -->
@@ -263,7 +263,7 @@
     <div class="overlay-title">Время вышло</div>
     <div class="overlay-desc">30 минут истекли. Сеанс завершён.</div>
     <div class="overlay-stats" id="timeout-stats"></div>
-    <button class="overlay-btn" onclick="showReview()">Показать разбор кейса</button>
+    <div id="overlay-review-loading" style="font-size:13px;color:var(--text2);">⏳ Генерируется разбор...</div>
     <button class="overlay-btn secondary" onclick="location.reload()">Начать заново</button>
   </div>
 </div>
@@ -439,7 +439,7 @@ function updateTimerDisplay() {
 }
 
 function showWarning() {
-  addMessage('system', '⚠️ Осталось 5 минут. Убедитесь, что вы поставили диагноз и план лечения. Напишите «оценить» для получения разбора.');
+  addMessage('system', '⚠️ Осталось 5 минут. Убедитесь, что вы поставили диагноз и план лечения — оценка выдастся автоматически.');
 }
 
 function timeUp() {
@@ -454,6 +454,8 @@ function timeUp() {
     <div class="stat-row"><span class="stat-key">Диагноз поставлен</span><span class="stat-val">${stats.diagnosisGiven ? '✅ Да' : '❌ Нет'}</span></div>
   `;
   document.getElementById('timeout-overlay').classList.add('show');
+  // Auto-generate review
+  setTimeout(() => showReview(), 500);
 }
 
 async function showReview() {
@@ -524,16 +526,9 @@ async function sendMessage() {
   const text = inp.value.trim(); if (!text) return;
   inp.value = ''; inp.style.height = 'auto';
 
-  // Check if student wants evaluation
-  if (/оцени|оценить|разбор|покажи диагноз|итог/i.test(text)) {
-    addMessage('student', text);
-    stats.questions++;
-    await requestEvaluation();
-    return;
-  }
-
-  // Check if diagnosis given
-  if (/диагноз|диагностирую|считаю что|у пациента|мой диагноз|предварительно/i.test(text)) {
+  // Check if diagnosis given — auto-evaluate after
+  const isDiagnosis = /диагноз|диагностирую|считаю что|у пациента|мой диагноз|предварительно|заключение|ставлю/i.test(text);
+  if (isDiagnosis) {
     stats.diagnosisGiven = true;
   }
 
@@ -572,6 +567,12 @@ async function sendMessage() {
         setTimeout(() => renderLabResult(key), 400 + (examMatches.length + i) * 300);
       }
     });
+
+    // Auto-evaluate if diagnosis was just given
+    if (isDiagnosis) {
+      const delay = 400 + (examMatches.length + labMatches.length) * 300 + 600;
+      setTimeout(() => requestEvaluation(), delay);
+    }
   } catch(err) {
     hideTyping();
     addMessage('system', `Ошибка: ${err.message}`);
