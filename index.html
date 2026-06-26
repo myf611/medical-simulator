@@ -232,7 +232,7 @@
 </div>
 
 <script>
-let GROQ_KEY = 'gsk_lsGti8bgULChp2muhqNRWGdy' + 'b3FYOuPE6zu0viMGGRvPVcLTNxkF';
+const BACKEND_URL = 'https://medical-simulator-api.onrender.com';
 
 const CASE = {
   patient: { name: "Жасур Омонов", age: 20, gender: "мужчина", occupation: "менеджер в банке" },
@@ -477,9 +477,9 @@ async function generateReview(studentAnswer) {
 // API
 async function callGroq(msg) {
   conversationHistory.push({ role: 'user', content: msg });
-  const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+  const res = await fetch(`${BACKEND_URL}/api/chat`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${GROQ_KEY}` },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       model: 'llama-3.3-70b-versatile',
       messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...conversationHistory],
@@ -494,9 +494,9 @@ async function callGroq(msg) {
 }
 
 async function callGroqOneShot(prompt, sys) {
-  const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+  const res = await fetch(`${BACKEND_URL}/api/chat`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${GROQ_KEY}` },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       model: 'llama-3.3-70b-versatile',
       messages: [{ role: 'system', content: sys }, { role: 'user', content: prompt }],
