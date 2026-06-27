@@ -231,6 +231,13 @@
   .lang-opt.active { background: var(--accent); color: #fff; }
   .lang-opt:not(.active):hover { color: var(--accent); }
 
+
+  .auth-tabs { display: flex; border-bottom: 2px solid var(--border); margin-bottom: 4px; }
+  .auth-tab { flex: 1; padding: 10px; background: none; border: none; font-family: var(--font); font-size: 15px; font-weight: 600; color: var(--text3); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all .15s; }
+  .auth-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .auth-panel { display: none; }
+  .auth-panel.active { display: block; }
+
 </style>
 </head>
 <body>
@@ -284,65 +291,90 @@
   </div>
 </div>
 
-<!-- SCREEN 2: REGISTER -->
+<!-- SCREEN 2: LOGIN / REGISTER -->
 <div class="screen" id="screen-register">
   <div class="reg-card">
     <div class="reg-header">
       <button class="reg-back" onclick="showScreen('landing')" data-key="reg_back">← Назад</button>
-      <div class="reg-title" data-key="reg_title">Введите ваши данные</div>
-      <div class="reg-sub" data-key="reg_sub">Данные сохраняются для учёта результатов</div>
     </div>
-    <div class="form">
-      <div class="field">
-        <label class="label" data-key="lbl_last">Фамилия</label>
-        <input class="input" id="last-name" type="text" placeholder="Каримов" autocomplete="family-name">
-        <span class="error-msg" id="err-last">Введите фамилию</span>
-      </div>
-      <div class="field">
-        <label class="label" data-key="lbl_first">Имя</label>
-        <input class="input" id="first-name" type="text" placeholder="Азиз" autocomplete="given-name">
-        <span class="error-msg" id="err-first">Введите имя</span>
-      </div>
-      <div class="field">
-        <label class="label" data-key="lbl_phone">Мобильный телефон</label>
-        <div class="phone-wrap">
-          <span class="phone-prefix">+998</span>
-          <input class="input phone-input" id="phone" type="tel" placeholder="90 123 45 67" maxlength="12" inputmode="numeric">
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')" data-key="tab_login">Вход</button>
+      <button class="auth-tab" id="tab-register" onclick="switchAuthTab('register')" data-key="tab_reg">Регистрация</button>
+    </div>
+
+    <!-- LOGIN -->
+    <div class="auth-panel active" id="panel-login">
+      <div class="form" style="padding-top:8px;">
+        <div class="reg-title" data-key="login_title">Добро пожаловать</div>
+        <div class="reg-sub" data-key="login_sub">Введите номер телефона для входа</div>
+        <div class="field">
+          <label class="label" data-key="lbl_phone">Мобильный телефон</label>
+          <div class="phone-wrap">
+            <span class="phone-prefix">+998</span>
+            <input class="input phone-input" id="login-phone" type="tel" placeholder="90 123 45 67" maxlength="12" inputmode="numeric">
+          </div>
+          <span class="error-msg" id="err-login-phone">Неверный формат. Пример: 90 123 45 67</span>
         </div>
-        <span class="error-msg" id="err-phone">Неверный формат. Пример: 90 123 45 67</span>
+        <button class="primary-btn" id="login-btn" onclick="login()">Войти →</button>
       </div>
-      <div class="field">
-        <label class="label" data-key="lbl_region">Область</label>
-        <select class="select" id="region">
-          <option value="">— Выберите область —</option>
-          <option value="Ташкент (город)">Ташкент (город)</option>
-          <option value="Андижанская область">Андижанская область</option>
-          <option value="Бухарская область">Бухарская область</option>
-          <option value="Джизакская область">Джизакская область</option>
-          <option value="Кашкадарьинская область">Кашкадарьинская область</option>
-          <option value="Навоийская область">Навоийская область</option>
-          <option value="Наманганская область">Наманганская область</option>
-          <option value="Самаркандская область">Самаркандская область</option>
-          <option value="Сурхандарьинская область">Сурхандарьинская область</option>
-          <option value="Сырдарьинская область">Сырдарьинская область</option>
-          <option value="Ташкентская область">Ташкентская область</option>
-          <option value="Ферганская область">Ферганская область</option>
-          <option value="Хорезмская область">Хорезмская область</option>
-          <option value="Республика Каракалпакстан">Республика Каракалпакстан</option>
-        </select>
-        <span class="error-msg" id="err-region">Выберите область</span>
+    </div>
+
+    <!-- REGISTER -->
+    <div class="auth-panel" id="panel-register">
+      <div class="form" style="padding-top:8px;">
+        <div class="reg-title" data-key="reg_title">Регистрация</div>
+        <div class="reg-sub" data-key="reg_sub">Данные сохраняются для учёта результатов</div>
+        <div class="field">
+          <label class="label" data-key="lbl_last">Фамилия</label>
+          <input class="input" id="last-name" type="text" placeholder="Каримов" autocomplete="family-name">
+          <span class="error-msg" id="err-last">Введите фамилию</span>
+        </div>
+        <div class="field">
+          <label class="label" data-key="lbl_first">Имя</label>
+          <input class="input" id="first-name" type="text" placeholder="Азиз" autocomplete="given-name">
+          <span class="error-msg" id="err-first">Введите имя</span>
+        </div>
+        <div class="field">
+          <label class="label" data-key="lbl_phone">Мобильный телефон</label>
+          <div class="phone-wrap">
+            <span class="phone-prefix">+998</span>
+            <input class="input phone-input" id="phone" type="tel" placeholder="90 123 45 67" maxlength="12" inputmode="numeric">
+          </div>
+          <span class="error-msg" id="err-phone">Неверный формат. Пример: 90 123 45 67</span>
+        </div>
+        <div class="field">
+          <label class="label" data-key="lbl_region">Область</label>
+          <select class="select" id="region">
+            <option value="">— Выберите область —</option>
+            <option value="Ташкент (город)">Ташкент (город)</option>
+            <option value="Андижанская область">Андижанская область</option>
+            <option value="Бухарская область">Бухарская область</option>
+            <option value="Джизакская область">Джизакская область</option>
+            <option value="Кашкадарьинская область">Кашкадарьинская область</option>
+            <option value="Навоийская область">Навоийская область</option>
+            <option value="Наманганская область">Наманганская область</option>
+            <option value="Самаркандская область">Самаркандская область</option>
+            <option value="Сурхандарьинская область">Сурхандарьинская область</option>
+            <option value="Сырдарьинская область">Сырдарьинская область</option>
+            <option value="Ташкентская область">Ташкентская область</option>
+            <option value="Ферганская область">Ферганская область</option>
+            <option value="Хорезмская область">Хорезмская область</option>
+            <option value="Республика Каракалпакстан">Республика Каракалпакстан</option>
+          </select>
+          <span class="error-msg" id="err-region">Выберите область</span>
+        </div>
+        <div class="field">
+          <label class="label" data-key="lbl_city">Город / район</label>
+          <input class="input" id="city" type="text" placeholder="Например: Ташкент" autocomplete="address-level2">
+          <span class="error-msg" id="err-city">Введите город или район</span>
+        </div>
+        <div class="field">
+          <label class="label" data-key="lbl_workplace">Место работы</label>
+          <input class="input" id="workplace" type="text" placeholder="Укажите своё место работы" autocomplete="organization">
+          <span class="error-msg" id="err-workplace">Введите место работы</span>
+        </div>
+        <button class="primary-btn" id="reg-btn" onclick="register()">Зарегистрироваться →</button>
       </div>
-      <div class="field">
-        <label class="label" data-key="lbl_city">Город / район</label>
-        <input class="input" id="city" type="text" placeholder="Например: Ташкент" autocomplete="address-level2">
-        <span class="error-msg" id="err-city">Введите город или район</span>
-      </div>
-      <div class="field">
-        <label class="label" data-key="lbl_workplace">Место работы</label>
-        <input class="input" id="workplace" type="text" placeholder="Укажите своё место работы" autocomplete="organization">
-        <span class="error-msg" id="err-workplace">Введите место работы</span>
-      </div>
-      <button class="primary-btn" id="reg-btn" onclick="register()">Продолжить →</button>
     </div>
   </div>
 </div>
@@ -425,6 +457,10 @@ const T = {
     err_server: 'Сервер не отвечает — возможно просыпается. Подождите 10–15 секунд и попробуйте снова.',
     err_reg: 'Ошибка регистрации',
     retry_btn: 'Попробовать снова →',
+    tab_login: 'Вход',
+    tab_reg: 'Регистрация',
+    login_title: 'Добро пожаловать',
+    login_sub: 'Введите номер телефона для входа',
     regions: [
       'Ташкент (город)', 'Андижанская область', 'Бухарская область',
       'Джизакская область', 'Кашкадарьинская область', 'Навоийская область',
@@ -606,6 +642,20 @@ function goToRegister() {
 }
 
 // ── PHONE FORMAT ────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+  const lp = document.getElementById('login-phone');
+  if (lp) lp.addEventListener('input', function(e) {
+    let val = e.target.value.replace(/\D/g, '');
+    if (val.length > 9) val = val.slice(0, 9);
+    let f = val;
+    if (val.length > 2) f = val.slice(0,2) + ' ' + val.slice(2);
+    if (val.length > 5) f = val.slice(0,2) + ' ' + val.slice(2,5) + ' ' + val.slice(5);
+    if (val.length > 7) f = val.slice(0,2) + ' ' + val.slice(2,5) + ' ' + val.slice(5,7) + ' ' + val.slice(7);
+    e.target.value = f;
+    e.target.classList.remove('error');
+    document.getElementById('err-login-phone').classList.remove('show');
+  });
+});
 document.getElementById('phone').addEventListener('input', function(e) {
   let val = e.target.value.replace(/\D/g, '');
   if (val.length > 9) val = val.slice(0, 9);
@@ -632,6 +682,54 @@ function setFieldError(inputId, errId, show) {
 }
 
 // ── REGISTER ────────────────────────────────────────
+
+function switchAuthTab(tab) {
+  document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+  document.getElementById('tab-register').classList.toggle('active', tab === 'register');
+  document.getElementById('panel-login').classList.toggle('active', tab === 'login');
+  document.getElementById('panel-register').classList.toggle('active', tab === 'register');
+}
+
+async function login() {
+  const rawPhone = document.getElementById('login-phone').value || '';
+  const phone = '+998' + rawPhone.replace(/\D/g, '');
+  if (!validatePhone(phone)) {
+    document.getElementById('login-phone').classList.add('error');
+    document.getElementById('err-login-phone').classList.add('show');
+    return;
+  }
+  const btn = document.getElementById('login-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div>';
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      if (attempt > 0) await new Promise(r => setTimeout(r, 2000));
+      const res = await fetch(BACKEND_URL + '/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: phone, org_slug: ORG_SLUG })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        btn.disabled = false;
+        btn.textContent = 'Войти →';
+        alert(data.detail || 'Ошибка входа');
+        return;
+      }
+      saveSession({ student_id: data.student_id, name: data.name });
+      document.getElementById('ready-name').textContent = data.name;
+      showScreen('ready');
+      return;
+    } catch(e) {
+      if (attempt === 2) {
+        btn.disabled = false;
+        btn.textContent = 'Войти →';
+        alert(t('err_conn'));
+      }
+    }
+  }
+}
+
 async function register() {
   const lastName = document.getElementById('last-name').value.trim();
   const firstName = document.getElementById('first-name').value.trim();
