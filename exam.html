@@ -700,8 +700,14 @@ async function sendMessage() {
   });
 
   // Handle "результаты?" request
-  if (isResultRequest(text) && (usedLabs.size > 0 || usedExams.size > 0)) {
-    addMessage('system', 'Все назначенные анализы уже показаны выше в чате.');
+  if (isResultRequest(text)) {
+    if (usedLabs.size > 0 || usedExams.size > 0) {
+      // Patient reminds doctor results were already given
+      addMessage('patient', 'Доктор, я уже показывал вам результаты — они у вас есть.');
+    } else {
+      // No labs ordered yet - patient doesn't understand
+      addMessage('patient', 'Доктор, я не понимаю... вы о чём?');
+    }
     return;
   }
 
