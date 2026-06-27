@@ -210,12 +210,68 @@
   .select:focus { border-color: var(--accent); background-color: var(--surface); }
   .select.error { border-color: var(--red); background-color: var(--red-light); }
 
+
+  /* ── LANGUAGE SCREEN ── */
+  #screen-lang {
+    align-items: center; justify-content: center; padding: 24px;
+    background: var(--accent);
+  }
+  .lang-card {
+    background: var(--surface); border-radius: 24px;
+    padding: 36px 28px; max-width: 380px; width: 100%;
+    display: flex; flex-direction: column; gap: 24px; text-align: center;
+    box-shadow: 0 16px 60px rgba(0,0,0,0.2);
+  }
+  .lang-logo { font-size: 44px; }
+  .lang-title { font-size: 20px; font-weight: 700; color: var(--text); }
+  .lang-subtitle { font-size: 13px; color: var(--text2); }
+  .lang-buttons { display: flex; flex-direction: column; gap: 10px; }
+  .lang-btn {
+    width: 100%; padding: 16px; border: 2px solid var(--border);
+    border-radius: 14px; background: var(--surface);
+    cursor: pointer; font-family: var(--font);
+    display: flex; align-items: center; gap: 14px;
+    transition: all .15s; text-align: left;
+  }
+  .lang-btn:hover { border-color: var(--accent); background: var(--accent-light); }
+  .lang-btn:active { transform: scale(0.98); }
+  .lang-flag { font-size: 28px; flex-shrink: 0; }
+  .lang-name { font-size: 16px; font-weight: 700; color: var(--text); }
+  .lang-native { font-size: 12px; color: var(--text2); margin-top: 2px; }
+
 </style>
 </head>
 <body>
 
+<!-- SCREEN 0: LANGUAGE -->
+<div class="screen active" id="screen-lang">
+  <div class="lang-card">
+    <div class="lang-logo">🏥</div>
+    <div>
+      <div class="lang-title">Симулятор пациента</div>
+      <div class="lang-subtitle" style="margin-top:6px;">Tilni tanlang / Выберите язык</div>
+    </div>
+    <div class="lang-buttons">
+      <button class="lang-btn" onclick="setLang('uz')">
+        <span class="lang-flag">🇺🇿</span>
+        <div>
+          <div class="lang-name">O'zbekcha</div>
+          <div class="lang-native">Davom etish uchun tanlang</div>
+        </div>
+      </button>
+      <button class="lang-btn" onclick="setLang('ru')">
+        <span class="lang-flag">🇷🇺</span>
+        <div>
+          <div class="lang-name">Русский</div>
+          <div class="lang-native">Выберите для продолжения</div>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- SCREEN 1: LANDING -->
-<div class="screen active" id="screen-landing">
+<div class="screen" id="screen-landing">
   <div class="landing-card">
     <div class="landing-hero">
       <div class="landing-logo">🏥</div>
@@ -343,6 +399,231 @@
 
 <script>
 
+
+// ── TRANSLATIONS ─────────────────────────────────────
+const T = {
+  ru: {
+    // Landing
+    org: 'Центр эндокринологии Ташкент',
+    title: 'Симулятор пациента',
+    how_title: 'Как работать',
+    i1: 'Общайтесь с пациентом в свободной форме — задавайте вопросы',
+    i2: 'Запрашивайте осмотр и анализы явно — они выдаются только по вашему запросу',
+    i3: 'Когда будете готовы — нажмите кнопку «Поставить диагноз»',
+    i4: 'Оценка выдаётся автоматически после постановки диагноза',
+    timer_label: '⏱ Время на выполнение',
+    login_btn: 'Войти чтобы начать →',
+    login_btn_other: 'Войти как другой пользователь →',
+    // Resume
+    resume_title: '⚠️ Найден незавершённый сеанс',
+    resume_q: 'Это вы? Продолжить или начать заново?',
+    resume_yes: 'Продолжить',
+    resume_no: 'Это не я',
+    // Register
+    reg_back: '← Назад',
+    reg_title: 'Введите ваши данные',
+    reg_sub: 'Данные сохраняются для учёта результатов',
+    lbl_last: 'Фамилия',
+    lbl_first: 'Имя',
+    lbl_phone: 'Мобильный телефон',
+    lbl_region: 'Область',
+    lbl_city: 'Город / район',
+    lbl_workplace: 'Место работы',
+    ph_last: 'Каримов',
+    ph_first: 'Азиз',
+    ph_phone: '90 123 45 67',
+    ph_city: 'Например: Ташкент',
+    ph_workplace: 'Укажите своё место работы',
+    ph_region: '— Выберите область —',
+    err_last: 'Введите фамилию',
+    err_first: 'Введите имя',
+    err_phone: 'Неверный формат. Пример: 90 123 45 67',
+    err_region: 'Выберите область',
+    err_city: 'Введите город или район',
+    err_workplace: 'Введите место работы',
+    continue_btn: 'Продолжить →',
+    // Ready
+    welcome: 'Добро пожаловать,',
+    your_case: 'Ваш кейс',
+    case_title: 'Жасур Омонов, 20 лет',
+    case_meta: 'Приёмный покой · Эндокринология',
+    timer_note: 'После нажатия кнопки таймер запустится. Удачи!',
+    start_btn: 'Начать кейс →',
+    // Errors
+    err_conn: 'Ошибка соединения. Проверьте интернет.',
+    err_server: 'Сервер не отвечает — возможно просыпается. Подождите 10–15 секунд и попробуйте снова.',
+    err_reg: 'Ошибка регистрации',
+    retry_btn: 'Попробовать снова →',
+    regions: [
+      'Ташкент (город)', 'Андижанская область', 'Бухарская область',
+      'Джизакская область', 'Кашкадарьинская область', 'Навоийская область',
+      'Наманганская область', 'Самаркандская область', 'Сурхандарьинская область',
+      'Сырдарьинская область', 'Ташкентская область', 'Ферганская область',
+      'Хорезмская область', 'Республика Каракалпакстан'
+    ]
+  },
+  uz: {
+    // Landing
+    org: 'Toshkent endokrinologiya markazi',
+    title: 'Bemor simulyatori',
+    how_title: 'Qanday ishlash kerak',
+    i1: 'Bemor bilan erkin muloqot qiling — savollar bering',
+    i2: 'Ko'rikni va tahlillarni aniq so'rang — ular faqat so'rovingiz bo'yicha beriladi',
+    i3: 'Tayyor bo'lganda — «Tashxis qo'yish» tugmasini bosing',
+    i4: 'Baho tashxis qo'yilgandan so'ng avtomatik ravishda beriladi',
+    timer_label: '⏱ Bajarish vaqti',
+    login_btn: 'Boshlash uchun kiring →',
+    login_btn_other: 'Boshqa foydalanuvchi sifatida kiring →',
+    // Resume
+    resume_title: '⚠️ Tugallanmagan seans topildi',
+    resume_q: 'Bu sizsizmi? Davom ettirish yoki qaytadan boshlash?',
+    resume_yes: 'Davom etish',
+    resume_no: 'Bu men emasman',
+    // Register
+    reg_back: '← Orqaga',
+    reg_title: 'Ma'lumotlaringizni kiriting',
+    reg_sub: 'Ma'lumotlar natijalarni hisobga olish uchun saqlanadi',
+    lbl_last: 'Familiya',
+    lbl_first: 'Ism',
+    lbl_phone: 'Mobil telefon',
+    lbl_region: 'Viloyat',
+    lbl_city: 'Shahar / tuman',
+    lbl_workplace: 'Ish joyi',
+    ph_last: 'Karimov',
+    ph_first: 'Aziz',
+    ph_phone: '90 123 45 67',
+    ph_city: 'Masalan: Toshkent',
+    ph_workplace: 'Ish joyingizni ko'rsating',
+    ph_region: '— Viloyatni tanlang —',
+    err_last: 'Familiyangizni kiriting',
+    err_first: 'Ismingizni kiriting',
+    err_phone: 'Noto'g'ri format. Namuna: 90 123 45 67',
+    err_region: 'Viloyatni tanlang',
+    err_city: 'Shahar yoki tumanni kiriting',
+    err_workplace: 'Ish joyini kiriting',
+    continue_btn: 'Davom etish →',
+    // Ready
+    welcome: 'Xush kelibsiz,',
+    your_case: 'Sizning keys',
+    case_title: 'Jasur Omonov, 20 yosh',
+    case_meta: 'Qabul bo'limi · Endokrinologiya',
+    timer_note: 'Tugma bosilgandan so'ng taymer ishga tushadi. Omad!',
+    start_btn: 'Keysni boshlash →',
+    // Errors
+    err_conn: 'Ulanishda xatolik. Internetni tekshiring.',
+    err_server: 'Server javob bermayapti — uyg'onayotgan bo'lishi mumkin. 10–15 soniya kuting va qayta urinib ko'ring.',
+    err_reg: 'Ro'yxatdan o'tishda xatolik',
+    retry_btn: 'Qayta urinib ko'ring →',
+    regions: [
+      'Toshkent (shahar)', 'Andijon viloyati', 'Buxoro viloyati',
+      'Jizzax viloyati', 'Qashqadaryo viloyati', 'Navoiy viloyati',
+      'Namangan viloyati', 'Samarqand viloyati', 'Surxondaryo viloyati',
+      'Sirdaryo viloyati', 'Toshkent viloyati', 'Farg'ona viloyati',
+      'Xorazm viloyati', 'Qoraqalpog'iston Respublikasi'
+    ]
+  }
+};
+
+let currentLang = 'ru';
+
+function setLang(lang) {
+  currentLang = lang;
+  applyTranslations(lang);
+  showScreen('landing');
+}
+
+function t(key) {
+  return T[currentLang][key] || T['ru'][key] || key;
+}
+
+function applyTranslations(lang) {
+  const l = T[lang];
+
+  // Landing
+  document.querySelectorAll('.landing-org').forEach(el => el.textContent = l.org);
+  document.querySelectorAll('.landing-title, .reg-logo-title').forEach(el => el.textContent = l.title);
+  document.querySelector('.instr-title') && (document.querySelector('.instr-title').textContent = l.how_title);
+  const instrs = document.querySelectorAll('.instr-text');
+  if (instrs[0]) instrs[0].textContent = l.i1;
+  if (instrs[1]) instrs[1].textContent = l.i2;
+  if (instrs[2]) instrs[2].textContent = l.i3;
+  if (instrs[3]) instrs[3].textContent = l.i4;
+  document.querySelector('.timer-info-label') && (document.querySelector('.timer-info-label').textContent = l.timer_label);
+  const lbtn = document.getElementById('landing-btn');
+  if (lbtn) lbtn.textContent = getSession() ? l.login_btn_other : l.login_btn;
+
+  // Resume banner
+  document.querySelector('.resume-title') && (document.querySelector('.resume-title').textContent = l.resume_title);
+  const resumeQ = document.querySelector('.resume-banner > div:nth-child(3)');
+  if (resumeQ) resumeQ.textContent = l.resume_q;
+  const resumeBtns = document.querySelectorAll('.resume-btn');
+  if (resumeBtns[0]) resumeBtns[0].textContent = l.resume_yes;
+  if (resumeBtns[1]) resumeBtns[1].textContent = l.resume_no;
+
+  // Register
+  document.querySelector('.reg-back') && (document.querySelector('.reg-back').textContent = l.reg_back);
+  document.querySelector('.reg-title') && (document.querySelector('.reg-title').textContent = l.reg_title);
+  document.querySelector('.reg-sub') && (document.querySelector('.reg-sub').textContent = l.reg_sub);
+
+  const labels = document.querySelectorAll('.label');
+  const labelMap = {
+    'last-name': l.lbl_last, 'first-name': l.lbl_first,
+    'phone': l.lbl_phone, 'region': l.lbl_region,
+    'city': l.lbl_city, 'workplace': l.lbl_workplace
+  };
+  labels.forEach(label => {
+    const forEl = label.htmlFor || label.getAttribute('for');
+    if (forEl && labelMap[forEl]) label.textContent = labelMap[forEl];
+    // match by next sibling input
+    const next = label.nextElementSibling;
+    if (next) {
+      const id = next.id || (next.querySelector('input,select') || {}).id;
+      if (id && labelMap[id]) label.textContent = labelMap[id];
+    }
+  });
+
+  // Placeholders
+  const setph = (id, ph) => { const el = document.getElementById(id); if (el) el.placeholder = ph; };
+  setph('last-name', l.ph_last);
+  setph('first-name', l.ph_first);
+  setph('phone', l.ph_phone);
+  setph('city', l.ph_city);
+  setph('workplace', l.ph_workplace);
+
+  // Region dropdown
+  const regionSel = document.getElementById('region');
+  if (regionSel && l.regions) {
+    const current = regionSel.value;
+    regionSel.innerHTML = `<option value="">${l.ph_region}</option>` +
+      l.regions.map(r => `<option value="${r}">${r}</option>`).join('');
+    regionSel.value = current;
+  }
+
+  // Error messages
+  const errMap = {
+    'err-last': l.err_last, 'err-first': l.err_first,
+    'err-phone': l.err_phone, 'err-region': l.err_region,
+    'err-city': l.err_city, 'err-workplace': l.err_workplace
+  };
+  Object.entries(errMap).forEach(([id, text]) => {
+    const el = document.getElementById(id); if (el) el.textContent = text;
+  });
+
+  // Reg button
+  const regBtn = document.getElementById('reg-btn');
+  if (regBtn && !regBtn.disabled) regBtn.textContent = l.continue_btn;
+
+  // Ready screen
+  document.querySelector('.ready-greeting') && (document.querySelector('.ready-greeting').textContent = l.welcome);
+  document.querySelector('.ready-case-label') && (document.querySelector('.ready-case-label').textContent = l.your_case);
+  document.querySelector('.ready-case-title') && (document.querySelector('.ready-case-title').textContent = l.case_title);
+  document.querySelector('.ready-case-meta') && (document.querySelector('.ready-case-meta').textContent = l.case_meta);
+  document.querySelector('.ready-timer-label') && (document.querySelector('.ready-timer-label').textContent = l.timer_label);
+  document.querySelector('.ready-note') && (document.querySelector('.ready-note').textContent = l.timer_note);
+  const startBtn = document.querySelector('#screen-ready .primary-btn');
+  if (startBtn) startBtn.textContent = l.start_btn;
+}
+
 // Device detection
 (function() {
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
@@ -464,8 +745,8 @@ async function register() {
 
       if (!res.ok) {
         btn.disabled = false;
-        btn.innerHTML = 'Продолжить →';
-        alert(data.detail || 'Ошибка регистрации');
+        btn.innerHTML = t('continue_btn');
+        alert(data.detail || t('err_reg'));
         return;
       }
 
@@ -485,8 +766,8 @@ async function register() {
 
   // All retries failed
   btn.disabled = false;
-  btn.innerHTML = 'Попробовать снова →';
-  alert('Сервер не отвечает — возможно просыпается. Подождите 10–15 секунд и попробуйте снова.');
+  btn.innerHTML = t('retry_btn');
+  alert(t('err_server'));
 }
 
 // ── START CASE ──────────────────────────────────────
