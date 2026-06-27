@@ -271,16 +271,6 @@
 
 
 
-      <!-- Instructions -->
-      <div class="instructions">
-        <div class="instr-title" data-key="how_title">Как работать</div>
-        <div class="instr-item"><div class="instr-icon">💬</div><div class="instr-text" data-key="i1">Общайтесь с пациентом в свободной форме — задавайте вопросы</div></div>
-        <div class="instr-item"><div class="instr-icon">🩺</div><div class="instr-text" data-key="i2">Запрашивайте осмотр и анализы явно — они выдаются только по вашему запросу</div></div>
-        <div class="instr-item"><div class="instr-icon">📋</div><div class="instr-text" data-key="i3">Когда будете готовы — нажмите кнопку «Поставить диагноз»</div></div>
-        <div class="instr-item"><div class="instr-icon">⭐</div><div class="instr-text" data-key="i4">Оценка выдаётся автоматически после постановки диагноза</div></div>
-      </div>
-
-      <!-- Timer -->
       <div class="timer-info">
         <div class="timer-info-label" data-key="timer_label">⏱ Время на выполнение</div>
         <div class="timer-info-val">30:00</div>
@@ -381,22 +371,30 @@
 
 <!-- SCREEN 3: READY -->
 <div class="screen" id="screen-ready">
-  <div class="ready-card">
-    <div class="ready-icon">✅</div>
-    <div class="ready-greeting" data-key="welcome">Добро пожаловать,</div>
-    <div class="ready-name" id="ready-name">—</div>
-    <div class="ready-divider"></div>
-    <div class="ready-case">
-      <div class="ready-case-label" data-key="your_case">Ваш кейс</div>
-      <div class="ready-case-title">Жасур Омонов, 20 лет</div>
-      
+  <div class="landing-card" style="max-width:520px;">
+    <div class="landing-hero" style="padding:28px;">
+      <div class="landing-logo">🏥</div>
+      <div class="landing-title" style="font-size:18px;" data-key="welcome_title">Добро пожаловать</div>
+      <div class="ready-name" id="ready-name" style="font-size:22px;font-weight:700;color:#fff;margin-top:4px;">—</div>
+      <div class="landing-org" data-key="org">Центр эндокринологии Ташкент</div>
     </div>
-    <div class="ready-timer">
-      <div class="ready-timer-label" data-key="timer_label">⏱ Время на выполнение</div>
-      <div class="ready-timer-val">30:00</div>
+    <div class="landing-body" style="gap:18px;">
+      <div class="timer-info">
+        <div>
+          <div class="timer-info-label" data-key="timer_label">⏱ Время на выполнение</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px;" data-key="timer_warn">Предупреждение за 5 минут до конца</div>
+        </div>
+        <div class="timer-info-val">30:00</div>
+      </div>
+      <div class="instructions">
+        <div class="instr-title" data-key="how_title">Как работать</div>
+        <div class="instr-item"><div class="instr-icon">💬</div><div class="instr-text" data-key="i1">Общайтесь с пациентом в свободной форме — задавайте вопросы</div></div>
+        <div class="instr-item"><div class="instr-icon">🩺</div><div class="instr-text" data-key="i2">Запрашивайте осмотр и анализы явно — они выдаются только по вашему запросу</div></div>
+        <div class="instr-item"><div class="instr-icon">📋</div><div class="instr-text" data-key="i3">Когда будете готовы — нажмите кнопку «Поставить диагноз»</div></div>
+        <div class="instr-item"><div class="instr-icon">⭐</div><div class="instr-text" data-key="i4">Оценка выдаётся автоматически после постановки диагноза</div></div>
+      </div>
+      <button class="landing-btn" style="background:var(--green);" onclick="startCase()" data-key="start_btn">Начать кейс →</button>
     </div>
-    <div class="ready-note" data-key="timer_note">После нажатия кнопки таймер запустится. Удачи!</div>
-    <button class="primary-btn green" onclick="startCase()">Начать кейс →</button>
   </div>
 </div>
 
@@ -460,6 +458,8 @@ const T = {
     tab_login: 'Вход',
     tab_reg: 'Регистрация',
     login_title: 'Добро пожаловать',
+    welcome_title: 'Добро пожаловать,',
+    timer_warn: 'Предупреждение за 5 минут до конца',
     login_sub: 'Введите номер телефона для входа',
     regions: [
       'Ташкент (город)', 'Андижанская область', 'Бухарская область',
