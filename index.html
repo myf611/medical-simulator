@@ -219,6 +219,7 @@
     background: var(--surface); border: 1px solid var(--border);
     border-radius: 20px; padding: 4px 6px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    pointer-events: auto;
   }
   .lang-opt {
     padding: 4px 8px; border-radius: 14px;
@@ -708,11 +709,20 @@ function startCase(session) {
 
 // ── INIT ─────────────────────────────────────────────
 (function init() {
+  // Restore language preference
+  const savedLang = localStorage.getItem('preferred_lang') || 'ru';
+  currentLang = savedLang;
+  applyTranslations(savedLang);
+  document.getElementById('lang-ru').classList.toggle('active', savedLang === 'ru');
+  document.getElementById('lang-uz').classList.toggle('active', savedLang === 'uz');
+
+  // Check for existing session
   const s = getSession();
   if (s) {
     document.getElementById('resume-name').textContent = s.name;
     document.getElementById('resume-banner').classList.add('show');
-    document.getElementById('landing-btn').textContent = 'Войти как другой пользователь →';
+    const lbtn = document.getElementById('landing-btn');
+    if (lbtn) lbtn.textContent = T[currentLang].login_btn_other;
   }
 })();
 
