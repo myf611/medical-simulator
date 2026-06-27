@@ -269,6 +269,11 @@
         </div>
         <span class="error-msg" id="err-phone">Неверный формат. Пример: 90 123 45 67</span>
       </div>
+      <div class="field">
+        <label class="label">Место работы</label>
+        <input class="input" id="workplace" type="text" placeholder="Например: Центр эндокринологии Ташкент" autocomplete="organization">
+        <span class="error-msg" id="err-workplace">Введите место работы</span>
+      </div>
       <button class="primary-btn" id="reg-btn" onclick="register()">Продолжить →</button>
     </div>
   </div>
@@ -284,7 +289,7 @@
     <div class="ready-case">
       <div class="ready-case-label">Ваш кейс</div>
       <div class="ready-case-title">Жасур Омонов, 20 лет</div>
-      <div class="ready-case-meta">Приёмный покой · Эндокринология · Средняя сложность</div>
+      
     </div>
     <div class="ready-timer">
       <div class="ready-timer-label">⏱ Время на выполнение</div>
@@ -383,10 +388,13 @@ async function register() {
   const firstName = document.getElementById('first-name').value.trim();
   const phone = getPhone();
 
+  const workplace = document.getElementById('workplace').value.trim();
+
   let hasError = false;
   setFieldError('last-name', 'err-last', !lastName); if (!lastName) hasError = true;
   setFieldError('first-name', 'err-first', !firstName); if (!firstName) hasError = true;
   setFieldError('phone', 'err-phone', !validatePhone(phone)); if (!validatePhone(phone)) hasError = true;
+  setFieldError('workplace', 'err-workplace', !workplace); if (!workplace) hasError = true;
   if (hasError) return;
 
   const btn = document.getElementById('reg-btn');
@@ -405,7 +413,7 @@ async function register() {
       const res = await fetch(`${BACKEND_URL}/api/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ last_name: lastName, first_name: firstName, phone, org_slug: ORG_SLUG })
+        body: JSON.stringify({ last_name: lastName, first_name: firstName, phone, workplace, org_slug: ORG_SLUG })
       });
       const data = await res.json();
 
