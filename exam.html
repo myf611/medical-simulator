@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Симулятор пациента</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --bg: #f7f6f2; --surface: #fff; --surface2: #f2f1ed;
+    --border: #e2e0d8; --border2: #ccc9be;
+    --text: #1a1917; --text2: #6b6960; --text3: #9e9b90;
+    --accent: #1a5276; --accent-light: #eaf1f8;
+    --green: #0f6e56; --green-light: #e1f5ee;
+    --amber: #854f0b; --amber-light: #faeeda;
+    --red: #a32d2d;
+    --font: 'Inter', system-ui, sans-serif;
+  }
+  html { height: 100%; }
+  body { font-family: var(--font); background: var(--bg); color: var(--text); display: flex; flex-direction: column; height: 100%; height: 100dvh; overflow: hidden; }
+
+  /* HEADER */
+  .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 16px; height: 52px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+  .header-left { display: flex; align-items: center; gap: 8px; }
+  .logo { font-size: 14px; font-weight: 600; color: var(--accent); }
+
+  /* TIMER */
+  .timer { font-size: 20px; font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; letter-spacing: -0.5px; }
+  .timer.warning { color: var(--amber); }
+  .timer.danger { color: var(--red); animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+  /* MESSAGES */
+  .messages { flex: 1; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; min-height: 0; }
+  .msg { display: flex; gap: 8px; }
+  .msg.student { align-self: flex-end; flex-direction: row-reverse; max-width: 85%; }
+  .msg.patient { align-self: flex-start; max-width: 85%; }
+  .msg.system { align-self: center; max-width: 100%; }
+  .msg.result { align-self: flex-start; max-width: 100%; width: 100%; }
+  .avatar { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0; margin-top: 2px; }
+  .avatar.p { background: var(--amber-light); color: var(--amber); border: 1px solid #fac775; }
+  .avatar.s { background: var(--accent-light); color: var(--accent); border: 1px solid #b5d4f4; }
+  .bubble { padding: 9px 13px; border-radius: 14px; font-size: 14px; line-height: 1.6; }
+  .msg.patient .bubble { background: var(--surface); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
+  .msg.student .bubble { background: var(--accent); color: #fff; border-bottom-right-radius: 4px; }
+  .msg.system .bubble { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text2); font-size: 12px; text-align: center; padding: 7px 14px; width: 100%; }
+
+  /* RESULT CARD */
+  .result-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; width: 100%; }
+  .result-card-title { font-size: 12px; font-weight: 700; color: var(--text2); margin-bottom: 8px; }
+  .result-row { display: flex; justify-content: space-between; align-items: baseline; padding: 4px 0; border-bottom: 1px solid var(--border); font-size: 13px; gap: 10px; }
+  .result-row:last-child { border-bottom: none; }
+  .result-key { color: var(--text2); }
+  .result-val { font-weight: 600; text-align: right; }
+  .result-val.ab { color: var(--red); }
+  .result-val.wa { color: var(--amber); }
+  .result-val.ok { color: var(--green); }
+  .result-ref { font-size: 10px; color: var(--text3); }
+
+  /* TYPING */
+  .typing-dots { display: flex; gap: 4px; align-items: center; padding: 3px 0; }
+  .typing-dots span { width: 6px; height: 6px; border-radius: 50%; background: var(--text3); animation: bounce 1.2s infinite; }
+  .typing-dots span:nth-child(2) { animation-delay: .2s; }
+  .typing-dots span:nth-child(3) { animation-delay: .4s; }
+  @keyframes bounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-5px)} }
+
+  /* INPUT AREA */
+  .input-area { background: var(--surface); border-top: 1px solid var(--border); flex-shrink: 0; padding: 10px 14px; padding-bottom: max(10px, env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 8px; }
+  .input-row { display: flex; gap: 8px; align-items: flex-end; }
+  .chat-input { flex: 1; resize: none; border: 1px solid var(--border2); border-radius: 22px; padding: 10px 16px; font-family: var(--font); font-size: 15px; color: var(--text); background: var(--surface2); outline: none; line-height: 1.45; max-height: 120px; min-height: 42px; -webkit-appearance: none; transition: border-color .15s; }
+  .chat-input:focus { border-color: var(--accent); background: var(--surface); }
+  .chat-input:disabled { opacity: 0.5; cursor: not-allowed; }
+  .send-btn { height: 42px; width: 42px; background: var(--accent); color: #fff; border: none; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+  .send-btn:active { background: #15407a; }
+  .send-btn:disabled { background: var(--text3); cursor: not-allowed; }
+
+  /* DIAGNOSIS BUTTON */
+  .diag-btn { width: 100%; padding: 10px; background: var(--green); color: #fff; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: var(--font); display: flex; align-items: center; justify-content: center; gap: 6px; transition: background .15s; }
+  .diag-btn:active { background: #0a5240; }
+  .input-hint { font-size: 11px; color: var(--text3); text-align: center; }
+
+  /* DIAGNOSIS PANEL */
+  .diag-panel { position: fixed; inset: 0; z-index: 50; display: none; align-items: flex-end; }
+  .diag-panel.open { display: flex; }
+  .diag-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,.4); }
+  .diag-sheet { position: relative; background: var(--surface); border-radius: 20px 20px 0 0; width: 100%; padding: 0 0 env(safe-area-inset-bottom); animation: slideUp .25s cubic-bezier(.32,1,.45,1); max-height: 90vh; display: flex; flex-direction: column; }
+  @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+  .diag-handle { width: 36px; height: 4px; background: var(--border2); border-radius: 2px; margin: 12px auto 0; }
+  .diag-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 18px; border-bottom: 1px solid var(--border); }
+  .diag-title { font-size: 16px; font-weight: 700; color: var(--text); }
+  .diag-close { width: 28px; height: 28px; border-radius: 50%; background: var(--surface2); border: none; cursor: pointer; font-size: 14px; color: var(--text2); }
+  .diag-body { overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .diag-section { display: flex; flex-direction: column; gap: 5px; }
+  .diag-label { font-size: 12px; font-weight: 600; color: var(--text2); }
+  .diag-sublabel { font-size: 11px; color: var(--text3); }
+  .diag-textarea { border: 1px solid var(--border2); border-radius: 10px; padding: 10px 12px; font-family: var(--font); font-size: 14px; color: var(--text); background: var(--surface); outline: none; resize: none; min-height: 80px; line-height: 1.5; width: 100%; -webkit-appearance: none; }
+  .diag-textarea:focus { border-color: var(--accent); }
+  .diag-submit { width: 100%; padding: 13px; background: var(--accent); color: #fff; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; font-family: var(--font); margin-top: 4px; }
+  .diag-submit:active { background: #15407a; }
+
+  /* OVERLAY */
+  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.65); z-index: 100; display: none; align-items: center; justify-content: center; padding: 20px; }
+  .overlay.show { display: flex; }
+  .overlay-card { background: var(--surface); border-radius: 20px; padding: 28px 24px; max-width: 380px; width: 100%; text-align: center; display: flex; flex-direction: column; gap: 14px; }
+  .overlay-icon { font-size: 44px; }
+  .overlay-title { font-size: 20px; font-weight: 700; }
+  .overlay-stats { background: var(--surface2); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 6px; text-align: left; }
+  .stat-row { display: flex; justify-content: space-between; font-size: 13px; }
+  .stat-key { color: var(--text2); }
+  .stat-val { font-weight: 600; }
+  .overlay-btn { padding: 12px; background: var(--accent); color: #fff; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: var(--font); }
+  .overlay-btn.secondary { background: var(--surface2); color: var(--text2); }
+
+  /* INTRO */
+  .intro-screen { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 200; padding: 24px; overflow-y: auto; }
+  .intro-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 28px 24px; max-width: 460px; width: 100%; display: flex; flex-direction: column; gap: 18px; box-shadow: 0 8px 40px rgba(0,0,0,0.08); }
+  .intro-logo { font-size: 36px; text-align: center; }
+  .intro-title { font-size: 22px; font-weight: 700; color: var(--text); text-align: center; letter-spacing: -0.4px; }
+  .intro-timer-block { background: var(--accent-light); border: 1px solid #b5d4f4; border-radius: 12px; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; }
+  .intro-timer-val { font-size: 32px; font-weight: 700; color: var(--accent); letter-spacing: -1px; }
+  .intro-timer-label { font-size: 13px; color: var(--accent); font-weight: 500; }
+  .intro-timer-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
+  .intro-rules { display: flex; flex-direction: column; gap: 10px; }
+  .intro-rules-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text3); }
+  .rule-item { display: flex; gap: 10px; align-items: flex-start; }
+  .rule-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+  .rule-text { font-size: 13px; color: var(--text2); line-height: 1.5; }
+  .rule-text b { color: var(--text); }
+  .intro-start-btn { width: 100%; padding: 14px; background: var(--accent); color: #fff; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; font-family: var(--font); }
+  .intro-start-btn:active { background: #15407a; }
+
+  @media (max-width: 640px) {
+    .bubble { font-size: 15px; }
+  }
+
+  /* FINISH SESSION */
+  .finish-btn {
+    width: 100%; padding: 12px; background: var(--surface2);
+    border: 1px solid var(--border2); border-radius: 10px;
+    font-size: 14px; font-weight: 500; color: var(--text2);
+    cursor: pointer; font-family: var(--font); margin-top: 8px;
+    transition: all .15s;
+  }
+  .finish-btn:hover { background: var(--red-light); border-color: var(--red); color: var(--red); }
+  .finish-btn.show { display: block; }
+  .session-info {
+    font-size: 12px; color: var(--text3); text-align: center; margin-top: 4px;
+  }
+
+</style>
+</head>
+<body>
+
+<!-- INTRO -->
+<div class="intro-screen" id="intro-screen">
+  <div class="intro-card">
+    <div class="intro-logo">🏥</div>
+    <div class="intro-title">Симулятор пациента</div>
+
+    <div class="intro-timer-block">
+      <div>
+        <div class="intro-timer-label">⏱ Время на выполнение</div>
+        <div class="intro-timer-sub">Предупреждение за 5 минут до конца</div>
+      </div>
+      <div class="intro-timer-val">30:00</div>
+    </div>
+
+    <div class="intro-rules">
+      <div class="intro-rules-title">Как работать</div>
+      <div class="rule-item"><div class="rule-icon">💬</div><div class="rule-text"><b>Общайтесь свободно</b> — задавайте вопросы пациенту в произвольной форме</div></div>
+      <div class="rule-item"><div class="rule-icon">🏥</div><div class="rule-text"><b>Запрашивайте явно</b> — осмотр и анализы выдаются только по вашему запросу</div></div>
+      <div class="rule-item"><div class="rule-icon">📋</div><div class="rule-text"><b>Кнопка «Поставить диагноз»</b> появится внизу — нажмите когда будете готовы</div></div>
+      <div class="rule-item"><div class="rule-icon">⭐</div><div class="rule-text"><b>Оценка</b> выдаётся автоматически после диагноза или по истечении времени</div></div>
+    </div>
+
+    <button class="intro-start-btn" onclick="startExam()">Начать →</button>
+  </div>
+</div>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-left">
+    <span style="font-size:18px;">🏥</span>
+    <span class="logo">Симулятор пациента</span>
+    <span id="student-name-badge" style="font-size:12px;color:var(--text3);"></span>
+  </div>
+  <div class="timer" id="timer">30:00</div>
+</div>
+
+<!-- MESSAGES -->
+<div class="messages" id="messages">
+  <div class="msg system"><div class="bubble">⏱ У вас 30 минут. Собирайте анамнез, запрашивайте осмотр и анализы. Когда будете готовы — нажмите кнопку «Поставить диагноз».</div></div>
+  <div class="msg patient">
+    <div class="avatar p">ЖО</div>
+    <div class="bubble">Здравствуйте, доктор. Меня зовут Жасур, мне 20 лет. Мне очень плохо — сильная слабость, тошнит, несколько раз вырвало, голова болит...</div>
+  </div>
+</div>
+
+<!-- INPUT -->
+<div class="input-area">
+  <div class="input-row">
+    <textarea class="chat-input" id="chat-input" placeholder="Напишите вопрос или запрос..." rows="1"></textarea>
+    <button class="send-btn" id="send-btn" onclick="sendMessage()">➤</button>
+  </div>
+  <button class="diag-btn" onclick="openDiagPanel()">📋 Поставить диагноз</button>
+  <div class="input-hint">Задавайте вопросы, запрашивайте осмотр и анализы в свободной форме</div>
+  <button class="finish-btn" id="finish-btn" style="display:none;" onclick="finishSession()">
+    Завершить сеанс и выйти
+  </button>
+  <div class="session-info" id="session-info" style="display:none;"></div>
+</div>
+
+<!-- DIAGNOSIS PANEL -->
+<div class="diag-panel" id="diag-panel">
+  <div class="diag-backdrop" onclick="closeDiagPanel()"></div>
+  <div class="diag-sheet">
+    <div class="diag-handle"></div>
+    <div class="diag-header">
+      <span class="diag-title">📋 Диагноз и план</span>
+      <button class="diag-close" onclick="closeDiagPanel()">✕</button>
+    </div>
+    <div class="diag-body">
+      <div class="diag-section">
+        <div class="diag-label">Диагноз</div>
+        <div class="diag-sublabel">Основной и сопутствующие диагнозы</div>
+        <textarea class="diag-textarea" id="inp-diagnosis" placeholder="Введите ваш диагноз..."></textarea>
+      </div>
+      <div class="diag-section">
+        <div class="diag-label">План обследования</div>
+        <div class="diag-sublabel">Какие дополнительные исследования необходимы</div>
+        <textarea class="diag-textarea" id="inp-workup" placeholder="Например: ОАК, биохимия, HbA1c, АГК, ОАМ, ЭКГ..."></textarea>
+      </div>
+      <div class="diag-section">
+        <div class="diag-label">План лечения</div>
+        <div class="diag-sublabel">Немедленные меры и дальнейшая тактика</div>
+        <textarea class="diag-textarea" id="inp-treatment" placeholder="Например: инфузионная терапия 0.9% NaCl, инсулинотерапия, коррекция электролитов..."></textarea>
+      </div>
+      <button class="diag-submit" onclick="submitDiagnosis()">Подтвердить и получить оценку →</button>
+    </div>
+  </div>
+</div>
+
+<!-- TIMEOUT OVERLAY -->
+<div class="overlay" id="timeout-overlay">
+  <div class="overlay-card">
+    <div class="overlay-icon">⏰</div>
+    <div class="overlay-title">Время вышло</div>
+    <div class="overlay-stats" id="timeout-stats"></div>
+    <div id="overlay-loading" style="font-size:13px;color:var(--text2);">⏳ Генерируется разбор...</div>
+    <button class="overlay-btn secondary" onclick="location.reload()">Начать заново</button>
+  </div>
+</div>
+
+<script>
+const BACKEND_URL = 'https://medical-simulator-api.onrender.com';
+
+const CASE = {
+  patient: { name: "Жасур Омонов", age: 20, gender: "мужчина", occupation: "менеджер в банке" },
+  history: {
+    presenting: "Последние 2–3 недели очень много пьёт воды и часто ходит в туалет. Сильная слабость, головная боль, тошнота, несколько раз рвало. Похудел примерно на 5–6 кг. Дышать стало тяжелее при движении. Диабет никогда не диагностировали.",
+    past_medical: "Нет хронических заболеваний, операций или травм. Наследственность по диабету не отягощена.",
+    medications: "Не принимает никаких лекарств.",
+    allergies: "Аллергий нет.",
+    family: "Наследственность по сахарному диабету не отягощена. Родители и сестра здоровы.",
+    social: "Работает менеджером в банке, постоянно испытывает стресс. Не курит, алкоголь не употребляет. Часто ест фаст-фуд. Финансово обеспечен."
+  },
+  vitals: [
+    { k: "АД", v: "100/70 мм рт.ст.", s: "wa" },
+    { k: "ЧСС", v: "120 уд/мин", s: "ab" },
+    { k: "ЧД", v: "24 в мин", s: "wa" },
+    { k: "SpO2", v: "99%", s: "ok" },
+    { k: "Температура", v: "36,5 °C", s: "ok" },
+    { k: "Рост / Вес / ИМТ", v: "160 см / 62 кг / 24,2", s: "ok" }
+  ],
+  exam: {
+    general: "Истощённый вид, кожа бледно-розовая, рубеоз щёк. Сознание ясное, ориентирован полностью. Слизистые сухие. Капиллярное наполнение снижено. Запах кетонов в выдыхаемом воздухе.",
+    cardio: "Тоны сердца ясные, тахикардия. Шумов нет.",
+    resp: "Дыхание жёсткое. Выраженная одышка при разговоре и в покое (дыхание Куссмауля).",
+    abdomen: "Живот мягкий, умеренная болезненность в эпигастрии, перитонеальных симптомов нет.",
+    neuro: "Сознание ясное, полностью ориентирован. Шкала Глазго: 15 баллов. Очаговой симптоматики нет.",
+    extremities: "Изменений нет. Отёков нет. Пульс на артериях стоп сохранён."
+  },
+  labs: {
+    "глюкоза": { name: "Глюкоза крови (капиллярная)", rows: [{ k: "Глюкоза", v: "20,1 ммоль/л", r: "3,9–6,1", s: "ab" }] },
+    "hba1c":   { name: "HbA1c", rows: [{ k: "HbA1c", v: "17,6%", r: "4,0–5,9%", s: "ab" }] },
+    "моча":    { name: "Анализ мочи (ОАМ)", rows: [
+      { k: "Глюкоза мочи", v: "1,5 г/л", r: "Отриц.", s: "ab" },
+      { k: "Кетоновые тела", v: "+++ резко положит.", r: "Отриц.", s: "ab" }
+    ]},
+    "агк":     { name: "Газы артериальной крови (АГК)", rows: [
+      { k: "pH", v: "7,14 (ацидоз)", r: "7,35–7,45", s: "ab" },
+      { k: "Анионная разница", v: "22,0 ммоль/л", r: "8–16", s: "ab" }
+    ]},
+    "электролиты": { name: "Электролиты", rows: [
+      { k: "K⁺", v: "2,9 ммоль/л ↓", r: "3,4–5,2", s: "ab" },
+      { k: "Na⁺", v: "134 ммоль/л ↓", r: "136–145", s: "wa" }
+    ]},
+    "почки":   { name: "Функция почек", rows: [
+      { k: "Мочевина", v: "3,4 ммоль/л", r: "2,5–8,3", s: "ok" },
+      { k: "Креатинин", v: "59 мкмоль/л", r: "62–115", s: "ok" }
+    ]},
+    "оак":     { name: "ОАК", rows: [
+      { k: "Hb", v: "126 г/л", r: "130–170", s: "wa" },
+      { k: "Лейкоциты", v: "14,1 × 10⁹/л ↑", r: "4,0–9,0", s: "ab" },
+      { k: "Тромбоциты", v: "228 × 10⁹/л", r: "150–400", s: "ok" }
+    ]},
+    "печень":  { name: "Функция печени", rows: [
+      { k: "АЛТ", v: "30 ед/л", r: "0–45", s: "ok" },
+      { k: "АСТ", v: "24 ед/л", r: "0–40", s: "ok" }
+    ]},
+    "магний":  { name: "Магний крови", rows: [
+      { k: "Mg²⁺", v: "0,74 ммоль/л", r: "0,7–1,0", s: "ok" }
+    ]},
+    "экг":     { name: "ЭКГ", rows: [
+      { k: "Ритм", v: "Синусовая тахикардия", r: "Синусовый ритм", s: "wa" },
+      { k: "ЧСС", v: "122 уд/мин", r: "60–100", s: "ab" },
+      { k: "Изменения", v: "Диффузно-дистрофические изменения", r: "Норма", s: "wa" }
+    ]},
+    "рентген": { name: "Рентген грудной клетки", rows: [
+      { k: "Заключение", v: "Патологии не выявлено", r: "Норма", s: "ok" }
+    ]}
+  },
+  correct_diagnosis: "Сахарный диабет, впервые выявленный. Осложнение: диабетический кетоацидоз (ДКА).",
+  key_points: [
+    "Правильная формулировка диагноза: 'Сахарный диабет, впервые выявленный. Осл: диабетический кетоацидоз' — тип диабета при первичной постановке не указывается, хотя вероятность СД 1 типа высока",
+    "HbA1c 17,6% подтверждает факт длительной гипергликемии и наличие диабета, но НЕ является основанием для определения типа диабета",
+    "Классическая триада ДКА: гипергликемия (20,1 ммоль/л), кетонурия/кетоновые тела (+++), метаболический ацидоз (pH 7,14)",
+    "Гипокалиемия (K+ 2,9 ммоль/л) — требует коррекции ДО начала инсулинотерапии",
+    "При ДКА необходима коррекция не только K+ и Na+, но и магния (Mg²⁺) — особенно при длительной рвоте",
+    "Дыхание Куссмауля — компенсаторная гипервентиляция при метаболическом ацидозе",
+    "Лейкоцитоз при ДКА может быть реакцией стресса, а не признаком инфекции",
+    "Тактика: регидратация 0,9% NaCl → коррекция K+ и Mg²⁺ → инсулинотерапия (инфузия) → мониторинг КЩС и электролитов"
+  ]
+};
+
+const SYSTEM_PROMPT = `Ты — пациент Жасур Омонов, 20 лет. Ты в приёмном покое. С тобой говорит врач.
+
+АБСОЛЮТНЫЕ ПРАВИЛА:
+1. Отвечай ТОЛЬКО на основе данных кейса. Ничего не придумывай.
+2. Если спросили о чём-то, чего нет в кейсе — отвечай логично для здорового 20-летнего мужчины:
+   "Вы сдавали анализы?" → "Нет, раньше не сдавал, всё было нормально."
+   "Были в больнице?" → "Нет, раньше не обращался."
+   "Есть аллергия?" → "Нет, не было никогда."
+3. Говори просто, по-бытовому. 1–2 предложения.
+4. На вопрос о диагнозе — "Не знаю, вы доктор."
+5. НЕ комментируй анализы и результаты.
+6. Раскрывай информацию ТОЛЬКО если врач прямо спросил.
+
+КОГДА ВРАЧ НАЗНАЧАЕТ ОСМОТР ИЛИ АНАЛИЗЫ:
+Отвечай только "Хорошо, доктор." и добавь теги для КАЖДОГО назначенного исследования.
+Если перечислено несколько — добавь ВСЕ теги сразу.
+
+ТЕГИ (добавляй в конце ответа):
+[EXAM:витальные] — давление / пульс / температура / витальные
+[EXAM:общий] — общий осмотр / кожа / слизистые / внешний вид
+[EXAM:кардио] — сердце / тоны / аускультация сердца
+[EXAM:дыхание] — лёгкие / дыхание / аускультация лёгких
+[EXAM:живот] — живот / пальпация / перкуссия живота
+[EXAM:неврология] — неврология / сознание / рефлексы / ШКГ
+[EXAM:конечности] — конечности / стопы / отёки
+[LAB:глюкоза] — глюкоза / сахар крови / гликемия
+[LAB:hba1c] — HbA1c / гликированный гемоглобин
+[LAB:моча] — моча / ОАМ / анализ мочи / кетоны в моче / кетоновые тела в моче
+[LAB:агк] — газы крови / КЩС / pH / кислотно-щелочное состояние
+[LAB:электролиты] — электролиты / калий / натрий / K+ / Na+ / хлор
+[LAB:почки] — почки / мочевина / креатинин / функция почек
+[LAB:оак] — ОАК / общий анализ крови / лейкоциты / гемоглобин / коагулограмма
+[LAB:печень] — печень / АЛТ / АСТ / функция печени / билирубин
+[LAB:магний] — магний / Mg / магний крови
+[LAB:экг] — ЭКГ / электрокардиограмма
+[LAB:рентген] — рентген / рентгенография грудной клетки
+
+ДАННЫЕ КЕЙСА:
+${JSON.stringify({ patient: CASE.patient, history: CASE.history }, null, 2)}`;
+
+const SYSTEM_EVALUATOR = `Ты — опытный клинический преподаватель. Оцениваешь работу студента по разбору клинического кейса.
+
+КЕЙС: Жасур Омонов, 20 лет. Приёмный покой.
+ПРАВИЛЬНЫЙ ДИАГНОЗ: ${CASE.correct_diagnosis}
+КЛЮЧЕВЫЕ ПУНКТЫ: ${CASE.key_points.join('\n- ')}
+
+Дай структурированный разбор на русском:
+
+1. ✅ Что сделано правильно (конкретно)
+2. ❌ Что пропущено или неверно (конкретно)
+3. 📋 Правильный диагноз с обоснованием
+4. 💊 Ключевые пункты лечения (включая коррекцию K⁺ и Mg²⁺)
+5. ⭐ Оценка: A (отлично) / B (хорошо) / C (удовлетворительно) / D (неудовлетворительно)
+
+Обрати особое внимание:
+- Правильно ли сформулирован диагноз (не указывать тип диабета при первичной постановке)
+- Упомянул ли студент коррекцию магния
+- Правильно ли понят HbA1c (не для определения типа, а для подтверждения факта диабета)`;
+
+let conversationHistory = [];
+let isLoading = false;
+let isFinished = false;
+let timerInterval = null;
+let secondsLeft = 30 * 60;
+let stats = { questions: 0, exams: 0, labs: 0 };
+let usedExams = new Set();
+let usedLabs = new Set();
+
+// TIMER
+function startTimer() {
+  timerInterval = setInterval(() => {
+    secondsLeft--;
+    updateTimerDisplay();
+    if (secondsLeft === 5 * 60) showWarning();
+    if (secondsLeft <= 0) { clearInterval(timerInterval); timeUp(); }
+  }, 1000);
+}
+
+function updateTimerDisplay() {
+  const m = Math.floor(secondsLeft / 60);
+  const s = secondsLeft % 60;
+  const el = document.getElementById('timer');
+  el.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  el.className = 'timer' + (secondsLeft <= 60 ? ' danger' : secondsLeft <= 5*60 ? ' warning' : '');
+}
+
+function showWarning() {
+  addMessage('system', '⚠️ Осталось 5 минут. Убедитесь что поставили диагноз и план лечения.');
+}
+
+function timeUp() {
+  isFinished = true;
+  document.getElementById('chat-input').disabled = true;
+  document.getElementById('send-btn').disabled = true;
+  const el = document.getElementById('timeout-stats');
+  el.innerHTML = `
+    <div class="stat-row"><span class="stat-key">Задано вопросов</span><span class="stat-val">${stats.questions}</span></div>
+    <div class="stat-row"><span class="stat-key">Проведено осмотров</span><span class="stat-val">${stats.exams}</span></div>
+    <div class="stat-row"><span class="stat-key">Назначено анализов</span><span class="stat-val">${stats.labs}</span></div>
+  `;
+  document.getElementById('timeout-overlay').classList.add('show');
+  setTimeout(() => generateReview('Время вышло. '), 600);
+}
+
+// DIAGNOSIS PANEL
+function openDiagPanel() {
+  document.getElementById('diag-panel').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeDiagPanel() {
+  document.getElementById('diag-panel').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+async function submitDiagnosis() {
+  const diagnosis = document.getElementById('inp-diagnosis').value.trim();
+  const workup = document.getElementById('inp-workup').value.trim();
+  const treatment = document.getElementById('inp-treatment').value.trim();
+  if (!diagnosis) { alert('Введите диагноз'); return; }
+
+  closeDiagPanel();
+  clearInterval(timerInterval);
+  isFinished = true;
+  document.getElementById('chat-input').disabled = true;
+  document.getElementById('send-btn').disabled = true;
+
+  const timeSpent = 30*60 - secondsLeft;
+  const m = Math.floor(timeSpent/60), s = timeSpent%60;
+
+  let summary = `📋 Диагноз студента: ${diagnosis}`;
+  if (workup) summary += `\nПлан обследования: ${workup}`;
+  if (treatment) summary += `\nПлан лечения: ${treatment}`;
+  addMessage('system', summary.replace(/\n/g, '<br>'));
+  addMessage('system', `⏱ Время: ${m} мин ${s} сек · Вопросов: ${stats.questions} · Осмотров: ${stats.exams} · Анализов: ${stats.labs}`);
+
+  const studentAnswer = `Диагноз: ${diagnosis}\nПлан обследования: ${workup || 'не указан'}\nПлан лечения: ${treatment || 'не указан'}`;
+  await generateReview(studentAnswer);
+}
+
+async function generateReview(studentAnswer) {
+  addMessage('system', '📋 Генерируется разбор...');
+  isLoading = true;
+  showTyping();
+  try {
+    const history = conversationHistory.map(m => `${m.role === 'user' ? 'СТУДЕНТ' : 'ПАЦИЕНТ'}: ${m.content}`).join('\n');
+    const prompt = `Диалог студента с пациентом:\n${history}\n\nОтвет студента:\n${studentAnswer}\n\nДай подробный разбор.`;
+    const fb = await callGroqOneShot(prompt, SYSTEM_EVALUATOR);
+    hideTyping();
+    document.getElementById('timeout-overlay').classList.remove('show');
+    const d = document.createElement('div');
+    d.className = 'msg result';
+    d.innerHTML = `<div class="result-card" style="background:var(--green-light);border-color:#9fe1cb;max-width:100%;"><div class="result-card-title" style="color:var(--green);">📝 Разбор кейса — Жасур Омонов</div><div style="font-size:13px;line-height:1.7;white-space:pre-line;color:var(--text);">${fb}</div></div>`;
+    document.getElementById('messages').appendChild(d);
+    document.getElementById('messages').scrollTop = 99999;
+    // Show finish button after review
+    showFinishBtn();
+  } catch(e) {
+    hideTyping();
+    addMessage('system', 'Не удалось получить разбор. Попробуйте обновить страницу.');
+    showFinishBtn();
+  }
+  isLoading = false;
+}
+
+// API
+async function callGroq(msg) {
+  conversationHistory.push({ role: 'user', content: msg });
+  const res = await fetch(`${BACKEND_URL}/api/chat`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'llama-3.3-70b-versatile',
+      messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...conversationHistory],
+      max_tokens: 500, temperature: 0.7
+    })
+  });
+  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e?.error?.message || `HTTP ${res.status}`); }
+  const data = await res.json();
+  const reply = data.choices?.[0]?.message?.content || '...';
+  conversationHistory.push({ role: 'assistant', content: reply });
+  return reply;
+}
+
+async function callGroqOneShot(prompt, sys) {
+  const res = await fetch(`${BACKEND_URL}/api/chat`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'llama-3.3-70b-versatile',
+      messages: [{ role: 'system', content: sys }, { role: 'user', content: prompt }],
+      max_tokens: 1200, temperature: 0.4
+    })
+  });
+  const data = await res.json();
+  return data.choices?.[0]?.message?.content || '';
+}
+
+async function sendMessage() {
+  if (isLoading || isFinished) return;
+  const inp = document.getElementById('chat-input');
+  const text = inp.value.trim(); if (!text) return;
+  inp.value = ''; inp.style.height = 'auto';
+  addMessage('student', text);
+  stats.questions++;
+  isLoading = true;
+  document.getElementById('send-btn').disabled = true;
+  showTyping();
+  try {
+    const reply = await callGroq(text);
+    hideTyping();
+    const cleanReply = reply.replace(/\[(EXAM|LAB):[^\]]+\]/g, '').trim();
+    addMessage('patient', cleanReply);
+
+    const examMatches = [...reply.matchAll(/\[EXAM:([^\]]+)\]/g)];
+    examMatches.forEach((m, i) => {
+      const key = m[1].trim();
+      if (!usedExams.has(key)) { usedExams.add(key); stats.exams++; setTimeout(() => renderExamResult(key), 400 + i * 250); }
+    });
+
+    const labMatches = [...reply.matchAll(/\[LAB:([^\]]+)\]/g)];
+    labMatches.forEach((m, i) => {
+      const key = m[1].trim();
+      if (!usedLabs.has(key)) { usedLabs.add(key); stats.labs++; setTimeout(() => renderLabResult(key), 400 + (examMatches.length + i) * 250); }
+    });
+  } catch(err) {
+    hideTyping();
+    addMessage('system', `Ошибка: ${err.message}`);
+  }
+  isLoading = false;
+  document.getElementById('send-btn').disabled = false;
+}
+
+function renderExamResult(key) {
+  const map = {
+    'витальные': { title: '❤️ Витальные показатели', rows: CASE.vitals },
+    'общий':     { title: '👁 Общий осмотр', rows: [{ k: 'Данные', v: CASE.exam.general, s: 'wa' }] },
+    'кардио':    { title: '🫀 Сердечно-сосудистая', rows: [{ k: 'Данные', v: CASE.exam.cardio, s: 'wa' }] },
+    'дыхание':   { title: '🫁 Дыхательная система', rows: [{ k: 'Данные', v: CASE.exam.resp, s: 'ab' }] },
+    'живот':     { title: '🔍 Абдоминальный осмотр', rows: [{ k: 'Данные', v: CASE.exam.abdomen, s: 'wa' }] },
+    'неврология':{ title: '🧠 Неврологический осмотр', rows: [{ k: 'Данные', v: CASE.exam.neuro, s: 'ok' }] },
+    'конечности':{ title: '🦵 Конечности', rows: [{ k: 'Данные', v: CASE.exam.extremities, s: 'ok' }] },
+  };
+  const item = map[key]; if (!item) return;
+  renderCard(item.title, item.rows);
+}
+
+function renderLabResult(key) {
+  const lab = CASE.labs[key]; if (!lab) return;
+  renderCard(`🧪 ${lab.name}`, lab.rows);
+}
+
+function renderCard(title, rows) {
+  const c = document.getElementById('messages');
+  const d = document.createElement('div');
+  d.className = 'msg result';
+  const rowsHtml = rows.map(r => `<div class="result-row"><span class="result-key">${r.k}</span><div style="text-align:right"><div class="result-val ${r.s||''}">${r.v}</div>${r.r ? `<div class="result-ref">${r.r}</div>` : ''}</div></div>`).join('');
+  d.innerHTML = `<div class="result-card"><div class="result-card-title">${title}</div>${rowsHtml}</div>`;
+  c.appendChild(d); c.scrollTop = c.scrollHeight;
+}
+
+function addMessage(role, text) {
+  const c = document.getElementById('messages');
+  const d = document.createElement('div');
+  d.className = `msg ${role}`;
+  if (role === 'system') d.innerHTML = `<div class="bubble">${text}</div>`;
+  else if (role === 'patient') d.innerHTML = `<div class="avatar p">ЖО</div><div class="bubble">${text}</div>`;
+  else d.innerHTML = `<div class="avatar s">Вы</div><div class="bubble">${text}</div>`;
+  c.appendChild(d); c.scrollTop = c.scrollHeight;
+}
+
+function showTyping() {
+  const c = document.getElementById('messages');
+  const d = document.createElement('div');
+  d.className = 'msg patient'; d.id = 'typing';
+  d.innerHTML = `<div class="avatar p">ЖО</div><div class="bubble"><div class="typing-dots"><span></span><span></span><span></span></div></div>`;
+  c.appendChild(d); c.scrollTop = c.scrollHeight;
+}
+function hideTyping() { document.getElementById('typing')?.remove(); }
+
+
+// ── SESSION ─────────────────────────────────────────
+const SESSION_KEY = 'med_sim_session';
+let autoFinishTimer = null;
+
+function getStudentFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  return {
+    student_id: params.get('student_id') || '',
+    name: params.get('name') || ''
+  };
+}
+
+function finishSession() {
+  if (!confirm('Завершить сеанс? Следующий студент сможет начать с главной страницы.')) return;
+  localStorage.removeItem(SESSION_KEY);
+  window.location.href = 'index.html';
+}
+
+function showFinishBtn() {
+  const btn = document.getElementById('finish-btn');
+  const info = document.getElementById('session-info');
+  btn.style.display = 'block';
+  info.style.display = 'block';
+
+  // Auto-finish countdown (5 minutes)
+  let secs = 5 * 60;
+  autoFinishTimer = setInterval(() => {
+    secs--;
+    const m = Math.floor(secs/60), s = secs%60;
+    info.textContent = `Сеанс автоматически завершится через ${m}:${String(s).padStart(2,'0')}`;
+    if (secs <= 0) {
+      clearInterval(autoFinishTimer);
+      localStorage.removeItem(SESSION_KEY);
+      window.location.href = 'index.html';
+    }
+  }, 1000);
+}
+
+function startExam() {
+  document.getElementById('intro-screen').style.display = 'none';
+  startTimer();
+  if (window.visualViewport) {
+    const onResize = () => {
+      document.body.style.height = window.visualViewport.height + 'px';
+      const msgs = document.getElementById('messages');
+      if (msgs) setTimeout(() => { msgs.scrollTop = msgs.scrollHeight; }, 50);
+    };
+    window.visualViewport.addEventListener('resize', onResize);
+    window.visualViewport.addEventListener('scroll', onResize);
+  }
+  setTimeout(() => document.getElementById('chat-input').focus(), 100);
+  // Show student name
+  const student = getStudentFromUrl();
+  if (student.name) {
+    document.getElementById('student-name-badge').textContent = student.name;
+  }
+
+}
+
+const inp = document.getElementById('chat-input');
+inp.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
+inp.addEventListener('input', () => { inp.style.height = 'auto'; inp.style.height = Math.min(inp.scrollHeight, 120) + 'px'; });
+</script>
+</body>
+</html>
