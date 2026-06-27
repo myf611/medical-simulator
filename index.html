@@ -195,6 +195,21 @@
     .ready-card { padding: 20px; border-radius: 16px; }
   }
 
+
+  .select {
+    border: 1px solid var(--border2); border-radius: 10px;
+    padding: 12px 14px; font-family: var(--font); font-size: 15px;
+    color: var(--text); background: var(--surface2); outline: none;
+    transition: border-color .15s; -webkit-appearance: none;
+    width: 100%; cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%239e9b90' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+  }
+  .select:focus { border-color: var(--accent); background-color: var(--surface); }
+  .select.error { border-color: var(--red); background-color: var(--red-light); }
+
 </style>
 </head>
 <body>
@@ -268,6 +283,32 @@
           <input class="input phone-input" id="phone" type="tel" placeholder="90 123 45 67" maxlength="12" inputmode="numeric">
         </div>
         <span class="error-msg" id="err-phone">Неверный формат. Пример: 90 123 45 67</span>
+      </div>
+      <div class="field">
+        <label class="label">Область</label>
+        <select class="select" id="region">
+          <option value="">— Выберите область —</option>
+          <option value="Ташкент (город)">Ташкент (город)</option>
+          <option value="Андижанская область">Андижанская область</option>
+          <option value="Бухарская область">Бухарская область</option>
+          <option value="Джизакская область">Джизакская область</option>
+          <option value="Кашкадарьинская область">Кашкадарьинская область</option>
+          <option value="Навоийская область">Навоийская область</option>
+          <option value="Наманганская область">Наманганская область</option>
+          <option value="Самаркандская область">Самаркандская область</option>
+          <option value="Сурхандарьинская область">Сурхандарьинская область</option>
+          <option value="Сырдарьинская область">Сырдарьинская область</option>
+          <option value="Ташкентская область">Ташкентская область</option>
+          <option value="Ферганская область">Ферганская область</option>
+          <option value="Хорезмская область">Хорезмская область</option>
+          <option value="Республика Каракалпакстан">Республика Каракалпакстан</option>
+        </select>
+        <span class="error-msg" id="err-region">Выберите область</span>
+      </div>
+      <div class="field">
+        <label class="label">Город / район</label>
+        <input class="input" id="city" type="text" placeholder="Например: Ташкент" autocomplete="address-level2">
+        <span class="error-msg" id="err-city">Введите город или район</span>
       </div>
       <div class="field">
         <label class="label">Место работы</label>
@@ -389,11 +430,15 @@ async function register() {
   const phone = getPhone();
 
   const workplace = document.getElementById('workplace').value.trim();
+  const region = document.getElementById('region').value.trim();
+  const city = document.getElementById('city').value.trim();
 
   let hasError = false;
   setFieldError('last-name', 'err-last', !lastName); if (!lastName) hasError = true;
   setFieldError('first-name', 'err-first', !firstName); if (!firstName) hasError = true;
   setFieldError('phone', 'err-phone', !validatePhone(phone)); if (!validatePhone(phone)) hasError = true;
+  setFieldError('region', 'err-region', !region); if (!region) hasError = true;
+  setFieldError('city', 'err-city', !city); if (!city) hasError = true;
   setFieldError('workplace', 'err-workplace', !workplace); if (!workplace) hasError = true;
   if (hasError) return;
 
@@ -413,7 +458,7 @@ async function register() {
       const res = await fetch(`${BACKEND_URL}/api/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ last_name: lastName, first_name: firstName, phone, workplace, org_slug: ORG_SLUG })
+        body: JSON.stringify({ last_name: lastName, first_name: firstName, phone, region, city, workplace, org_slug: ORG_SLUG })
       });
       const data = await res.json();
 
