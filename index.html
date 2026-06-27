@@ -246,18 +246,18 @@
     <div class="landing-hero">
       <div class="landing-logo">🏥</div>
       <div class="landing-title">Симулятор пациента</div>
-      <div class="landing-org">Центр эндокринологии Ташкент</div>
+      <div class="landing-org" data-key="org">Центр эндокринологии Ташкент</div>
     </div>
     <div class="landing-body">
 
       <!-- Resume banner -->
       <div class="resume-banner" id="resume-banner">
-        <div class="resume-title">⚠️ Найден незавершённый сеанс</div>
+        <div class="resume-title" data-key="resume_title">⚠️ Найден незавершённый сеанс</div>
         <div class="resume-name" id="resume-name"></div>
-        <div style="font-size:12px;color:var(--text2);">Это вы? Продолжить или начать заново?</div>
+        <div style="font-size:12px;color:var(--text2);" data-key="resume_q">Это вы? Продолжить или начать заново?</div>
         <div class="resume-btns">
-          <button class="resume-btn primary" onclick="resumeSession()">Продолжить</button>
-          <button class="resume-btn secondary" onclick="clearSession()">Это не я</button>
+          <button class="resume-btn primary" onclick="resumeSession()" data-key="resume_yes">Продолжить</button>
+          <button class="resume-btn secondary" onclick="clearSession()" data-key="resume_no">Это не я</button>
         </div>
       </div>
 
@@ -265,16 +265,16 @@
 
       <!-- Instructions -->
       <div class="instructions">
-        <div class="instr-title">Как работать</div>
-        <div class="instr-item"><div class="instr-icon">💬</div><div class="instr-text">Общайтесь с пациентом в свободной форме — задавайте вопросы</div></div>
-        <div class="instr-item"><div class="instr-icon">🩺</div><div class="instr-text">Запрашивайте осмотр и анализы явно — они выдаются только по вашему запросу</div></div>
-        <div class="instr-item"><div class="instr-icon">📋</div><div class="instr-text">Когда будете готовы — нажмите кнопку «Поставить диагноз»</div></div>
-        <div class="instr-item"><div class="instr-icon">⭐</div><div class="instr-text">Оценка выдаётся автоматически после постановки диагноза</div></div>
+        <div class="instr-title" data-key="how_title">Как работать</div>
+        <div class="instr-item"><div class="instr-icon">💬</div><div class="instr-text" data-key="i1">Общайтесь с пациентом в свободной форме — задавайте вопросы</div></div>
+        <div class="instr-item"><div class="instr-icon">🩺</div><div class="instr-text" data-key="i2">Запрашивайте осмотр и анализы явно — они выдаются только по вашему запросу</div></div>
+        <div class="instr-item"><div class="instr-icon">📋</div><div class="instr-text" data-key="i3">Когда будете готовы — нажмите кнопку «Поставить диагноз»</div></div>
+        <div class="instr-item"><div class="instr-icon">⭐</div><div class="instr-text" data-key="i4">Оценка выдаётся автоматически после постановки диагноза</div></div>
       </div>
 
       <!-- Timer -->
       <div class="timer-info">
-        <div class="timer-info-label">⏱ Время на выполнение</div>
+        <div class="timer-info-label" data-key="timer_label">⏱ Время на выполнение</div>
         <div class="timer-info-val">30:00</div>
       </div>
 
@@ -287,23 +287,23 @@
 <div class="screen" id="screen-register">
   <div class="reg-card">
     <div class="reg-header">
-      <button class="reg-back" onclick="showScreen('landing')">← Назад</button>
-      <div class="reg-title">Введите ваши данные</div>
-      <div class="reg-sub">Данные сохраняются для учёта результатов</div>
+      <button class="reg-back" onclick="showScreen('landing')" data-key="reg_back">← Назад</button>
+      <div class="reg-title" data-key="reg_title">Введите ваши данные</div>
+      <div class="reg-sub" data-key="reg_sub">Данные сохраняются для учёта результатов</div>
     </div>
     <div class="form">
       <div class="field">
-        <label class="label">Фамилия</label>
+        <label class="label" data-key="lbl_last">Фамилия</label>
         <input class="input" id="last-name" type="text" placeholder="Каримов" autocomplete="family-name">
         <span class="error-msg" id="err-last">Введите фамилию</span>
       </div>
       <div class="field">
-        <label class="label">Имя</label>
+        <label class="label" data-key="lbl_first">Имя</label>
         <input class="input" id="first-name" type="text" placeholder="Азиз" autocomplete="given-name">
         <span class="error-msg" id="err-first">Введите имя</span>
       </div>
       <div class="field">
-        <label class="label">Мобильный телефон</label>
+        <label class="label" data-key="lbl_phone">Мобильный телефон</label>
         <div class="phone-wrap">
           <span class="phone-prefix">+998</span>
           <input class="input phone-input" id="phone" type="tel" placeholder="90 123 45 67" maxlength="12" inputmode="numeric">
@@ -311,7 +311,7 @@
         <span class="error-msg" id="err-phone">Неверный формат. Пример: 90 123 45 67</span>
       </div>
       <div class="field">
-        <label class="label">Область</label>
+        <label class="label" data-key="lbl_region">Область</label>
         <select class="select" id="region">
           <option value="">— Выберите область —</option>
           <option value="Ташкент (город)">Ташкент (город)</option>
@@ -332,12 +332,12 @@
         <span class="error-msg" id="err-region">Выберите область</span>
       </div>
       <div class="field">
-        <label class="label">Город / район</label>
+        <label class="label" data-key="lbl_city">Город / район</label>
         <input class="input" id="city" type="text" placeholder="Например: Ташкент" autocomplete="address-level2">
         <span class="error-msg" id="err-city">Введите город или район</span>
       </div>
       <div class="field">
-        <label class="label">Место работы</label>
+        <label class="label" data-key="lbl_workplace">Место работы</label>
         <input class="input" id="workplace" type="text" placeholder="Укажите своё место работы" autocomplete="organization">
         <span class="error-msg" id="err-workplace">Введите место работы</span>
       </div>
@@ -350,19 +350,19 @@
 <div class="screen" id="screen-ready">
   <div class="ready-card">
     <div class="ready-icon">✅</div>
-    <div class="ready-greeting">Добро пожаловать,</div>
+    <div class="ready-greeting" data-key="welcome">Добро пожаловать,</div>
     <div class="ready-name" id="ready-name">—</div>
     <div class="ready-divider"></div>
     <div class="ready-case">
-      <div class="ready-case-label">Ваш кейс</div>
+      <div class="ready-case-label" data-key="your_case">Ваш кейс</div>
       <div class="ready-case-title">Жасур Омонов, 20 лет</div>
       
     </div>
     <div class="ready-timer">
-      <div class="ready-timer-label">⏱ Время на выполнение</div>
+      <div class="ready-timer-label" data-key="timer_label">⏱ Время на выполнение</div>
       <div class="ready-timer-val">30:00</div>
     </div>
-    <div class="ready-note">После нажатия кнопки таймер запустится. Удачи!</div>
+    <div class="ready-note" data-key="timer_note">После нажатия кнопки таймер запустится. Удачи!</div>
     <button class="primary-btn green" onclick="startCase()">Начать кейс →</button>
   </div>
 </div>
@@ -513,56 +513,31 @@ function t(key) {
 function applyTranslations(lang) {
   const l = T[lang];
 
-  // Landing
-  document.querySelectorAll('.landing-org').forEach(el => el.textContent = l.org);
-  document.querySelectorAll('.landing-title, .reg-logo-title').forEach(el => el.textContent = l.title);
-  document.querySelector('.instr-title') && (document.querySelector('.instr-title').textContent = l.how_title);
-  const instrs = document.querySelectorAll('.instr-text');
-  if (instrs[0]) instrs[0].textContent = l.i1;
-  if (instrs[1]) instrs[1].textContent = l.i2;
-  if (instrs[2]) instrs[2].textContent = l.i3;
-  if (instrs[3]) instrs[3].textContent = l.i4;
-  document.querySelector('.timer-info-label') && (document.querySelector('.timer-info-label').textContent = l.timer_label);
+  // Translate all elements with data-key attribute
+  document.querySelectorAll('[data-key]').forEach(el => {
+    const key = el.getAttribute('data-key');
+    if (l[key] !== undefined) el.textContent = l[key];
+  });
+
+  // Landing button (dynamic text)
   const lbtn = document.getElementById('landing-btn');
   if (lbtn) lbtn.textContent = getSession() ? l.login_btn_other : l.login_btn;
 
-  // Resume banner
-  document.querySelector('.resume-title') && (document.querySelector('.resume-title').textContent = l.resume_title);
-  const resumeQ = document.querySelector('.resume-banner > div:nth-child(3)');
-  if (resumeQ) resumeQ.textContent = l.resume_q;
-  const resumeBtns = document.querySelectorAll('.resume-btn');
-  if (resumeBtns[0]) resumeBtns[0].textContent = l.resume_yes;
-  if (resumeBtns[1]) resumeBtns[1].textContent = l.resume_no;
+  // Reg button
+  const regBtn = document.getElementById('reg-btn');
+  if (regBtn && !regBtn.disabled) regBtn.textContent = l.continue_btn;
 
-  // Register
-  document.querySelector('.reg-back') && (document.querySelector('.reg-back').textContent = l.reg_back);
-  document.querySelector('.reg-title') && (document.querySelector('.reg-title').textContent = l.reg_title);
-  document.querySelector('.reg-sub') && (document.querySelector('.reg-sub').textContent = l.reg_sub);
-
-  const labels = document.querySelectorAll('.label');
-  const labelMap = {
-    'last-name': l.lbl_last, 'first-name': l.lbl_first,
-    'phone': l.lbl_phone, 'region': l.lbl_region,
-    'city': l.lbl_city, 'workplace': l.lbl_workplace
-  };
-  labels.forEach(label => {
-    const forEl = label.htmlFor || label.getAttribute('for');
-    if (forEl && labelMap[forEl]) label.textContent = labelMap[forEl];
-    // match by next sibling input
-    const next = label.nextElementSibling;
-    if (next) {
-      const id = next.id || (next.querySelector('input,select') || {}).id;
-      if (id && labelMap[id]) label.textContent = labelMap[id];
-    }
-  });
+  // Start button (ready screen)
+  const startBtn = document.querySelector('#screen-ready .primary-btn');
+  if (startBtn) startBtn.textContent = l.start_btn;
 
   // Placeholders
-  const setph = (id, ph) => { const el = document.getElementById(id); if (el) el.placeholder = ph; };
-  setph('last-name', l.ph_last);
-  setph('first-name', l.ph_first);
-  setph('phone', l.ph_phone);
-  setph('city', l.ph_city);
-  setph('workplace', l.ph_workplace);
+  const ph = (id, key) => { const el = document.getElementById(id); if (el) el.placeholder = l[key]; };
+  ph('last-name', 'ph_last');
+  ph('first-name', 'ph_first');
+  ph('phone', 'ph_phone');
+  ph('city', 'ph_city');
+  ph('workplace', 'ph_workplace');
 
   // Region dropdown
   const regionSel = document.getElementById('region');
@@ -574,28 +549,10 @@ function applyTranslations(lang) {
   }
 
   // Error messages
-  const errMap = {
-    'err-last': l.err_last, 'err-first': l.err_first,
-    'err-phone': l.err_phone, 'err-region': l.err_region,
-    'err-city': l.err_city, 'err-workplace': l.err_workplace
-  };
-  Object.entries(errMap).forEach(([id, text]) => {
-    const el = document.getElementById(id); if (el) el.textContent = text;
-  });
-
-  // Reg button
-  const regBtn = document.getElementById('reg-btn');
-  if (regBtn && !regBtn.disabled) regBtn.textContent = l.continue_btn;
-
-  // Ready screen
-  document.querySelector('.ready-greeting') && (document.querySelector('.ready-greeting').textContent = l.welcome);
-  document.querySelector('.ready-case-label') && (document.querySelector('.ready-case-label').textContent = l.your_case);
-  document.querySelector('.ready-case-title') && (document.querySelector('.ready-case-title').textContent = l.case_title);
-  document.querySelector('.ready-case-meta') && (document.querySelector('.ready-case-meta').textContent = l.case_meta);
-  document.querySelector('.ready-timer-label') && (document.querySelector('.ready-timer-label').textContent = l.timer_label);
-  document.querySelector('.ready-note') && (document.querySelector('.ready-note').textContent = l.timer_note);
-  const startBtn = document.querySelector('#screen-ready .primary-btn');
-  if (startBtn) startBtn.textContent = l.start_btn;
+  const err = (id, key) => { const el = document.getElementById(id); if (el) el.textContent = l[key]; };
+  err('err-last', 'err_last'); err('err-first', 'err_first');
+  err('err-phone', 'err_phone'); err('err-region', 'err_region');
+  err('err-city', 'err_city'); err('err-workplace', 'err_workplace');
 }
 
 // Device detection
