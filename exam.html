@@ -112,23 +112,7 @@
   .overlay-btn { padding: 12px; background: var(--accent); color: #fff; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: var(--font); }
   .overlay-btn.secondary { background: var(--surface2); color: var(--text2); }
 
-  /* INTRO */
-  .intro-screen { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 200; padding: 24px; overflow-y: auto; }
-  .intro-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 28px 24px; max-width: 460px; width: 100%; display: flex; flex-direction: column; gap: 18px; box-shadow: 0 8px 40px rgba(0,0,0,0.08); }
-  .intro-logo { font-size: 36px; text-align: center; }
-  .intro-title { font-size: 22px; font-weight: 700; color: var(--text); text-align: center; letter-spacing: -0.4px; }
-  .intro-timer-block { background: var(--accent-light); border: 1px solid #b5d4f4; border-radius: 12px; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; }
-  .intro-timer-val { font-size: 32px; font-weight: 700; color: var(--accent); letter-spacing: -1px; }
-  .intro-timer-label { font-size: 13px; color: var(--accent); font-weight: 500; }
-  .intro-timer-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
-  .intro-rules { display: flex; flex-direction: column; gap: 10px; }
-  .intro-rules-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text3); }
-  .rule-item { display: flex; gap: 10px; align-items: flex-start; }
-  .rule-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
-  .rule-text { font-size: 13px; color: var(--text2); line-height: 1.5; }
-  .rule-text b { color: var(--text); }
-  .intro-start-btn { width: 100%; padding: 14px; background: var(--accent); color: #fff; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; font-family: var(--font); }
-  .intro-start-btn:active { background: #15407a; }
+  /* Intro CSS removed */
 
   @media (max-width: 640px) {
     .bubble { font-size: 15px; }
@@ -895,7 +879,6 @@ function showFinishBtn() {
 }
 
 function startExam() {
-  document.getElementById('intro-screen').style.display = 'none';
   startTimer();
   if (window.visualViewport) {
     const onResize = () => {
@@ -910,7 +893,8 @@ function startExam() {
   // Show student name
   const student = getStudentFromUrl();
   if (student.name) {
-    document.getElementById('student-name-badge').textContent = student.name;
+    const badge = document.getElementById('student-name-badge');
+    if (badge) badge.innerHTML = '<span style="font-size:11px;color:var(--text3);display:block;">Добро пожаловать,</span><strong style="font-size:13px;">' + student.name + '</strong>';
   }
 
 }
