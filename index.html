@@ -334,7 +334,7 @@ function getSession() {
 function saveSession(d) { localStorage.setItem(SESSION_KEY, JSON.stringify({...d, timestamp: Date.now()})); }
 function clearSession() { localStorage.removeItem(SESSION_KEY); }
 function showAuth() { document.getElementById('auth-panel').style.display = 'flex'; document.getElementById('welcome-panel').classList.remove('show'); }
-function showWelcome(name) { document.getElementById('auth-panel').style.display = 'none'; document.getElementById('welcome-name').textContent = name; document.getElementById('welcome-panel').classList.add('show'); }
+function showWelcome(name) { /* go straight to exam */ }
 function logout() { clearSession(); showAuth(); }
 function clearAndReset() { clearSession(); document.getElementById('resume-banner').classList.remove('show'); showAuth(); }
 function resumeSession() { const s = getSession(); if (s) startCase(s); }
@@ -377,7 +377,7 @@ async function login() {
   try {
     const {ok, data} = await apiCall('/api/login', { phone, org_slug: ORG_SLUG });
     if (!ok) alert(data.detail || T[currentLang].err_not_found);
-    else { saveSession({ student_id: data.student_id, name: data.name }); showWelcome(data.name); }
+    else { saveSession({ student_id: data.student_id, name: data.name }); startCase(); }
   } catch { alert(T[currentLang].err_conn); }
   btn.disabled = false; btn.textContent = T[currentLang].login_btn;
 }
@@ -402,7 +402,7 @@ async function register() {
   try {
     const {ok, data} = await apiCall('/api/register', { last_name:last, first_name:first, phone, region, city, workplace, org_slug: ORG_SLUG });
     if (!ok) alert(data.detail || 'Ошибка регистрации');
-    else { saveSession({ student_id: data.student_id, name: data.name }); showWelcome(data.name); }
+    else { saveSession({ student_id: data.student_id, name: data.name }); startCase(); }
   } catch { alert(T[currentLang].err_conn); }
   btn.disabled = false; btn.textContent = T[currentLang].reg_btn;
 }
