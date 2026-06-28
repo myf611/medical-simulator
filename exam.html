@@ -877,6 +877,9 @@ function startExam() {
 const inp = document.getElementById('chat-input');
 inp.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
 inp.addEventListener('input', () => { inp.style.height = 'auto'; inp.style.height = Math.min(inp.scrollHeight, 120) + 'px'; });
+
+// Auto start
+startExam();
 </script>
 </body>
 </html>
