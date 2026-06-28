@@ -187,6 +187,24 @@
     .sidebar-column { display: none; }
   }
 
+
+  /* ORDER PANEL */
+  .order-group-item { display:flex; align-items:center; gap:8px; padding:10px 12px; border:1px solid var(--border); border-radius:8px; cursor:pointer; font-size:13px; font-weight:500; color:var(--text); transition:all .15s; background:var(--surface); }
+  .order-group-item:hover { border-color:var(--accent); background:var(--accent-light); }
+  .order-group-item input[type="checkbox"] { accent-color:var(--accent); width:15px; height:15px; cursor:pointer; }
+  .order-next-btn { width:100%; padding:10px; background:var(--accent); color:#fff; border:none; border-radius:8px; font-family:var(--font); font-size:13px; font-weight:600; cursor:pointer; margin-top:12px; }
+  .order-next-btn:hover { background:#15407a; }
+  .order-back-btn { background:none; border:none; color:var(--text3); font-size:12px; cursor:pointer; font-family:var(--font); padding:0; margin-bottom:12px; display:block; }
+  .order-back-btn:hover { color:var(--accent); }
+  .order-section { margin-bottom:14px; }
+  .order-section-title { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--text3); margin-bottom:6px; }
+  .order-item { display:flex; align-items:center; gap:8px; padding:7px 10px; border-radius:6px; cursor:pointer; font-size:12px; color:var(--text); transition:background .12s; }
+  .order-item:hover { background:var(--surface2); }
+  .order-item.used { color:var(--text3); pointer-events:none; text-decoration:line-through; }
+  .order-item input[type="checkbox"] { accent-color:var(--accent); width:13px; height:13px; cursor:pointer; flex-shrink:0; }
+  .order-submit-btn { width:100%; padding:10px; background:var(--green); color:#fff; border:none; border-radius:8px; font-family:var(--font); font-size:13px; font-weight:600; cursor:pointer; margin-top:10px; }
+  .order-submit-btn:hover { background:#0a5240; }
+
 </style>
 </head>
 <body>
@@ -231,15 +249,45 @@
 <!-- DESKTOP SIDEBAR -->
 <div class="sidebar-column" id="desktop-sidebar">
   <div class="sidebar-tabs">
-    <button class="sidebar-tab active" onclick="switchSidebarTab('results')">📋 Результаты</button>
-    <button class="sidebar-tab" onclick="switchSidebarTab('diagnosis')">📝 Диагноз</button>
+    <button class="sidebar-tab active" id="stab-order" onclick="switchSidebarTab('order')">🩺 Назначить</button>
+    <button class="sidebar-tab" id="stab-results" onclick="switchSidebarTab('results')">📋 Результаты</button>
+    <button class="sidebar-tab" id="stab-diagnosis" onclick="switchSidebarTab('diagnosis')">📝 Диагноз</button>
   </div>
   <div class="sidebar-content">
-    <div class="sidebar-panel active" id="sidebar-results">
-      <div style="font-size:13px;color:var(--text3);text-align:center;padding:20px 0;">
-        Результаты осмотров и анализов появятся здесь
+
+    <!-- ORDER PANEL: Step 1 — groups -->
+    <div class="sidebar-panel active" id="sidebar-order">
+      <div id="order-step1">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:10px;">Выберите категорию</div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <label class="order-group-item">
+            <input type="checkbox" class="order-group-cb" value="lab"> 🧪 Лабораторные анализы
+          </label>
+          <label class="order-group-item">
+            <input type="checkbox" class="order-group-cb" value="exam"> 🩺 Физикальный осмотр
+          </label>
+          <label class="order-group-item">
+            <input type="checkbox" class="order-group-cb" value="instrument"> 📈 Инструментальные
+          </label>
+        </div>
+        <button class="order-next-btn" onclick="showOrderStep2()">Далее →</button>
+      </div>
+
+      <div id="order-step2" style="display:none;">
+        <button class="order-back-btn" onclick="showOrderStep1()">← Назад</button>
+        <div id="order-step2-content"></div>
+        <button class="order-submit-btn" onclick="submitOrder()">Назначить выбранное</button>
       </div>
     </div>
+
+    <!-- RESULTS PANEL -->
+    <div class="sidebar-panel" id="sidebar-results">
+      <div style="font-size:13px;color:var(--text3);text-align:center;padding:20px 0;" id="sidebar-results-empty">
+        Результаты появятся здесь
+      </div>
+    </div>
+
+    <!-- DIAGNOSIS PANEL -->
     <div class="sidebar-panel" id="sidebar-diagnosis">
       <div style="display:flex;flex-direction:column;gap:12px;">
         <div style="display:flex;flex-direction:column;gap:4px;">
@@ -768,7 +816,7 @@ function renderCard(title, rows) {
     const s = document.createElement('div');
     s.innerHTML = cardHtml;
     sidebar.appendChild(s.firstChild);
-    switchSidebarTab('results');
+    switchSidebarTab('results'); document.getElementById('sidebar-results-empty')?.remove();
   }
 }
 
@@ -794,9 +842,111 @@ function hideTyping() { document.getElementById('typing')?.remove(); }
 
 
 // ── SIDEBAR (DESKTOP) ────────────────────────────────
+
+// ── ORDER PANEL ──────────────────────────────────────
+const ORDER_CATALOG = {
+  lab: {
+    title: '🧪 Лабораторные анализы',
+    items: [
+      { key: 'глюкоза',     label: 'Глюкоза крови' },
+      { key: 'hba1c',       label: 'HbA1c (гликированный гемоглобин)' },
+      { key: 'оак',         label: 'ОАК (общий анализ крови)' },
+      { key: 'электролиты', label: 'Электролиты (K⁺, Na⁺)' },
+      { key: 'агк',         label: 'Газы крови / КЩС' },
+      { key: 'почки',       label: 'Функция почек (мочевина, креатинин)' },
+      { key: 'печень',      label: 'Функция печени (АЛТ, АСТ)' },
+      { key: 'магний',      label: 'Магний крови' },
+      { key: 'моча',        label: 'Анализ мочи (ОАМ)' },
+    ]
+  },
+  exam: {
+    title: '🩺 Физикальный осмотр',
+    items: [
+      { key: 'витальные',   label: 'Витальные показатели (АД, ЧСС, ЧД, SpO2, Т°)' },
+      { key: 'общий',       label: 'Общий осмотр / кожа / слизистые' },
+      { key: 'кардио',      label: 'Сердечно-сосудистая система' },
+      { key: 'дыхание',     label: 'Дыхательная система' },
+      { key: 'живот',       label: 'Абдоминальный осмотр' },
+      { key: 'неврология',  label: 'Неврологический осмотр' },
+      { key: 'конечности',  label: 'Конечности / стопы' },
+    ]
+  },
+  instrument: {
+    title: '📈 Инструментальные',
+    items: [
+      { key: 'экг',     label: 'ЭКГ' },
+      { key: 'рентген', label: 'Рентген грудной клетки' },
+    ]
+  }
+};
+
+function showOrderStep1() {
+  document.getElementById('order-step1').style.display = 'block';
+  document.getElementById('order-step2').style.display = 'none';
+  // Reset checkboxes
+  document.querySelectorAll('.order-group-cb').forEach(cb => cb.checked = false);
+}
+
+function showOrderStep2() {
+  const selected = [...document.querySelectorAll('.order-group-cb:checked')].map(cb => cb.value);
+  if (selected.length === 0) { alert('Выберите хотя бы одну категорию'); return; }
+
+  let html = '';
+  selected.forEach(group => {
+    const cat = ORDER_CATALOG[group];
+    if (!cat) return;
+    html += `<div class="order-section"><div class="order-section-title">${cat.title}</div>`;
+    cat.items.forEach(item => {
+      const isUsed = usedLabs.has(item.key) || usedExams.has(item.key);
+      html += `<label class="order-item ${isUsed ? 'used' : ''}">
+        <input type="checkbox" class="order-item-cb" value="${item.key}" data-type="${group}" ${isUsed ? 'disabled' : ''}>
+        ${item.label} ${isUsed ? '✓' : ''}
+      </label>`;
+    });
+    html += '</div>';
+  });
+
+  document.getElementById('order-step2-content').innerHTML = html;
+  document.getElementById('order-step1').style.display = 'none';
+  document.getElementById('order-step2').style.display = 'block';
+}
+
+function submitOrder() {
+  const selected = [...document.querySelectorAll('.order-item-cb:checked')];
+  if (selected.length === 0) { alert('Выберите хотя бы один анализ или осмотр'); return; }
+
+  const labKeys = [];
+  const examKeys = [];
+
+  selected.forEach(cb => {
+    const key = cb.value;
+    const type = cb.getAttribute('data-type');
+    if (type === 'exam') {
+      if (!usedExams.has(key)) { usedExams.add(key); stats.exams++; examKeys.push(key); }
+    } else {
+      if (!usedLabs.has(key)) { usedLabs.add(key); stats.labs++; labKeys.push(key); }
+    }
+  });
+
+  // Render cards
+  examKeys.forEach((key, i) => setTimeout(() => renderExamResult(key), i * 250));
+  labKeys.forEach((key, i) => setTimeout(() => renderLabResult(key), (examKeys.length + i) * 250));
+
+  // Add message to chat
+  const allLabels = selected.map(cb => cb.parentElement.textContent.trim().replace('✓','').trim());
+  addMessage('system', '🩺 Назначено: ' + allLabels.join(', '));
+
+  // Switch to results tab
+  setTimeout(() => switchSidebarTab('results'), 300);
+
+  // Reset panel
+  showOrderStep1();
+}
+
+
 function switchSidebarTab(tab) {
-  document.querySelectorAll('.sidebar-tab').forEach((t, i) => {
-    t.classList.toggle('active', ['results','diagnosis'][i] === tab);
+  ['order','results','diagnosis'].forEach(t => {
+    document.getElementById(`stab-${t}`)?.classList.toggle('active', t === tab);
   });
   document.querySelectorAll('.sidebar-panel').forEach(p => p.classList.remove('active'));
   document.getElementById(`sidebar-${tab}`)?.classList.add('active');
