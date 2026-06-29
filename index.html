@@ -1,180 +1,227 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Симулятор пациента</title>
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  :root {
-    --bg: #f7f6f2; --surface: #fff; --surface2: #f2f1ed;
-    --border: #e2e0d8; --border2: #ccc9be;
-    --text: #1a1917; --text2: #6b6960; --text3: #9e9b90;
-    --accent: #1a5276; --accent-light: #eaf1f8;
-    --green: #0f6e56; --green-light: #e1f5ee;
-    --amber: #854f0b; --amber-light: #faeeda;
-    --red: #a32d2d; --red-light: #fcebeb;
-    --font: 'Inter', system-ui, sans-serif;
-  }
-  html { height: 100%; }
-  body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100%; display: flex; align-items: center; justify-content: center; padding: 24px; }
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Симулятор пациента</title>
+  <style>
+    :root {
+      --blue: #1a5276; --blue-2: #123d59; --green: #0f6e56; --green-2: #0b5946;
+      --bg: #f7f6f2; --surface: #ffffff; --line: #dfe5e8; --muted: #687985;
+      --text: #17242b; --soft-blue: #eaf3f7; --danger: #a04444;
+      --shadow: 0 18px 45px rgba(18,61,89,0.12);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--text); }
+    button, input, select, textarea { font: inherit; }
+    button { border: 0; cursor: pointer; }
 
-  /* LANG */
-  .lang-switcher { position: fixed; top: 16px; right: 16px; z-index: 50; display: flex; gap: 4px; background: rgba(255,255,255,0.95); border: 1px solid var(--border); border-radius: 20px; padding: 4px 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-  .lang-opt { padding: 4px 8px; border-radius: 14px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; background: none; font-family: var(--font); color: var(--text3); transition: all .15s; }
-  .lang-opt.active { background: var(--accent); color: #fff; }
+    /* AUTH SCREEN */
+    .auth-screen {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: minmax(0,1fr) 420px;
+      background: radial-gradient(circle at 8% 8%, rgba(26,82,118,0.08), transparent 30%), var(--bg);
+    }
+    .auth-left {
+      background: var(--surface);
+      padding: 44px clamp(28px,6vw,88px);
+      display: flex; flex-direction: column; justify-content: center;
+    }
+    .brand { display: flex; align-items: center; gap: 14px; color: var(--blue); font-weight: 800; }
+    .brand-mark {
+      width: 46px; height: 46px; display: grid; place-items: center;
+      border-radius: 12px; background: var(--blue); color: #fff;
+      box-shadow: 0 10px 24px rgba(26,82,118,0.24);
+    }
+    .brand-mark svg { width: 26px; height: 26px; }
+    .brand-title { font-size: 19px; line-height: 1.15; }
+    .lang-switcher {
+      display: inline-grid; grid-template-columns: 1fr 1fr; gap: 4px;
+      padding: 4px; border: 1px solid var(--line); border-radius: 999px; background: #fff;
+    }
+    .lang-btn { min-width: 48px; padding: 8px 11px; border-radius: 999px; color: var(--muted); background: transparent; font-weight: 700; }
+    .lang-btn.active { background: var(--blue); color: #fff; }
+    .auth-topline { display: flex; justify-content: space-between; align-items: center; gap: 18px; margin-bottom: 70px; }
+    .eyebrow { margin: 0 0 14px; color: var(--green); font-weight: 800; text-transform: uppercase; font-size: 12px; letter-spacing: .12em; }
+    h1 { margin: 0; color: var(--blue-2); font-size: clamp(38px,5vw,66px); line-height: 0.98; }
+    .lead { margin: 22px 0 0; max-width: 650px; color: #41545e; font-size: 19px; line-height: 1.62; }
+    .steps { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 16px; margin-top: 46px; max-width: 940px; }
+    .step { border: 1px solid var(--line); border-radius: 8px; padding: 18px; background: #fbfcfc; }
+    .step-icon { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 8px; background: var(--soft-blue); color: var(--blue); margin-bottom: 16px; }
+    .step-icon svg { width: 23px; height: 23px; }
+    .step h3 { margin: 0 0 8px; font-size: 15px; color: var(--blue-2); }
+    .step p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.45; }
 
-  /* MAIN CARD */
-  .main-card { background: var(--surface); border-radius: 20px; overflow: hidden; width: 100%; max-width: 900px; box-shadow: 0 8px 40px rgba(0,0,0,0.1); display: grid; grid-template-columns: 280px 1fr; min-height: 540px; }
+    /* AUTH PANEL */
+    .auth-panel { min-height: 100vh; background: var(--blue); padding: 30px; display: flex; align-items: center; }
+    .auth-card { width: 100%; border-radius: 8px; background: var(--surface); padding: 22px; box-shadow: var(--shadow); }
+    .tabs { display: grid; grid-template-columns: 1fr 1fr; padding: 4px; border-radius: 8px; background: #eef3f5; margin-bottom: 22px; }
+    .tab { padding: 11px 12px; border-radius: 6px; background: transparent; color: var(--muted); font-weight: 800; }
+    .tab.active { background: #fff; color: var(--blue); box-shadow: 0 4px 14px rgba(18,61,89,0.08); }
+    .form-title { margin: 0 0 7px; color: var(--blue-2); font-size: 22px; }
+    .form-note { margin: 0 0 20px; color: var(--muted); line-height: 1.5; font-size: 14px; }
+    .form { display: none; }
+    .form.active { display: block; }
+    .field { margin-bottom: 14px; }
+    .field label { display: block; margin-bottom: 7px; color: #344952; font-size: 13px; font-weight: 700; }
+    .field input, .field select { width: 100%; min-height: 46px; border: 1px solid #d6dee2; border-radius: 8px; padding: 11px 13px; background: #fff; color: var(--text); outline: 0; }
+    .field input:focus, .field select:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(26,82,118,0.12); }
+    .field input.error { border-color: var(--danger); }
+    .err-msg { display: none; font-size: 11px; color: var(--danger); margin-top: 3px; }
+    .err-msg.show { display: block; }
+    .phone-wrap { position: relative; }
+    .phone-pre { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 14px; pointer-events: none; }
+    .phone-inp { padding-left: 52px !important; }
+    .primary-btn, .success-btn { width: 100%; min-height: 48px; border-radius: 8px; color: #fff; font-weight: 800; font-size: 15px; }
+    .primary-btn { background: var(--blue); }
+    .primary-btn:hover { background: var(--blue-2); }
+    .success-btn { background: var(--green); }
+    .success-btn:hover { background: var(--green-2); }
+    .primary-btn:disabled, .success-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spin { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; vertical-align: middle; }
 
-  /* LEFT = BLUE AUTH PANEL */
-  .auth-side { background: var(--accent); padding: 36px 28px; display: flex; flex-direction: column; gap: 24px; justify-content: center; border-radius: 20px 0 0 20px; }
-  .auth-logo { font-size: 32px; }
-  .auth-brand { font-size: 18px; font-weight: 700; color: #fff; line-height: 1.2; }
+    /* RESUME BANNER */
+    .resume-banner { display: none; border: 1px solid #f5c84a; border-radius: 8px; background: #fffaed; padding: 14px; margin-bottom: 16px; }
+    .resume-banner.show { display: block; }
+    .resume-title { font-size: 13px; font-weight: 800; color: #7a5a00; margin-bottom: 4px; }
+    .resume-name { font-size: 15px; font-weight: 800; color: var(--blue-2); margin-bottom: 10px; }
+    .resume-btns { display: flex; gap: 8px; }
+    .resume-btn { flex: 1; min-height: 36px; border-radius: 6px; font-weight: 800; font-size: 13px; }
+    .resume-btn.yes { background: var(--blue); color: #fff; }
+    .resume-btn.no { background: #fff; border: 1px solid var(--line); color: var(--muted); }
 
-  /* RESUME */
-  .resume-banner { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); border-radius: 10px; padding: 12px; display: none; flex-direction: column; gap: 8px; }
-  .resume-banner.show { display: flex; }
-  .resume-title { font-size: 12px; font-weight: 600; color: #fff; }
-  .resume-name-text { font-size: 13px; font-weight: 700; color: #fff; }
-  .resume-btns { display: flex; gap: 6px; }
-  .resume-btn { flex: 1; padding: 7px; border: none; border-radius: 8px; font-family: var(--font); font-size: 12px; font-weight: 600; cursor: pointer; }
-  .resume-btn.primary { background: #fff; color: var(--accent); }
-  .resume-btn.secondary { background: rgba(255,255,255,0.2); color: #fff; border: 1px solid rgba(255,255,255,0.3); }
+    /* STUDENT CARD */
+    .student-card { display: none; border: 1px solid var(--line); border-radius: 8px; padding: 16px; margin-top: 18px; background: #fbfcfc; }
+    .student-card.active { display: block; }
+    .student-name { margin: 0 0 5px; color: var(--blue-2); font-size: 18px; font-weight: 800; }
+    .student-status { margin: 0 0 14px; color: var(--muted); font-size: 13px; }
 
-  /* AUTH FORM ON BLUE */
-  .auth-form-wrap { display: flex; flex-direction: column; gap: 14px; }
-  .auth-tabs { display: flex; border-bottom: 1px solid rgba(255,255,255,0.25); }
-  .auth-tab { flex: 1; padding: 8px; background: none; border: none; font-family: var(--font); font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.55); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all .15s; }
-  .auth-tab.active { color: #fff; border-bottom-color: #fff; }
-  .tab-content { display: none; flex-direction: column; gap: 10px; }
-  .tab-content.active { display: flex; }
-
-  .field { display: flex; flex-direction: column; gap: 4px; }
-  .label { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.75); }
-  .input { border: 1px solid rgba(255,255,255,0.25); border-radius: 8px; padding: 9px 12px; font-family: var(--font); font-size: 13px; color: #fff; background: rgba(255,255,255,0.12); outline: none; width: 100%; transition: border-color .15s; -webkit-appearance: none; }
-  .input::placeholder { color: rgba(255,255,255,0.4); }
-  .input:focus { border-color: rgba(255,255,255,0.6); background: rgba(255,255,255,0.18); }
-  .input.error { border-color: #ff6b6b; background: rgba(255,50,50,0.15); }
-  .select { border: 1px solid rgba(255,255,255,0.25); border-radius: 8px; padding: 9px 30px 9px 12px; font-family: var(--font); font-size: 13px; color: #fff; background: rgba(255,255,255,0.12); outline: none; width: 100%; -webkit-appearance: none; cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='rgba(255,255,255,0.6)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; }
-  .select option { color: var(--text); background: var(--surface); }
-  .error-msg { font-size: 10px; color: #ffaaaa; display: none; }
-  .error-msg.show { display: block; }
-  .phone-wrap { position: relative; }
-  .phone-prefix { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 13px; color: rgba(255,255,255,0.7); font-weight: 500; pointer-events: none; }
-  .phone-input { padding-left: 50px !important; }
-
-  .submit-btn { width: 100%; padding: 10px; border: none; border-radius: 8px; font-family: var(--font); font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: opacity .15s; }
-  .submit-btn:hover { opacity: 0.9; }
-  .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-  .submit-btn.white { background: #fff; color: var(--accent); }
-  .submit-btn.green { background: var(--green); color: #fff; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .spinner { width: 14px; height: 14px; border: 2px solid rgba(26,82,118,0.3); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; }
-
-  /* WELCOME ON BLUE */
-  .welcome-panel { display: none; flex-direction: column; gap: 14px; }
-  .welcome-panel.show { display: flex; }
-  .welcome-greeting { font-size: 12px; color: rgba(255,255,255,0.7); }
-  .welcome-name { font-size: 20px; font-weight: 700; color: #fff; line-height: 1.2; }
-  .welcome-note { font-size: 12px; color: rgba(255,255,255,0.7); line-height: 1.5; }
-  .logout-link { background: none; border: none; color: rgba(255,255,255,0.5); font-size: 11px; cursor: pointer; font-family: var(--font); text-align: center; }
-  .logout-link:hover { color: rgba(255,255,255,0.8); }
-
-  /* RIGHT = WHITE INFO PANEL */
-  .info-side { padding: 44px 44px; display: flex; flex-direction: column; gap: 28px; justify-content: center; }
-  .info-heading { display: flex; flex-direction: column; gap: 10px; }
-  .info-tag { display: inline-flex; align-items: center; gap: 6px; background: var(--accent-light); color: var(--accent); font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px; border: 1px solid #b5d4f4; width: fit-content; }
-  .info-title { font-size: 28px; font-weight: 700; color: var(--text); letter-spacing: -0.5px; line-height: 1.2; }
-  .info-desc { font-size: 14px; color: var(--text2); line-height: 1.65; }
-  .info-divider { height: 1px; background: var(--border); }
-  .info-how { display: flex; flex-direction: column; gap: 12px; }
-  .info-how-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text3); }
-  .info-step { display: flex; gap: 12px; align-items: flex-start; }
-  .info-step-num { width: 24px; height: 24px; border-radius: 50%; background: var(--accent-light); color: var(--accent); font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
-  .info-step-text { font-size: 13px; color: var(--text2); line-height: 1.5; }
-  .info-step-text b { color: var(--text); }
-  .info-timer-badge { display: inline-flex; align-items: center; gap: 8px; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 16px; width: fit-content; }
-  .info-timer-label { font-size: 12px; color: var(--text2); }
-  .info-timer-val { font-size: 18px; font-weight: 700; color: var(--accent); }
-
-  /* MOBILE */
-  @media (max-width: 680px) {
-    body { padding: 0; align-items: stretch; justify-content: flex-start; overflow-y: auto; }
-    .main-card { grid-template-columns: 1fr; border-radius: 0; box-shadow: none; min-height: auto; }
-    .auth-side { border-radius: 0; padding: 24px 20px; gap: 16px; }
-    .info-side { padding: 24px 20px; gap: 20px; }
-    .info-title { font-size: 22px; }
-    .info-desc { font-size: 13px; }
-  }
-</style>
+    /* MOBILE */
+    @media (max-width: 880px) {
+      .auth-screen { grid-template-columns: 1fr; }
+      .auth-left { padding: 26px 18px 28px; }
+      .auth-topline { margin-bottom: 34px; }
+      .lead { font-size: 16px; }
+      .steps { grid-template-columns: 1fr 1fr; margin-top: 28px; }
+      .auth-panel { min-height: auto; padding: 18px; }
+    }
+    @media (max-width: 520px) {
+      h1 { font-size: 36px; }
+      .steps { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 <body>
 
-<div class="lang-switcher">
-  <button class="lang-opt active" id="lang-ru" onclick="setLang('ru')">RU</button>
-  <button class="lang-opt" id="lang-uz" onclick="setLang('uz')">UZ</button>
-</div>
+<div class="auth-screen">
 
-<div class="main-card">
+  <!-- LEFT: INFO -->
+  <main class="auth-left">
+    <div class="auth-topline">
+      <div class="brand">
+        <div class="brand-mark">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 3.8 5.2 6.7v5.1c0 4.3 2.7 7.2 6.8 8.4 4.1-1.2 6.8-4.1 6.8-8.4V6.7L12 3.8Z" stroke="currentColor" stroke-width="1.8"/><path d="M12 8v7M8.5 11.5h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </div>
+        <div class="brand-title" data-key="brand">Симулятор пациента</div>
+      </div>
+      <div class="lang-switcher">
+        <button class="lang-btn active" id="lang-ru" onclick="setLang('ru')">RU</button>
+        <button class="lang-btn" id="lang-uz" onclick="setLang('uz')">UZ</button>
+      </div>
+    </div>
 
-  <!-- LEFT: BLUE AUTH -->
-  <div class="auth-side">
     <div>
-      <div class="auth-logo">🏥</div>
-      <div class="auth-brand" data-key="brand">Симулятор пациента</div>
+      <p class="eyebrow" data-key="audience">Для врачей и студентов-медиков</p>
+      <h1 data-key="heroTitle">Тренируйте клиническое мышление на реалистичных пациентах</h1>
+      <p class="lead" data-key="heroLead">Платформа помогает безопасно отрабатывать сбор анамнеза, назначение анализов и постановку диагноза перед реальной практикой.</p>
     </div>
 
-    <div class="resume-banner" id="resume-banner">
-      <div class="resume-title" data-key="resume_title">⚠️ Незавершённый сеанс</div>
-      <div class="resume-name-text" id="resume-name"></div>
-      <div class="resume-btns">
-        <button class="resume-btn primary" onclick="resumeSession()" data-key="resume_yes">Продолжить</button>
-        <button class="resume-btn secondary" onclick="clearAndReset()" data-key="resume_no">Не я</button>
-      </div>
+    <div class="steps">
+      <article class="step">
+        <div class="step-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12h8M8 16h5M6 4h12v16H6z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+        <h3 data-key="s1t">Соберите анамнез</h3>
+        <p data-key="s1d">Общайтесь с пациентом в свободной форме — задавайте любые вопросы.</p>
+      </article>
+      <article class="step">
+        <div class="step-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M8 3h8M10 3v5.2l-4.2 8A3.2 3.2 0 0 0 8.6 21h6.8a3.2 3.2 0 0 0 2.8-4.8l-4.2-8V3" stroke="currentColor" stroke-width="1.8"/></svg></div>
+        <h3 data-key="s2t">Назначьте анализы</h3>
+        <p data-key="s2d">Ищите исследования в базе и получайте результаты для интерпретации.</p>
+      </article>
+      <article class="step">
+        <div class="step-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M9 12l2 2 4-4M12 3a9 9 0 1 0 0 18A9 9 0 0 0 12 3z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+        <h3 data-key="s3t">Поставьте диагноз</h3>
+        <p data-key="s3d">Заполните диагноз и план лечения когда будете готовы.</p>
+      </article>
+      <article class="step">
+        <div class="step-icon"><svg viewBox="0 0 24 24" fill="none"><path d="m5 13 4 4L19 7" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <h3 data-key="s4t">Получите оценку</h3>
+        <p data-key="s4d">Автоматический разбор с указанием ошибок и правильного ответа.</p>
+      </article>
     </div>
+  </main>
 
-    <!-- AUTH FORM -->
-    <div class="auth-form-wrap" id="auth-panel">
-      <div class="auth-tabs">
-        <button class="auth-tab active" id="tab-login" onclick="switchTab('login')" data-key="tab_login">Вход</button>
-        <button class="auth-tab" id="tab-register" onclick="switchTab('register')" data-key="tab_reg">Регистрация</button>
+  <!-- RIGHT: AUTH -->
+  <aside class="auth-panel">
+    <div class="auth-card">
+
+      <!-- Resume banner -->
+      <div class="resume-banner" id="resume-banner">
+        <div class="resume-title" data-key="resume_title">⚠️ Найден незавершённый сеанс</div>
+        <div class="resume-name" id="resume-name"></div>
+        <div class="resume-btns">
+          <button class="resume-btn yes" onclick="resumeSession()" data-key="resume_yes">Продолжить</button>
+          <button class="resume-btn no" onclick="clearAndReset()" data-key="resume_no">Это не я</button>
+        </div>
       </div>
 
-      <div class="tab-content active" id="tab-login-content">
-        <div class="field">
-          <label class="label" data-key="lbl_phone">Телефон</label>
-          <div class="phone-wrap">
-            <span class="phone-prefix">+998</span>
-            <input class="input phone-input" id="login-phone" type="tel" placeholder="90 123 45 67" maxlength="12" inputmode="numeric">
-          </div>
-          <span class="error-msg" id="err-login-phone">Неверный формат</span>
-        </div>
-        <button class="submit-btn white" id="login-btn" onclick="login()" data-key="login_btn">Войти →</button>
+      <div class="tabs">
+        <button class="tab active" id="tab-login" onclick="switchTab('login')" data-key="tab_login">Вход</button>
+        <button class="tab" id="tab-register" onclick="switchTab('register')" data-key="tab_reg">Регистрация</button>
       </div>
 
-      <div class="tab-content" id="tab-register-content">
+      <!-- LOGIN -->
+      <div id="form-login" class="form active">
+        <h2 class="form-title" data-key="login_title">Войти в кабинет</h2>
+        <p class="form-note" data-key="login_note">Введите номер телефона, чтобы продолжить тренировку.</p>
         <div class="field">
-          <label class="label" data-key="lbl_last">Фамилия</label>
-          <input class="input" id="last-name" type="text" placeholder="Каримов" autocomplete="family-name">
-          <span class="error-msg" id="err-last">Введите фамилию</span>
-        </div>
-        <div class="field">
-          <label class="label" data-key="lbl_first">Имя</label>
-          <input class="input" id="first-name" type="text" placeholder="Азиз" autocomplete="given-name">
-          <span class="error-msg" id="err-first">Введите имя</span>
-        </div>
-        <div class="field">
-          <label class="label" data-key="lbl_phone">Телефон</label>
+          <label data-key="lbl_phone">Телефон</label>
           <div class="phone-wrap">
-            <span class="phone-prefix">+998</span>
-            <input class="input phone-input" id="reg-phone" type="tel" placeholder="90 123 45 67" maxlength="12" inputmode="numeric">
+            <span class="phone-pre">+998</span>
+            <input class="phone-inp" id="login-phone" type="tel" placeholder="90 123 45 67" maxlength="12" inputmode="numeric">
           </div>
-          <span class="error-msg" id="err-reg-phone">Неверный формат</span>
+          <div class="err-msg" id="err-login-phone">Неверный формат номера</div>
+        </div>
+        <button class="primary-btn" id="login-btn" onclick="login()" data-key="login_btn">Войти</button>
+      </div>
+
+      <!-- REGISTER -->
+      <div id="form-register" class="form">
+        <h2 class="form-title" data-key="reg_title">Создать профиль</h2>
+        <p class="form-note" data-key="reg_note">Данные нужны для экзаменационной ведомости и аналитики обучения.</p>
+        <div class="field">
+          <label data-key="lbl_last">Фамилия</label>
+          <input id="last-name" type="text" placeholder="Каримов">
+          <div class="err-msg" id="err-last">Введите фамилию</div>
         </div>
         <div class="field">
-          <label class="label" data-key="lbl_region">Область</label>
-          <select class="select" id="region">
+          <label data-key="lbl_first">Имя</label>
+          <input id="first-name" type="text" placeholder="Азиз">
+          <div class="err-msg" id="err-first">Введите имя</div>
+        </div>
+        <div class="field">
+          <label data-key="lbl_phone">Телефон</label>
+          <div class="phone-wrap">
+            <span class="phone-pre">+998</span>
+            <input class="phone-inp" id="reg-phone" type="tel" placeholder="90 123 45 67" maxlength="12" inputmode="numeric">
+          </div>
+          <div class="err-msg" id="err-reg-phone">Неверный формат номера</div>
+        </div>
+        <div class="field">
+          <label data-key="lbl_region">Область</label>
+          <select id="region">
             <option value="">— Выберите —</option>
             <option>Ташкент (город)</option><option>Андижанская область</option>
             <option>Бухарская область</option><option>Джизакская область</option>
@@ -184,70 +231,30 @@
             <option>Ташкентская область</option><option>Ферганская область</option>
             <option>Хорезмская область</option><option>Республика Каракалпакстан</option>
           </select>
-          <span class="error-msg" id="err-region">Выберите область</span>
+          <div class="err-msg" id="err-region">Выберите область</div>
         </div>
         <div class="field">
-          <label class="label" data-key="lbl_city">Город / район</label>
-          <input class="input" id="city" type="text" placeholder="Ташкент">
-          <span class="error-msg" id="err-city">Введите город</span>
+          <label data-key="lbl_city">Город / район</label>
+          <input id="city" type="text" placeholder="Ташкент">
+          <div class="err-msg" id="err-city">Введите город</div>
         </div>
         <div class="field">
-          <label class="label" data-key="lbl_workplace">Место работы</label>
-          <input class="input" id="workplace" type="text" placeholder="Место работы">
-          <span class="error-msg" id="err-workplace">Введите место работы</span>
+          <label data-key="lbl_work">Место работы</label>
+          <input id="workplace" type="text" placeholder="Место работы">
+          <div class="err-msg" id="err-work">Введите место работы</div>
         </div>
-        <button class="submit-btn white" id="reg-btn" onclick="register()" data-key="reg_btn">Зарегистрироваться →</button>
+        <button class="primary-btn" id="reg-btn" onclick="register()" data-key="reg_btn">Зарегистрироваться</button>
       </div>
+
+      <!-- STUDENT CARD (after login) -->
+      <div class="student-card" id="student-card">
+        <p class="student-name" id="student-name-display"></p>
+        <p class="student-status" data-key="ready_note">Профиль готов. Можно начать тренировочный кейс.</p>
+        <button class="success-btn" onclick="startCase()" data-key="start_btn">Начать кейс</button>
+      </div>
+
     </div>
-
-    <!-- WELCOME -->
-    <div class="welcome-panel" id="welcome-panel">
-      <div>
-        <div class="welcome-greeting" data-key="welcome_greeting">Добро пожаловать,</div>
-        <div class="welcome-name" id="welcome-name">—</div>
-      </div>
-      <div class="welcome-note" data-key="welcome_note">Нажмите кнопку чтобы начать. Таймер запустится сразу.</div>
-      <button class="submit-btn green" onclick="startCase()" data-key="start_btn">Начать кейс →</button>
-      <button class="logout-link" onclick="logout()" data-key="logout_btn">Это не я — выйти</button>
-    </div>
-  </div>
-
-  <!-- RIGHT: WHITE INFO -->
-  <div class="info-side">
-    <div class="info-heading">
-      <div class="info-tag">🩺 <span data-key="tag">Клинический тренажёр</span></div>
-      <div class="info-title" data-key="info_title">Симулятор пациента</div>
-      <div class="info-desc" data-key="info_desc">Интерактивная платформа для отработки клинических навыков. Проведите приём виртуального пациента в условиях, максимально приближённых к реальным.</div>
-    </div>
-
-    <div class="info-divider"></div>
-
-    <div class="info-how">
-      <div class="info-how-title" data-key="how_title">Как проходит приём</div>
-      <div class="info-step">
-        <div class="info-step-num">1</div>
-        <div class="info-step-text" data-key="step1"><b>Соберите анамнез</b> — задавайте вопросы пациенту в свободной форме, как на реальном приёме</div>
-      </div>
-      <div class="info-step">
-        <div class="info-step-num">2</div>
-        <div class="info-step-text" data-key="step2"><b>Назначьте обследования</b> — запросите осмотр и анализы, они выдаются только по вашему запросу</div>
-      </div>
-      <div class="info-step">
-        <div class="info-step-num">3</div>
-        <div class="info-step-text" data-key="step3"><b>Поставьте диагноз</b> — заполните диагноз, план обследования и план лечения</div>
-      </div>
-      <div class="info-step">
-        <div class="info-step-num">4</div>
-        <div class="info-step-text" data-key="step4"><b>Получите оценку</b> — автоматический разбор с указанием ошибок и правильного ответа</div>
-      </div>
-    </div>
-
-    <div class="info-timer-badge">
-      <div class="info-timer-label" data-key="timer_label">⏱ Время на выполнение</div>
-      <div class="info-timer-val">30:00</div>
-    </div>
-  </div>
-
+  </aside>
 </div>
 
 <script>
@@ -258,48 +265,44 @@ const SESSION_TIMEOUT = 45 * 60 * 1000;
 
 const T = {
   ru: {
-    brand: 'Симулятор пациента', tag: 'Клинический тренажёр',
-    info_title: 'Симулятор пациента',
-    info_desc: 'Интерактивная платформа для отработки клинических навыков. Проведите приём виртуального пациента в условиях, максимально приближённых к реальным.',
-    how_title: 'Как проходит приём',
-    step1: 'Соберите анамнез — задавайте вопросы пациенту в свободной форме, как на реальном приёме',
-    step2: 'Назначьте обследования — запросите осмотр и анализы, они выдаются только по вашему запросу',
-    step3: 'Поставьте диагноз — заполните диагноз, план обследования и план лечения',
-    step4: 'Получите оценку — автоматический разбор с указанием ошибок и правильного ответа',
-    timer_label: '⏱ Время на выполнение',
-    resume_title: '⚠️ Незавершённый сеанс', resume_yes: 'Продолжить', resume_no: 'Не я',
-    tab_login: 'Вход', tab_reg: 'Регистрация',
-    lbl_phone: 'Телефон', lbl_last: 'Фамилия', lbl_first: 'Имя',
-    lbl_region: 'Область', lbl_city: 'Город / район', lbl_workplace: 'Место работы',
-    login_btn: 'Войти →', reg_btn: 'Зарегистрироваться →',
-    welcome_greeting: 'Добро пожаловать,',
-    welcome_note: 'Нажмите кнопку чтобы начать. Таймер запустится сразу.',
-    start_btn: 'Начать кейс →', logout_btn: 'Это не я — выйти',
-    err_conn: 'Ошибка соединения. Проверьте интернет.',
-    err_not_found: 'Номер не найден. Пройдите регистрацию.',
-    regions: ['Ташкент (город)','Андижанская область','Бухарская область','Джизакская область','Кашкадарьинская область','Навоийская область','Наманганская область','Самаркандская область','Сурхандарьинская область','Сырдарьинская область','Ташкентская область','Ферганская область','Хорезмская область','Республика Каракалпакстан']
+    brand:'Симулятор пациента', audience:'Для врачей и студентов-медиков',
+    heroTitle:'Тренируйте клиническое мышление на реалистичных пациентах',
+    heroLead:'Платформа помогает безопасно отрабатывать сбор анамнеза, назначение анализов и постановку диагноза перед реальной практикой.',
+    s1t:'Соберите анамнез', s1d:'Общайтесь с пациентом в свободной форме — задавайте любые вопросы.',
+    s2t:'Назначьте анализы', s2d:'Ищите исследования в базе и получайте результаты для интерпретации.',
+    s3t:'Поставьте диагноз', s3d:'Заполните диагноз и план лечения когда будете готовы.',
+    s4t:'Получите оценку', s4d:'Автоматический разбор с указанием ошибок и правильного ответа.',
+    resume_title:'⚠️ Найден незавершённый сеанс', resume_yes:'Продолжить', resume_no:'Это не я',
+    tab_login:'Вход', tab_reg:'Регистрация',
+    login_title:'Войти в кабинет', login_note:'Введите номер телефона, чтобы продолжить тренировку.',
+    lbl_phone:'Телефон', login_btn:'Войти',
+    reg_title:'Создать профиль', reg_note:'Данные нужны для экзаменационной ведомости и аналитики обучения.',
+    lbl_last:'Фамилия', lbl_first:'Имя', lbl_region:'Область', lbl_city:'Город / район', lbl_work:'Место работы',
+    reg_btn:'Зарегистрироваться', ready_note:'Профиль готов. Можно начать тренировочный кейс.', start_btn:'Начать кейс',
+    regions:['Ташкент (город)','Андижанская область','Бухарская область','Джизакская область','Кашкадарьинская область','Навоийская область','Наманганская область','Самаркандская область','Сурхандарьинская область','Сырдарьинская область','Ташкентская область','Ферганская область','Хорезмская область','Республика Каракалпакстан'],
+    err_phone:'Неверный формат номера', err_last:'Введите фамилию', err_first:'Введите имя',
+    err_region:'Выберите область', err_city:'Введите город', err_work:'Введите место работы',
+    err_conn:'Ошибка соединения. Проверьте интернет.', err_not_found:'Номер не найден. Пройдите регистрацию.',
   },
   uz: {
-    brand: 'Bemor simulyatori', tag: 'Klinik trenajyor',
-    info_title: 'Bemor simulyatori',
-    info_desc: "Klinik ko'nikmalarni mashq qilish uchun interaktiv platforma. Virtual bemorni haqiqiy sharoitga yaqin muhitda qabul qiling.",
-    how_title: 'Qabul qanday o\'tadi',
-    step1: "Anamnez yig'ing — bemorga erkin shaklda savol bering",
-    step2: "Tekshiruvlar buyuring — ko'rik va tahlillarni so'rang, ular faqat so'rovingiz bo'yicha beriladi",
-    step3: "Tashxis qo'ying — tashxis, tekshiruv va davolash rejasini to'ldiring",
-    step4: "Baho oling — xatolar va to'g'ri javob ko'rsatilgan avtomatik tahlil",
-    timer_label: '⏱ Bajarish vaqti',
-    resume_title: '⚠️ Tugallanmagan seans', resume_yes: 'Davom etish', resume_no: 'Men emas',
-    tab_login: 'Kirish', tab_reg: "Ro'yxatdan o'tish",
-    lbl_phone: 'Telefon', lbl_last: 'Familiya', lbl_first: 'Ism',
-    lbl_region: 'Viloyat', lbl_city: 'Shahar / tuman', lbl_workplace: 'Ish joyi',
-    login_btn: 'Kirish →', reg_btn: "Ro'yxatdan o'tish →",
-    welcome_greeting: 'Xush kelibsiz,',
-    welcome_note: 'Boshlash uchun tugmani bosing. Taymer darhol ishga tushadi.',
-    start_btn: 'Keysni boshlash →', logout_btn: 'Bu men emasman — chiqish',
-    err_conn: 'Ulanishda xatolik. Internetni tekshiring.',
-    err_not_found: "Raqam topilmadi. Ro'yxatdan o'ting.",
-    regions: ["Toshkent (shahar)","Andijon viloyati","Buxoro viloyati","Jizzax viloyati","Qashqadaryo viloyati","Navoiy viloyati","Namangan viloyati","Samarqand viloyati","Surxondaryo viloyati","Sirdaryo viloyati","Toshkent viloyati","Farg'ona viloyati","Xorazm viloyati","Qoraqalpog'iston Respublikasi"]
+    brand:'Bemor simulyatori', audience:'Shifokorlar va tibbiyot talabalari uchun',
+    heroTitle:"Real bemor holatlarida klinik fikrlashni mashq qiling",
+    heroLead:"Platforma anamnez yig'ish, tahlil tayinlash va tashxis qo'yishni xavfsiz muhitda mashq qilishga yordam beradi.",
+    s1t:"Anamnez yig'ing", s1d:"Bemor bilan erkin muloqot qiling — istalgan savollarni bering.",
+    s2t:"Tahlillar tayinlang", s2d:"Bazadan tekshiruvlarni toping va natijalarni talqin qiling.",
+    s3t:"Tashxis qo'ying", s3d:"Tayyor bo'lgach tashxis va davolash rejasini to'ldiring.",
+    s4t:"Bahoni oling", s4d:"Xatolar va to'g'ri javob ko'rsatilgan avtomatik tahlil.",
+    resume_title:"⚠️ Tugallanmagan seans topildi", resume_yes:"Davom etish", resume_no:"Bu men emasman",
+    tab_login:"Kirish", tab_reg:"Ro'yxatdan o'tish",
+    login_title:"Kabinetga kirish", login_note:"Mashg'ulotni davom ettirish uchun telefon raqamingizni kiriting.",
+    lbl_phone:"Telefon", login_btn:"Kirish",
+    reg_title:"Profil yaratish", reg_note:"Ma'lumotlar imtihon qaydnomasi va o'quv tahlili uchun kerak.",
+    lbl_last:"Familiya", lbl_first:"Ism", lbl_region:"Viloyat", lbl_city:"Shahar / tuman", lbl_work:"Ish joyi",
+    reg_btn:"Ro'yxatdan o'tish", ready_note:"Profil tayyor. Mashq keysini boshlash mumkin.", start_btn:"Keysni boshlash",
+    regions:["Toshkent (shahar)","Andijon viloyati","Buxoro viloyati","Jizzax viloyati","Qashqadaryo viloyati","Navoiy viloyati","Namangan viloyati","Samarqand viloyati","Surxondaryo viloyati","Sirdaryo viloyati","Toshkent viloyati","Farg'ona viloyati","Xorazm viloyati","Qoraqalpog'iston Respublikasi"],
+    err_phone:"Noto'g'ri format", err_last:"Familiyangizni kiriting", err_first:"Ismingizni kiriting",
+    err_region:"Viloyatni tanlang", err_city:"Shahar yoki tumanni kiriting", err_work:"Ish joyini kiriting",
+    err_conn:"Ulanishda xatolik. Internetni tekshiring.", err_not_found:"Raqam topilmadi. Ro'yxatdan o'ting.",
   }
 };
 
@@ -307,9 +310,9 @@ let currentLang = 'ru';
 
 function setLang(lang) {
   currentLang = lang;
+  localStorage.setItem('preferred_lang', lang);
   document.getElementById('lang-ru').classList.toggle('active', lang === 'ru');
   document.getElementById('lang-uz').classList.toggle('active', lang === 'uz');
-  localStorage.setItem('preferred_lang', lang);
   const l = T[lang];
   document.querySelectorAll('[data-key]').forEach(el => {
     const k = el.getAttribute('data-key');
@@ -318,53 +321,71 @@ function setLang(lang) {
   const sel = document.getElementById('region');
   if (sel && l.regions) {
     const cur = sel.value;
-    sel.innerHTML = `<option value="">— ${lang === 'uz' ? 'Tanlang' : 'Выберите'} —</option>` +
-      l.regions.map(r => `<option value="${r}">${r}</option>`).join('');
+    sel.innerHTML = `<option value="">— ${lang==='uz'?'Tanlang':'Выберите'} —</option>` +
+      l.regions.map(r=>`<option value="${r}">${r}</option>`).join('');
     sel.value = cur;
   }
+  const errs = {'err-login-phone':'err_phone','err-reg-phone':'err_phone','err-last':'err_last',
+    'err-first':'err_first','err-region':'err_region','err-city':'err_city','err-work':'err_work'};
+  Object.entries(errs).forEach(([id,key])=>{ const el=document.getElementById(id); if(el) el.textContent=l[key]; });
 }
 
 function getSession() {
   try {
-    const s = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
-    if (!s || Date.now() - s.timestamp > SESSION_TIMEOUT) { clearSession(); return null; }
+    const s = JSON.parse(localStorage.getItem(SESSION_KEY)||'null');
+    if (!s || Date.now()-s.timestamp>SESSION_TIMEOUT) { clearSession(); return null; }
     return s;
   } catch { return null; }
 }
-function saveSession(d) { localStorage.setItem(SESSION_KEY, JSON.stringify({...d, timestamp: Date.now()})); }
+function saveSession(d) { localStorage.setItem(SESSION_KEY, JSON.stringify({...d, timestamp:Date.now()})); }
 function clearSession() { localStorage.removeItem(SESSION_KEY); }
-function showAuth() { document.getElementById('auth-panel').style.display = 'flex'; document.getElementById('welcome-panel').classList.remove('show'); }
-function showWelcome(name) { /* go straight to exam */ }
-function logout() { clearSession(); showAuth(); }
-function clearAndReset() { clearSession(); document.getElementById('resume-banner').classList.remove('show'); showAuth(); }
-function resumeSession() { const s = getSession(); if (s) startCase(s); }
-function startCase(s) { const session = s || getSession(); if (!session) return showAuth(); saveSession(session); window.location.href = `exam.html?student_id=${session.student_id}&name=${encodeURIComponent(session.name)}`; }
+function resumeSession() { const s=getSession(); if(s) startCase(s); }
+function clearAndReset() { clearSession(); document.getElementById('resume-banner').classList.remove('show'); }
+function startCase(s) {
+  const session = s || getSession();
+  if (!session) return;
+  saveSession(session);
+  window.location.href = `exam.html?student_id=${session.student_id}&name=${encodeURIComponent(session.name)}`;
+}
+
 function switchTab(tab) {
   ['login','register'].forEach(t => {
-    document.getElementById(`tab-${t}`).classList.toggle('active', t === tab);
-    document.getElementById(`tab-${t}-content`).classList.toggle('active', t === tab);
+    document.getElementById(`tab-${t}`).classList.toggle('active', t===tab);
+    document.getElementById(`form-${t}`).classList.toggle('active', t===tab);
   });
+  document.getElementById('student-card').classList.remove('active');
 }
+
 function formatPhone(e) {
   let v = e.target.value.replace(/\D/g,'');
-  if (v.length > 9) v = v.slice(0,9);
-  let f = v;
-  if (v.length > 2) f = v.slice(0,2)+' '+v.slice(2);
-  if (v.length > 5) f = v.slice(0,2)+' '+v.slice(2,5)+' '+v.slice(5);
-  if (v.length > 7) f = v.slice(0,2)+' '+v.slice(2,5)+' '+v.slice(5,7)+' '+v.slice(7);
-  e.target.value = f; e.target.classList.remove('error');
+  if (v.length>9) v=v.slice(0,9);
+  let f=v;
+  if(v.length>2) f=v.slice(0,2)+' '+v.slice(2);
+  if(v.length>5) f=v.slice(0,2)+' '+v.slice(2,5)+' '+v.slice(5);
+  if(v.length>7) f=v.slice(0,2)+' '+v.slice(2,5)+' '+v.slice(5,7)+' '+v.slice(7);
+  e.target.value=f; e.target.classList.remove('error');
 }
 function getPhone(id) { return '+998'+(document.getElementById(id)?.value||'').replace(/\D/g,''); }
 function validPhone(p) { return /^\+998(90|91|93|94|95|97|98|99)\d{7}$/.test(p); }
-function setErr(iid,eid,show) { document.getElementById(iid)?.classList.toggle('error',show); document.getElementById(eid)?.classList.toggle('show',show); }
+function setErr(iid,eid,show) {
+  document.getElementById(iid)?.classList.toggle('error',show);
+  document.getElementById(eid)?.classList.toggle('show',show);
+}
+
+function showStudentCard(name) {
+  document.getElementById('student-name-display').textContent = name;
+  document.getElementById('student-card').classList.add('active');
+  document.getElementById('form-login').classList.remove('active');
+  document.getElementById('form-register').classList.remove('active');
+}
 
 async function apiCall(url, body) {
-  for (let i = 0; i < 3; i++) {
+  for (let i=0; i<3; i++) {
     try {
-      if (i > 0) await new Promise(r => setTimeout(r, 2000));
-      const res = await fetch(BACKEND_URL + url, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
-      return { ok: res.ok, data: await res.json() };
-    } catch(e) { if (i === 2) throw e; }
+      if(i>0) await new Promise(r=>setTimeout(r,2000));
+      const res = await fetch(BACKEND_URL+url, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+      return {ok:res.ok, data:await res.json()};
+    } catch(e) { if(i===2) throw e; }
   }
 }
 
@@ -373,51 +394,54 @@ async function login() {
   if (!validPhone(phone)) { setErr('login-phone','err-login-phone',true); return; }
   setErr('login-phone','err-login-phone',false);
   const btn = document.getElementById('login-btn');
-  btn.disabled = true; btn.innerHTML = '<div class="spinner"></div>';
+  btn.disabled=true; btn.innerHTML='<span class="spin"></span>';
   try {
-    const {ok, data} = await apiCall('/api/login', { phone, org_slug: ORG_SLUG });
-    if (!ok) alert(data.detail || T[currentLang].err_not_found);
-    else { saveSession({ student_id: data.student_id, name: data.name }); startCase(); }
+    const {ok,data} = await apiCall('/api/login',{phone,org_slug:ORG_SLUG});
+    if (!ok) alert(data.detail||T[currentLang].err_not_found);
+    else { saveSession({student_id:data.student_id,name:data.name}); startCase(); }
   } catch { alert(T[currentLang].err_conn); }
-  btn.disabled = false; btn.textContent = T[currentLang].login_btn;
+  btn.disabled=false; btn.textContent=T[currentLang].login_btn;
 }
 
 async function register() {
-  const last = document.getElementById('last-name')?.value.trim();
-  const first = document.getElementById('first-name')?.value.trim();
-  const phone = getPhone('reg-phone');
-  const region = document.getElementById('region')?.value.trim();
-  const city = document.getElementById('city')?.value.trim();
-  const workplace = document.getElementById('workplace')?.value.trim();
-  let err = false;
-  setErr('last-name','err-last',!last); if (!last) err=true;
-  setErr('first-name','err-first',!first); if (!first) err=true;
-  setErr('reg-phone','err-reg-phone',!validPhone(phone)); if (!validPhone(phone)) err=true;
-  setErr('region','err-region',!region); if (!region) err=true;
-  setErr('city','err-city',!city); if (!city) err=true;
-  setErr('workplace','err-workplace',!workplace); if (!workplace) err=true;
-  if (err) return;
-  const btn = document.getElementById('reg-btn');
-  btn.disabled = true; btn.innerHTML = '<div class="spinner"></div>';
+  const last=document.getElementById('last-name')?.value.trim();
+  const first=document.getElementById('first-name')?.value.trim();
+  const phone=getPhone('reg-phone');
+  const region=document.getElementById('region')?.value.trim();
+  const city=document.getElementById('city')?.value.trim();
+  const workplace=document.getElementById('workplace')?.value.trim();
+  let err=false;
+  setErr('last-name','err-last',!last); if(!last) err=true;
+  setErr('first-name','err-first',!first); if(!first) err=true;
+  setErr('reg-phone','err-reg-phone',!validPhone(phone)); if(!validPhone(phone)) err=true;
+  setErr('region','err-region',!region); if(!region) err=true;
+  setErr('city','err-city',!city); if(!city) err=true;
+  setErr('workplace','err-work',!workplace); if(!workplace) err=true;
+  if(err) return;
+  const btn=document.getElementById('reg-btn');
+  btn.disabled=true; btn.innerHTML='<span class="spin"></span>';
   try {
-    const {ok, data} = await apiCall('/api/register', { last_name:last, first_name:first, phone, region, city, workplace, org_slug: ORG_SLUG });
-    if (!ok) alert(data.detail || 'Ошибка регистрации');
-    else { saveSession({ student_id: data.student_id, name: data.name }); startCase(); }
+    const {ok,data}=await apiCall('/api/register',{last_name:last,first_name:first,phone,region,city,workplace,org_slug:ORG_SLUG});
+    if(!ok) alert(data.detail||'Ошибка регистрации');
+    else { saveSession({student_id:data.student_id,name:data.name}); startCase(); }
   } catch { alert(T[currentLang].err_conn); }
-  btn.disabled = false; btn.textContent = T[currentLang].reg_btn;
+  btn.disabled=false; btn.textContent=T[currentLang].reg_btn;
 }
 
 (function init() {
-  const lang = localStorage.getItem('preferred_lang') || 'ru';
+  const lang = localStorage.getItem('preferred_lang')||'ru';
   currentLang = lang;
   setLang(lang);
   const s = getSession();
-  if (s) { document.getElementById('resume-name').textContent = s.name; document.getElementById('resume-banner').classList.add('show'); }
-  document.getElementById('login-phone')?.addEventListener('input', formatPhone);
-  document.getElementById('reg-phone')?.addEventListener('input', formatPhone);
+  if (s) {
+    document.getElementById('resume-name').textContent = s.name;
+    document.getElementById('resume-banner').classList.add('show');
+  }
+  document.getElementById('login-phone')?.addEventListener('input',formatPhone);
+  document.getElementById('reg-phone')?.addEventListener('input',formatPhone);
   document.addEventListener('keydown', e => {
-    if (e.key !== 'Enter') return;
-    document.getElementById('tab-login-content').classList.contains('active') ? login() : register();
+    if(e.key!=='Enter') return;
+    document.getElementById('form-login').classList.contains('active') ? login() : register();
   });
 })();
 </script>
