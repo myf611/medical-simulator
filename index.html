@@ -3,371 +3,477 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Симулятор пациента</title>
+  <title>Симулятор пациента — платформа клинического обучения</title>
   <style>
-    :root {
-      --blue: #1a5276; --blue-dark: #103b58; --green: #0f6e56; --green-dark: #0a5844;
-      --bg: #f7f6f2; --surface: #ffffff; --surface-soft: #fbfcfc;
-      --line: #dfe8ed; --text: #13242d; --muted: #6c7c86;
-      --soft-blue: #eaf4f8; --soft-green: #e8f5f1; --warning: #b7771d; --danger: #a04444;
-      --shadow: 0 22px 55px rgba(16,59,88,0.12); --shadow-soft: 0 10px 28px rgba(16,59,88,0.08);
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+    :root{
+      --blue:#1a5276; --blue-dark:#0d3d60; --blue-900:#083554;
+      --green:#0f6e56; --green-2:#119474;
+      --mint:#e8f6f1; --mint-2:#dff4ef; --cyan:#25c6cf;
+      --bg:#f7f6f2; --white:#fff; --text:#13354d; --muted:#657789;
+      --line:#d8e4ec; --line-soft:#edf3f6;
+      --shadow:0 22px 70px rgba(26,82,118,.11);
+      --shadow-soft:0 12px 34px rgba(26,82,118,.08);
+      --danger:#a04444;
+      font-family:Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
     }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0; min-height: 100vh; color: var(--text);
-      background: radial-gradient(circle at 10% 0%, rgba(15,110,86,0.12), transparent 28%),
-        radial-gradient(circle at 100% 6%, rgba(26,82,118,0.10), transparent 26%), var(--bg);
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0; color:var(--text);
+      background:
+        radial-gradient(circle at 63% 7%, rgba(37,198,207,.16), transparent 26%),
+        radial-gradient(circle at 6% 42%, rgba(15,110,86,.08), transparent 31%),
+        var(--bg);
+      min-height:100vh;
     }
-    button, input, select, textarea { font: inherit; }
-    button { cursor: pointer; border: 0; }
-    svg.ui-icon { width: 24px; height: 24px; flex: 0 0 auto; color: currentColor; }
+    button,input,select{font:inherit; border:0; cursor:pointer;}
+    a{color:inherit; text-decoration:none;}
 
-    /* LANG */
-    .lang-switch {
-      display: inline-grid; grid-template-columns: 1fr 1fr; gap: 4px;
-      padding: 4px; border: 1px solid var(--line); border-radius: 999px;
-      background: rgba(255,255,255,0.82); backdrop-filter: blur(16px);
+    .page-shell{
+      width:min(1880px, calc(100% - 40px)); margin:24px auto;
+      min-height:calc(100vh - 48px);
+      background:rgba(255,255,255,.86);
+      border:1px solid rgba(216,228,236,.85); border-radius:36px;
+      box-shadow:0 24px 80px rgba(18,54,78,.10);
+      overflow:hidden; position:relative; backdrop-filter:blur(18px);
     }
-    .lang-btn { min-width: 44px; min-height: 34px; padding: 7px 10px; border-radius: 999px; background: transparent; color: var(--muted); font-weight: 800; font-size: 13px; transition: 180ms ease; }
-    .lang-btn.active { background: var(--blue); color: #fff; box-shadow: 0 8px 18px rgba(26,82,118,0.18); }
+    .page-shell::before{
+      content:""; position:absolute; inset:0; pointer-events:none;
+      background:
+        radial-gradient(circle at 47% -10%, rgba(37,198,207,.14), transparent 28%),
+        linear-gradient(115deg, rgba(255,255,255,.72), rgba(255,255,255,.36) 40%, rgba(232,246,241,.18));
+    }
+    .content{position:relative; padding:42px 58px 48px;}
+    .layout{display:grid; grid-template-columns:minmax(0,1fr) 440px; gap:44px; align-items:start;}
 
-    /* AUTH SCREEN */
-    .auth-screen { min-height: 100vh; padding: 28px; display: grid; place-items: center; }
-    .auth-shell {
-      width: min(1220px, 100%); min-height: 760px;
-      display: grid; grid-template-columns: minmax(0,1fr) 390px;
-      overflow: hidden; border: 1px solid rgba(223,232,237,0.9); border-radius: 34px;
-      background: var(--surface); box-shadow: var(--shadow);
+    /* BRAND */
+    .brand{display:flex; align-items:center; gap:18px; margin-bottom:36px;}
+    .brand-mark{
+      width:74px; height:74px; border-radius:22px; background:var(--blue); color:#fff;
+      display:grid; place-items:center; flex-shrink:0;
+      box-shadow:0 14px 30px rgba(26,82,118,.28);
     }
-    .auth-left {
-      position: relative; padding: clamp(30px,5vw,64px);
-      display: flex; flex-direction: column; justify-content: center;
-      background: radial-gradient(circle at 22% 18%, rgba(42,194,204,0.10), transparent 26%), #fff;
-    }
-    .auth-top {
-      position: absolute; left: clamp(30px,5vw,64px); right: clamp(30px,5vw,64px); top: 30px;
-      display: flex; justify-content: space-between; align-items: center; gap: 20px;
-    }
-    .brand { display: flex; align-items: center; gap: 14px; min-width: 0; }
-    .brand-mark {
-      width: 46px; height: 46px; display: grid; place-items: center;
-      border-radius: 14px; background: var(--blue); color: #fff; flex-shrink: 0;
-      box-shadow: 0 10px 24px rgba(26,82,118,0.24);
-    }
-    .brand-mark svg { width: 26px; height: 26px; }
-    .brand-title { color: var(--blue-dark); font-weight: 850; font-size: 18px; letter-spacing: -0.02em; line-height: 1.15; }
-    .brand-subtitle { margin-top: 3px; color: var(--muted); font-size: 12px; }
+    .brand-title{margin:0; font-size:28px; line-height:1.05; letter-spacing:-.04em; font-weight:850; color:var(--blue-dark);}
+    .brand-subtitle{margin:6px 0 0; color:var(--muted); font-size:15px;}
 
-    .hero { width: min(720px,100%); margin: 30px auto 0; text-align: center; }
-    h1 { margin: 0; color: var(--blue-dark); font-size: clamp(38px,5vw,60px); line-height: 1.0; letter-spacing: -0.05em; }
-    .lead { max-width: 560px; margin: 18px auto 0; color: var(--muted); font-size: 17px; line-height: 1.55; }
+    /* HERO */
+    .hero-grid{display:grid; grid-template-columns:minmax(0,1fr) 440px; gap:36px; align-items:center; margin-bottom:28px;}
+    .hero h1{margin:0; color:var(--blue-900); font-size:clamp(48px,5vw,82px); line-height:.96; letter-spacing:-.065em; font-weight:900;}
+    .hero p{max-width:740px; margin:22px 0 0; font-size:20px; line-height:1.5; color:#536b7b; letter-spacing:-.015em;}
 
-    .steps { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-top: 40px; }
-    .step-card {
-      min-height: 170px; padding: 18px 16px; border-radius: 20px;
-      border: 1px solid var(--line); background: rgba(255,255,255,0.88);
-      box-shadow: var(--shadow-soft); text-align: left;
-      transition: transform 180ms ease, box-shadow 180ms ease;
-    }
-    .step-card:hover { transform: translateY(-3px); box-shadow: 0 18px 35px rgba(16,59,88,0.12); }
-    .step-icon {
-      width: 48px; height: 48px; display: grid; place-items: center;
-      border-radius: 14px; background: linear-gradient(145deg,#fff,var(--soft-blue));
-      border: 1px solid rgba(26,82,118,0.12); color: var(--blue); margin-bottom: 14px;
-    }
-    .step-icon svg { width: 26px; height: 26px; }
-    .step-card h3 { margin: 0; color: var(--blue-dark); font-size: 14px; font-weight: 850; }
-    .step-card p { margin: 8px 0 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
+    /* HERO VISUAL */
+    .hero-visual{height:260px; position:relative; display:flex; align-items:center; justify-content:center;}
+    .hero-blob{position:absolute; width:390px; height:230px; border-radius:64px; background:linear-gradient(135deg, rgba(216,249,245,.9), rgba(183,238,237,.55)); box-shadow:inset 0 1px 0 rgba(255,255,255,.8), 0 34px 80px rgba(37,198,207,.18);}
+    .hero-card-stack{width:250px; height:196px; position:relative; filter:drop-shadow(0 28px 36px rgba(26,82,118,.16));}
+    .glass-card{position:absolute; border:1px solid rgba(255,255,255,.72); border-radius:34px; box-shadow:inset 0 1px 0 rgba(255,255,255,.9);}
+    .glass-card.back{inset:24px 0 0 68px; background:linear-gradient(145deg, rgba(37,198,207,.36), rgba(26,82,118,.18));}
+    .glass-card.mid{inset:46px 42px -24px 34px; background:rgba(255,255,255,.36);}
+    .glass-card.front{inset:0 86px 28px 0; background:rgba(255,255,255,.82); display:flex; flex-direction:column; justify-content:center; padding:26px 24px;}
+    .wave{height:42px; margin-bottom:18px;}
+    .mock-line{height:10px; border-radius:10px; background:#20bfc9; margin:9px 0; width:84px; display:inline-block;}
+    .mock-line.short{width:60px; background:#a8d6df;}
+    .mock-dot{width:18px; height:18px; border-radius:50%; background:#20bfc9; margin-right:14px; display:inline-block; vertical-align:middle;}
+    .mock-dot.light{background:#9ed8df;}
 
-    .benefits {
-      display: grid; grid-template-columns: repeat(2,1fr); gap: 12px;
-      margin-top: 24px; padding: 12px; border: 1px solid var(--line); border-radius: 20px; background: #fff;
-    }
-    .benefit-card {
-      display: grid; grid-template-columns: 40px 1fr; gap: 10px; align-items: center;
-      padding: 12px; border-radius: 16px; border: 1px solid var(--line);
-      background: rgba(255,255,255,0.88); box-shadow: var(--shadow-soft);
-    }
-    .mini-icon {
-      width: 40px; height: 40px; display: grid; place-items: center;
-      border-radius: 12px; color: var(--green); background: var(--soft-green);
-    }
-    .benefit-card strong { display: block; color: var(--blue-dark); font-size: 13px; margin-bottom: 3px; }
-    .benefit-card span { display: block; color: var(--muted); font-size: 11px; line-height: 1.35; }
+    /* EDUCATION PANEL */
+    .education-panel{background:rgba(255,255,255,.9); border:1px solid var(--line); border-radius:28px; box-shadow:var(--shadow-soft); padding:24px 28px 28px; position:relative; overflow:hidden;}
+    .education-panel::before{content:""; position:absolute; inset:-80px auto auto 48%; width:360px; height:360px; background:radial-gradient(circle, rgba(37,198,207,.10), transparent 67%); pointer-events:none;}
+    .section-title{position:relative; margin:0 0 16px; text-align:center; color:var(--blue-900); font-size:24px; letter-spacing:-.03em; font-weight:850;}
+    .platform-map{position:relative; display:grid; grid-template-columns:230px minmax(460px,1fr) 230px; gap:28px; align-items:center;}
+    .side-modules{display:grid; gap:28px;}
+    .module-card{position:relative; min-height:150px; border:1px solid var(--line); border-radius:22px; background:#fff; padding:22px; box-shadow:0 12px 26px rgba(26,82,118,.06);}
+    .module-icon{width:52px; height:52px; display:grid; place-items:center; border-radius:16px; background:linear-gradient(135deg, var(--mint), rgba(238,247,250,.95)); color:var(--green); margin-bottom:14px;}
+    .module-card h3{margin:0 0 8px; color:var(--blue-900); font-size:18px; letter-spacing:-.025em;}
+    .module-card p{margin:0; color:#60758a; font-size:13px; line-height:1.45;}
+    .connector{position:absolute; top:50%; width:44px; border-top:2px dotted #b9cbd6;}
+    .module-card.left .connector{right:-45px;}
+    .module-card.right .connector{left:-45px;}
 
-    /* AUTH PANEL */
-    .auth-panel {
-      position: relative; padding: 30px;
-      background: linear-gradient(180deg,rgba(26,82,118,0.05),transparent 28%), #fafbfb;
-      border-left: 1px solid var(--line); display: flex; align-items: center;
-    }
-    .auth-panel .lang-switch { position: absolute; top: 24px; right: 30px; }
-    .auth-card { width: 100%; padding: 24px; border-radius: 24px; border: 1px solid var(--line); background: #fff; box-shadow: var(--shadow-soft); }
-    .tabs {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 5px;
-      margin-bottom: 22px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface-soft);
-    }
-    .tab { min-height: 40px; border-radius: 999px; background: transparent; color: var(--muted); font-weight: 800; font-size: 14px; transition: 180ms ease; }
-    .tab.active { color: #fff; background: var(--blue); box-shadow: 0 10px 22px rgba(26,82,118,0.18); }
+    /* DASHBOARD */
+    .dashboard{background:#fff; border:1px solid var(--line); border-radius:24px; box-shadow:0 20px 42px rgba(26,82,118,.10); min-height:320px; display:grid; grid-template-columns:72px 1fr; overflow:hidden;}
+    .dash-sidebar{background:linear-gradient(180deg, var(--blue), #0b4268); padding:16px 12px; display:flex; flex-direction:column; gap:12px; align-items:center;}
+    .dash-mark{width:38px; height:38px; border-radius:12px; background:linear-gradient(135deg,#15d0c8,#0e87a8); display:grid; place-items:center; color:#fff; margin-bottom:4px; box-shadow:0 9px 18px rgba(0,0,0,.16);}
+    .dash-nav{width:32px; height:32px; border-radius:10px; display:grid; place-items:center; color:rgba(255,255,255,.7);}
+    .dash-nav.active{background:rgba(255,255,255,.15); color:#fff;}
+    .dash-body{padding:20px; background:linear-gradient(180deg,#fff,#fbfdfe);}
+    .dash-body h3{margin:0 0 14px; color:var(--blue-900); font-size:18px; letter-spacing:-.025em;}
+    .metric-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:14px;}
+    .metric{border:1px solid var(--line-soft); border-radius:13px; padding:12px; background:#fff;}
+    .metric span{display:block; color:#5d7084; font-size:11px; margin-bottom:6px;}
+    .metric b{display:block; color:var(--blue); font-size:22px; line-height:1;}
+    .metric small{color:#62798b; font-size:10px;}
+    .dash-row{display:grid; grid-template-columns:1.35fr .9fr; gap:12px;}
+    .chart-card,.activity-card{border:1px solid var(--line-soft); border-radius:14px; background:#fff; padding:14px;}
+    .chart-card h4,.activity-card h4{margin:0 0 8px; color:var(--blue-900); font-size:13px;}
+    .chart{width:100%; height:120px; display:block;}
+    .activity-list{display:grid; gap:8px;}
+    .activity-item{display:grid; grid-template-columns:14px 1fr; gap:8px; align-items:start; font-size:11px; line-height:1.35; color:#52677c;}
+    .activity-dot{width:12px; height:12px; border:3px solid #d9eef0; border-radius:50%; margin-top:1px; background:#fff;}
 
-    .form { display: none; }
-    .form.active { display: block; }
-    .form-title { margin: 0; color: var(--blue-dark); font-size: 22px; letter-spacing: -0.03em; }
-    .form-note { margin: 7px 0 20px; color: var(--muted); font-size: 13px; line-height: 1.45; }
-    .field { margin-bottom: 13px; }
-    label { display: block; margin-bottom: 6px; color: var(--blue-dark); font-weight: 800; font-size: 12px; }
-    input, select { width: 100%; min-height: 46px; padding: 0 13px; border: 1px solid var(--line); border-radius: 12px; outline: none; color: var(--text); background: #fff; transition: border-color 160ms, box-shadow 160ms; -webkit-appearance: none; }
-    input:focus, select:focus { border-color: rgba(26,82,118,0.55); box-shadow: 0 0 0 4px rgba(26,82,118,0.10); }
-    input.error { border-color: var(--danger); }
-    .err-msg { display: none; font-size: 11px; color: var(--danger); margin-top: 3px; }
-    .err-msg.show { display: block; }
-    .phone-wrap { position: relative; }
-    .phone-pre { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 14px; pointer-events: none; border-right: 1px solid var(--line); padding-right: 10px; line-height: 1; }
-    .phone-inp { padding-left: 58px !important; }
-    select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236c7c86' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 13px center; padding-right: 36px; }
-    select option { background: white; }
+    /* VALUE ROW */
+    .value-row{margin-top:20px; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:20px;}
+    .value-card{display:flex; gap:14px; align-items:center; border:1px solid var(--line); border-radius:18px; background:#fff; padding:16px 18px; box-shadow:0 12px 26px rgba(26,82,118,.05);}
+    .value-icon{width:50px; height:50px; flex-shrink:0; border-radius:16px; background:linear-gradient(135deg,var(--mint),rgba(238,247,250,.95)); color:var(--green); display:grid; place-items:center;}
+    .value-card h3{margin:0 0 4px; color:var(--blue-900); font-size:16px;}
+    .value-card p{margin:0; color:#60758a; font-size:12px; line-height:1.4;}
 
-    .primary-btn, .success-btn {
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-      width: 100%; min-height: 50px; border-radius: 14px; color: #fff; font-weight: 850; font-size: 15px;
-      transition: transform 160ms, box-shadow 160ms;
-    }
-    .primary-btn { background: linear-gradient(180deg, var(--blue), var(--blue-dark)); box-shadow: 0 13px 28px rgba(26,82,118,0.22); }
-    .success-btn { background: linear-gradient(180deg, var(--green), var(--green-dark)); box-shadow: 0 13px 28px rgba(15,110,86,0.22); }
-    .primary-btn:hover, .success-btn:hover { transform: translateY(-1px); }
-    .primary-btn:disabled, .success-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .spin { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; }
+    /* BOTTOM BANNER */
+    .bottom-banner{margin-top:24px; background:linear-gradient(135deg,var(--blue),#073c63); border-radius:20px; min-height:80px; display:flex; align-items:center; gap:20px; padding:20px 28px; color:#fff; position:relative; overflow:hidden; box-shadow:0 22px 44px rgba(26,82,118,.23);}
+    .bottom-banner::after{content:""; position:absolute; right:-70px; bottom:-90px; width:420px; height:220px; background-image:radial-gradient(rgba(255,255,255,.28) 1px, transparent 1px); background-size:13px 13px; opacity:.42; transform:rotate(-8deg);}
+    .banner-icon{width:50px; height:50px; border-radius:14px; background:rgba(255,255,255,.16); display:grid; place-items:center; position:relative; z-index:1; flex-shrink:0;}
+    .bottom-banner strong{font-size:22px; line-height:1.25; letter-spacing:-.03em; position:relative; z-index:1;}
+
+    /* AUTH COLUMN */
+    .auth-column{padding-top:100px; display:grid; gap:20px; position:sticky; top:24px;}
+    .auth-card,.trust-card{background:rgba(255,255,255,.92); border:1px solid var(--line); border-radius:28px; box-shadow:var(--shadow);}
+    .auth-card{padding:34px 32px 28px;}
+    .auth-card h2{margin:0 0 8px; text-align:center; color:var(--blue-900); font-size:28px; letter-spacing:-.04em;}
+    .auth-welcome{text-align:center; margin:0 0 20px; color:var(--muted); font-size:14px; line-height:1.45;}
+    .tabs{display:grid; grid-template-columns:1fr 1fr; border:1px solid var(--line); border-radius:18px; background:#fff; overflow:hidden; margin-bottom:16px;}
+    .tab-btn{background:transparent; color:var(--blue); font-weight:800; padding:14px; border-radius:16px; transition:.2s;}
+    .tab-btn.active{background:var(--blue); color:#fff; box-shadow:0 10px 26px rgba(26,82,118,.24);}
+    .form{display:none; flex-direction:column; gap:12px;}
+    .form.active{display:flex;}
+    .field-wrap{position:relative;}
+    .field-wrap svg{position:absolute; left:16px; top:50%; transform:translateY(-50%); color:#7891a4; pointer-events:none;}
+    .field-inp{width:100%; height:54px; border:1px solid var(--line); border-radius:13px; background:#fff; padding:0 14px 0 46px; color:var(--text); outline:none; transition:.2s; -webkit-appearance:none;}
+    .field-inp:focus{border-color:#86c9cf; box-shadow:0 0 0 4px rgba(37,198,207,.12);}
+    .field-inp.error{border-color:var(--danger);}
+    .field-inp.phone-inp{padding-left:82px;}
+    .phone-pre{position:absolute; left:46px; top:50%; transform:translateY(-50%); color:var(--muted); font-size:14px; pointer-events:none; border-right:1px solid var(--line); padding-right:8px; line-height:1;}
+    select.field-inp{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236c7c86' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 13px center; padding-right:36px;}
+    .err-msg{display:none; font-size:11px; color:var(--danger); margin-top:-6px;}
+    .err-msg.show{display:block;}
+    .form-row{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+    .primary-btn{width:100%; height:54px; border-radius:13px; color:#fff; font-weight:850; font-size:16px; transition:.2s;}
+    .primary-btn.blue{background:linear-gradient(135deg,var(--blue),#0d4166); box-shadow:0 16px 30px rgba(26,82,118,.2);}
+    .primary-btn.green{background:linear-gradient(135deg,#0f8b6a,var(--green)); box-shadow:0 16px 30px rgba(15,110,86,.2);}
+    .primary-btn:hover{transform:translateY(-1px);}
+    .primary-btn:disabled{opacity:.5; cursor:not-allowed; transform:none;}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .spin{display:inline-block; width:16px; height:16px; border:2px solid rgba(255,255,255,.4); border-top-color:#fff; border-radius:50%; animation:spin .7s linear infinite; vertical-align:middle;}
+    .divider{display:grid; grid-template-columns:1fr auto 1fr; gap:14px; align-items:center; color:#8798a8; margin:4px 0; font-size:13px;}
+    .divider::before,.divider::after{content:""; height:1px; background:var(--line);}
+    .sso-btn{height:54px; border:1px solid var(--line); background:#fff; color:var(--blue-900); border-radius:13px; display:flex; align-items:center; justify-content:center; gap:10px; font-weight:750; width:100%;}
+    .policy{margin:14px 0 0; color:#7b8c9a; text-align:center; font-size:12px; line-height:1.5;}
+    .policy a{color:var(--blue); font-weight:700;}
 
     /* RESUME BANNER */
-    .resume-banner { display: none; margin-bottom: 16px; padding: 14px; border: 1px solid #f5c84a; border-radius: 16px; background: #fffaed; }
-    .resume-banner.show { display: block; }
-    .resume-title { font-size: 12px; font-weight: 800; color: #7a5a00; margin-bottom: 4px; }
-    .resume-name-txt { font-size: 15px; font-weight: 800; color: var(--blue-dark); margin-bottom: 10px; }
-    .resume-btns { display: flex; gap: 8px; }
-    .resume-btn { flex: 1; min-height: 36px; border-radius: 10px; font-weight: 800; font-size: 13px; }
-    .resume-btn.yes { background: var(--blue); color: #fff; }
-    .resume-btn.no { background: #fff; border: 1px solid var(--line); color: var(--muted); }
+    .resume-banner{display:none; margin-bottom:14px; padding:14px; border:1px solid #f5c84a; border-radius:16px; background:#fffaed;}
+    .resume-banner.show{display:block;}
+    .resume-title{font-size:12px; font-weight:800; color:#7a5a00; margin-bottom:4px;}
+    .resume-name-txt{font-size:14px; font-weight:800; color:var(--blue-900); margin-bottom:10px;}
+    .resume-btns{display:flex; gap:8px;}
+    .resume-btn{flex:1; min-height:34px; border-radius:10px; font-weight:800; font-size:13px;}
+    .resume-btn.yes{background:var(--blue); color:#fff;}
+    .resume-btn.no{background:#fff; border:1px solid var(--line); color:var(--muted);}
 
     /* STUDENT CARD */
-    .student-card { display: none; margin-top: 18px; padding: 16px; border: 1px solid var(--line); border-radius: 18px; background: linear-gradient(180deg,#fff,#fbfdfd); }
-    .student-card.active { display: block; }
-    .student-mini { display: grid; grid-template-columns: 46px 1fr; gap: 12px; align-items: center; margin-bottom: 14px; }
-    .student-avatar { width: 46px; height: 46px; display: grid; place-items: center; border-radius: 14px; background: var(--soft-blue); color: var(--blue); border: 1px solid rgba(26,82,118,0.12); }
-    .student-name { margin: 0 0 3px; color: var(--blue-dark); font-weight: 850; font-size: 16px; }
-    .student-status { display: inline-flex; align-items: center; gap: 6px; margin: 0; color: var(--muted); font-size: 12px; }
-    .dot { width: 7px; height: 7px; border-radius: 99px; background: var(--green); }
-    .security-note { display: grid; grid-template-columns: 24px 1fr; gap: 9px; align-items: center; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--muted); font-size: 11px; line-height: 1.35; }
-    .security-note svg { color: var(--green); }
+    .student-card{display:none; margin-top:16px; padding:18px; border:1px solid var(--line); border-radius:20px; background:linear-gradient(180deg,#fff,#f8fcfd);}
+    .student-card.active{display:block;}
+    .student-mini{display:grid; grid-template-columns:46px 1fr; gap:12px; align-items:center; margin-bottom:14px;}
+    .student-avatar{width:46px; height:46px; border-radius:14px; background:linear-gradient(135deg,var(--mint),#d0eef6); color:var(--blue); display:grid; place-items:center;}
+    .student-name{margin:0 0 3px; color:var(--blue-900); font-weight:850; font-size:16px;}
+    .student-status{display:inline-flex; align-items:center; gap:6px; margin:0; color:var(--muted); font-size:12px;}
+    .dot{width:7px; height:7px; border-radius:99px; background:var(--green);}
 
-    /* MOBILE */
-    @media (max-width: 1120px) {
-      .auth-shell { grid-template-columns: 1fr; }
-      .auth-panel { border-left: 0; border-top: 1px solid var(--line); }
-      .auth-panel .lang-switch { display: none; }
-      .auth-top { position: static; margin-bottom: 30px; }
-      .hero { margin-top: 0; text-align: left; }
-      .lead { margin-left: 0; }
-    }
-    @media (max-width: 780px) {
-      .auth-screen { padding: 12px; }
-      .auth-shell { border-radius: 26px; min-height: 0; }
-      .auth-left { padding: 24px; }
-      h1 { font-size: 36px; }
-      .lead { font-size: 15px; }
-      .steps { grid-template-columns: 1fr 1fr; gap: 10px; }
-      .benefits { grid-template-columns: 1fr; }
-      .auth-panel { padding: 18px; }
-    }
-    @media (max-width: 520px) {
-      .auth-left { padding: 20px; }
-      .steps { grid-template-columns: 1fr; }
-      h1 { font-size: 32px; }
-      .auth-card { padding: 18px; }
-    }
+    /* TRUST CARDS */
+    .trust-card{padding:22px 24px; display:flex; align-items:center; gap:18px; box-shadow:var(--shadow-soft);}
+    .trust-icon{width:60px; height:60px; border-radius:20px; background:linear-gradient(135deg,var(--mint),rgba(238,247,250,.95)); color:var(--green); display:grid; place-items:center; flex-shrink:0;}
+    .trust-card h3{margin:0 0 5px; color:var(--blue-900); font-size:18px;}
+    .trust-card p{margin:0; color:#60758a; font-size:13px; line-height:1.4;}
+
+    /* LANG */
+    .lang-switch{display:flex; border:1px solid var(--line); border-radius:999px; overflow:hidden; background:#fff;}
+    .lang-btn{background:transparent; padding:7px 12px; font-weight:800; color:#7891a4; font-size:12px;}
+    .lang-btn.active{background:var(--mint); color:var(--green);}
+    .lang-wrap{display:flex; justify-content:flex-end; margin-bottom:10px;}
+
+    /* TOP MINI BADGES */
+    .top-mini-badges{position:absolute; top:54px; left:50%; display:flex; gap:16px; transform:translateX(-7%);}
+    .mini-badge{display:flex; align-items:center; gap:12px; background:rgba(255,255,255,.88); border:1px solid var(--line); border-radius:18px; padding:12px 16px; box-shadow:0 16px 34px rgba(26,82,118,.08);}
+    .mini-icon{width:40px; height:40px; border-radius:13px; background:linear-gradient(135deg,var(--mint),rgba(238,247,250,.95)); color:var(--green); display:grid; place-items:center; flex-shrink:0;}
+    .mini-badge b{display:block; color:var(--blue-900); font-size:13px; margin-bottom:2px;}
+    .mini-badge span{display:block; color:#5f7484; font-size:11px; line-height:1.2;}
+
+    /* RESPONSIVE */
+    @media(max-width:1420px){.content{padding:32px 40px 40px;} .layout{grid-template-columns:minmax(0,1fr) 390px; gap:30px;} .hero h1{font-size:clamp(46px,5vw,70px);} .platform-map{grid-template-columns:200px minmax(380px,1fr) 200px; gap:20px;}}
+    @media(max-width:1180px){.layout{grid-template-columns:1fr;} .auth-column{position:relative; top:auto; padding-top:0;} .hero-grid{grid-template-columns:1fr;} .hero-visual{height:200px;} .top-mini-badges{display:none;}}
+    @media(max-width:980px){.page-shell{width:calc(100% - 22px); margin:11px auto; border-radius:26px;} .content{padding:22px 18px 28px;} .platform-map{grid-template-columns:1fr;} .side-modules{grid-template-columns:1fr 1fr;} .connector{display:none;} .dashboard{grid-template-columns:56px 1fr;} .metric-grid{grid-template-columns:repeat(2,1fr);} .dash-row{grid-template-columns:1fr;} .value-row{grid-template-columns:1fr;}}
+    @media(max-width:640px){.hero h1{font-size:40px;} .hero p{font-size:16px;} .hero-visual{display:none;} .side-modules{grid-template-columns:1fr;} .dashboard{grid-template-columns:1fr;} .dash-sidebar{display:none;} .form-row{grid-template-columns:1fr;} .auth-card{padding:24px 18px;} .bottom-banner strong{font-size:18px;}}
   </style>
 </head>
 <body>
+<main class="page-shell">
+  <div class="content">
 
-  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M5 6.5h11a4 4 0 0 1 0 8H9l-4 3v-11Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></symbol>
-  <symbol id="i-lab" viewBox="0 0 24 24"><path d="M8 3h8M10 3v5.5l-2.8 6.4A4.3 4.3 0 0 0 9.2 21h5.6a4.3 4.3 0 0 0 4-6.1L16 8.5V3" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M7.2 15.5h9.6" stroke="#0f6e56" stroke-width="1.8" stroke-linecap="round"/></symbol>
-  <symbol id="i-diagnosis" viewBox="0 0 24 24"><path d="M10.5 18a7.5 7.5 0 1 1 5.3-2.2L21 21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="m7.5 12 2.2-3.6 2.4 6.4 2-4.2H17" fill="none" stroke="#0f6e56" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-  <symbol id="i-clipboard" viewBox="0 0 24 24"><path d="M9 4h6l1 2h3v15H5V6h3l1-2Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 6h6M12 10v6M9 13h6" fill="none" stroke="#0f6e56" stroke-width="1.9" stroke-linecap="round"/></symbol>
-  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5 20a7 7 0 0 1 14 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
-  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3.5 5.5 6.2v5.2c0 4.4 2.6 7.6 6.5 9.1 3.9-1.5 6.5-4.7 6.5-9.1V6.2L12 3.5Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="m9 12.1 2 2 4-4.5" fill="none" stroke="#0f6e56" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-  <symbol id="i-hospital" viewBox="0 0 24 24"><path d="M4 20h16M6 20V8h4V4h4v4h4v12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 7v5M9.5 9.5h5" stroke="#0f6e56" stroke-width="1.8" stroke-linecap="round"/></symbol>
-  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="10" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8.5 10V7.8A3.5 3.5 0 0 1 12 4.3v0a3.5 3.5 0 0 1 3.5 3.5V10" fill="none" stroke="#0f6e56" stroke-width="1.8" stroke-linecap="round"/></symbol>
-</svg>
+    <div class="top-mini-badges" aria-hidden="true">
+      <div class="mini-badge">
+        <div class="mini-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v5c0 4.6-2.9 8-7 10-4.1-2-7-5.4-7-10V6l7-3z" stroke="#0f6e56" stroke-width="2"/><path d="M9 12l2 2 4-5" stroke="#0f6e56" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div><b>Безопасная среда</b><span>Можно ошибаться<br>и учиться</span></div>
+      </div>
+      <div class="mini-badge">
+        <div class="mini-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M5 19V9m7 10V5m7 14v-8" stroke="#0f6e56" stroke-width="2" stroke-linecap="round"/><path d="M3 19h18" stroke="#0f6e56" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div><b>Доказательный подход</b><span>Клинические<br>рекомендации</span></div>
+      </div>
+    </div>
 
-<div class="auth-screen">
-  <div class="auth-shell">
+    <div class="layout">
 
-    <!-- LEFT -->
-    <main class="auth-left">
-      <div class="auth-top">
-        <div class="brand">
-          <div class="brand-mark"><svg viewBox="0 0 24 24" fill="none" width="26" height="26"><path d="M12 3.8 5.2 6.7v5.1c0 4.3 2.7 7.2 6.8 8.4 4.1-1.2 6.8-4.1 6.8-8.4V6.7L12 3.8Z" stroke="currentColor" stroke-width="1.8"/><path d="M12 8v7M8.5 11.5h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+      <!-- MAIN COLUMN -->
+      <section>
+        <header class="brand">
+          <div class="brand-mark">
+            <svg viewBox="0 0 24 24" fill="none" width="38" height="38"><path d="M12 3.8 5.2 6.7v5.1c0 4.3 2.7 7.2 6.8 8.4 4.1-1.2 6.8-4.1 6.8-8.4V6.7L12 3.8Z" stroke="#fff" stroke-width="1.8"/><path d="M12 8v7M8.5 11.5h7" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </div>
           <div>
-            <div class="brand-title" data-key="brand">Симулятор пациента</div>
-            <div class="brand-subtitle" data-key="brand_sub">Платформа для обучения и клинической практики</div>
+            <h2 class="brand-title" data-key="brand">Симулятор пациента</h2>
+            <p class="brand-subtitle" data-key="brand_sub">Платформа клинического обучения</p>
           </div>
-        </div>
-        <div class="lang-switch">
-          <button class="lang-btn active" id="lang-ru" onclick="setLang('ru')">RU</button>
-          <button class="lang-btn" id="lang-uz" onclick="setLang('uz')">UZ</button>
-        </div>
-      </div>
+        </header>
 
-      <section class="hero">
-        <h1 data-key="hero_title">Тренируйте клиническое мышление</h1>
-        <p class="lead" data-key="hero_lead">Интерактивный тренажёр для врачей и медицинских студентов. Отрабатывайте анамнез, назначение анализов и постановку диагноза в безопасной среде.</p>
-      </section>
-
-      <section class="steps">
-        <article class="step-card">
-          <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" width="26" height="26"><path d="M5 6.5h11a4 4 0 0 1 0 8H9l-4 3v-11Z" stroke="#1a5276" stroke-width="1.8" stroke-linejoin="round"/></svg></div>
-          <h3 data-key="s1t">Соберите анамнез</h3>
-          <p data-key="s1d">Общайтесь с пациентом в свободной форме — задавайте любые вопросы.</p>
-        </article>
-        <article class="step-card">
-          <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" width="26" height="26"><path d="M8 3h8M10 3v5.5l-2.8 6.4A4.3 4.3 0 0 0 9.2 21h5.6a4.3 4.3 0 0 0 4-6.1L16 8.5V3" stroke="#1a5276" stroke-width="1.8" stroke-linecap="round"/><path d="M7.2 15.5h9.6" stroke="#0f6e56" stroke-width="1.8" stroke-linecap="round"/></svg></div>
-          <h3 data-key="s2t">Назначьте анализы</h3>
-          <p data-key="s2d">Ищите исследования в базе и получайте результаты для интерпретации.</p>
-        </article>
-        <article class="step-card">
-          <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" width="26" height="26"><path d="M10.5 18a7.5 7.5 0 1 1 5.3-2.2L21 21" stroke="#1a5276" stroke-width="1.8" stroke-linecap="round"/><path d="m7.5 12 2.2-3.6 2.4 6.4 2-4.2H17" stroke="#0f6e56" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-          <h3 data-key="s3t">Поставьте диагноз</h3>
-          <p data-key="s3d">Заполните диагноз и план лечения когда будете готовы.</p>
-        </article>
-        <article class="step-card">
-          <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" width="26" height="26"><path d="M9 4h6l1 2h3v15H5V6h3l1-2Z" stroke="#1a5276" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 6h6M12 10v6M9 13h6" stroke="#0f6e56" stroke-width="1.9" stroke-linecap="round"/></svg></div>
-          <h3 data-key="s4t">Получите оценку</h3>
-          <p data-key="s4d">Автоматический разбор с указанием ошибок и правильного ответа.</p>
-        </article>
-      </section>
-
-      <section class="benefits">
-        <div class="benefit-card">
-          <div class="mini-icon"><svg viewBox="0 0 24 24" fill="none" width="22" height="22"><path d="M12 3.5 5.5 6.2v5.2c0 4.4 2.6 7.6 6.5 9.1 3.9-1.5 6.5-4.7 6.5-9.1V6.2L12 3.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="m9 12.1 2 2 4-4.5" stroke="#0f6e56" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-          <div><strong data-key="b1t">Надёжно</strong><span data-key="b1d">Данные защищены и конфиденциальны</span></div>
-        </div>
-        <div class="benefit-card">
-          <div class="mini-icon"><svg viewBox="0 0 24 24" fill="none" width="22" height="22"><path d="M4 20h16M6 20V8h4V4h4v4h4v12" stroke="#0f6e56" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 7v5M9.5 9.5h5" stroke="#0f6e56" stroke-width="1.8" stroke-linecap="round"/></svg></div>
-          <div><strong data-key="b2t">Профессионально</strong><span data-key="b2d">Кейсы для реальной клинической практики</span></div>
-        </div>
-
-      </section>
-    </main>
-
-    <!-- RIGHT: AUTH -->
-    <aside class="auth-panel">
-      <div class="lang-switch">
-        <button class="lang-btn active" id="lang-ru2" onclick="setLang('ru')">RU</button>
-        <button class="lang-btn" id="lang-uz2" onclick="setLang('uz')">UZ</button>
-      </div>
-
-      <div class="auth-card">
-
-        <!-- RESUME -->
-        <div class="resume-banner" id="resume-banner">
-          <div class="resume-title" data-key="resume_title">⚠️ Найден незавершённый сеанс</div>
-          <div class="resume-name-txt" id="resume-name"></div>
-          <div class="resume-btns">
-            <button class="resume-btn yes" onclick="resumeSession()" data-key="resume_yes">Продолжить</button>
-            <button class="resume-btn no" onclick="clearAndReset()" data-key="resume_no">Это не я</button>
+        <div class="hero-grid">
+          <div class="hero">
+            <h1 data-key="hero_title">Тренируйте<br>клиническое мышление</h1>
+            <p data-key="hero_lead">Цифровая образовательная платформа для врачей и студентов-медиков. Тренируйтесь, получайте оценку и отслеживайте прогресс.</p>
+          </div>
+          <div class="hero-visual" aria-hidden="true">
+            <div class="hero-blob"></div>
+            <div class="hero-card-stack">
+              <div class="glass-card back"></div>
+              <div class="glass-card mid"></div>
+              <div class="glass-card front">
+                <svg class="wave" viewBox="0 0 160 52" fill="none"><path d="M8 28h28l12-18 21 34 22-40 18 24h43" stroke="#20c2cc" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <div><span class="mock-dot"></span><span class="mock-line"></span></div>
+                <div><span class="mock-dot light"></span><span class="mock-line short"></span></div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div class="tabs">
-          <button class="tab active" id="tab-login" onclick="switchTab('login')" data-key="tab_login">Вход</button>
-          <button class="tab" id="tab-register" onclick="switchTab('register')" data-key="tab_reg">Регистрация</button>
-        </div>
+        <section class="education-panel">
+          <h2 class="section-title" data-key="platform_title">Единая платформа для клинического обучения</h2>
+          <div class="platform-map">
+            <div class="side-modules">
+              <article class="module-card left">
+                <span class="connector"></span>
+                <div class="module-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H7a3 3 0 0 0-3 3V5.5z" stroke="#0f6e56" stroke-width="2"/><path d="M7 7h9M7 11h7" stroke="#0f6e56" stroke-width="2" stroke-linecap="round"/></svg></div>
+                <h3 data-key="m1t">Обучение</h3>
+                <p data-key="m1d">Интерактивные кейсы<br>Клинические сценарии</p>
+              </article>
+              <article class="module-card left">
+                <span class="connector"></span>
+                <div class="module-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" stroke="#0f6e56" stroke-width="2"/><path d="M4 21a8 8 0 0 1 16 0" stroke="#0f6e56" stroke-width="2" stroke-linecap="round"/></svg></div>
+                <h3 data-key="m2t">Практика</h3>
+                <p data-key="m2d">Симуляторы пациентов<br>Решение клинических ситуаций</p>
+              </article>
+            </div>
 
-        <!-- LOGIN -->
-        <div id="form-login" class="form active">
-          <h2 class="form-title" data-key="login_title">Войти в кабинет</h2>
-          <p class="form-note" data-key="login_note">Введите номер телефона, чтобы продолжить тренировку.</p>
-          <div class="field">
-            <label data-key="lbl_phone">Телефон</label>
-            <div class="phone-wrap">
+            <article class="dashboard">
+              <aside class="dash-sidebar">
+                <div class="dash-mark"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 12h5l2-5 4 10 2-5h5" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                <div class="dash-nav active"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M4 11l8-7 8 7v9H4v-9z" stroke="currentColor" stroke-width="2"/></svg></div>
+                <div class="dash-nav"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+                <div class="dash-nav"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M5 19V9m7 10V5m7 14v-8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+                <div class="dash-nav"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0" stroke="currentColor" stroke-width="2"/></svg></div>
+              </aside>
+              <div class="dash-body">
+                <h3 data-key="dash_title">Личный кабинет</h3>
+                <div class="metric-grid">
+                  <div class="metric"><span data-key="m_cases">Кейсов пройдено</span><b>—</b><small data-key="m_soon">Скоро</small></div>
+                  <div class="metric"><span data-key="m_score">Средний балл</span><b>—</b><small data-key="m_soon">Скоро</small></div>
+                  <div class="metric"><span data-key="m_time">Время практики</span><b>—</b><small data-key="m_soon">Скоро</small></div>
+                  <div class="metric"><span data-key="m_rank">Специальности</span><b>—</b><small data-key="m_soon">Скоро</small></div>
+                </div>
+                <div class="dash-row">
+                  <div class="chart-card">
+                    <h4 data-key="chart_title">Динамика обучения</h4>
+                    <svg class="chart" viewBox="0 0 420 140" fill="none">
+                      <path d="M30 15v100h360" stroke="#e1ebf1" stroke-width="2"/>
+                      <path d="M30 40h360M30 65h360M30 90h360M30 115h360" stroke="#eef4f7"/>
+                      <path d="M35 108C68 95 74 79 111 87C146 94 149 57 188 66C232 76 234 36 276 43C322 50 337 26 388 20" stroke="#1a5276" stroke-width="3.5" stroke-linecap="round"/>
+                      <path d="M35 115C76 105 92 100 126 105C160 110 172 91 206 93C244 96 259 82 299 85C337 88 354 76 388 71" stroke="#0f6e56" stroke-width="3.5" stroke-linecap="round"/>
+                      <g fill="#9aacb9" font-size="10"><text x="27" y="132">Янв</text><text x="93" y="132">Фев</text><text x="159" y="132">Мар</text><text x="225" y="132">Апр</text><text x="291" y="132">Май</text><text x="357" y="132">Июн</text></g>
+                    </svg>
+                  </div>
+                  <div class="activity-card">
+                    <h4 data-key="activity_title">Последние прохождения</h4>
+                    <div class="activity-list">
+                      <div class="activity-item"><span class="activity-dot"></span><span data-key="act1">История прохождений<br><b>появится здесь</b></span></div>
+                      <div class="activity-item"><span class="activity-dot"></span><span data-key="act2">После первого<br><b>завершённого кейса</b></span></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <div class="side-modules">
+              <article class="module-card right">
+                <span class="connector"></span>
+                <div class="module-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M9 12l2 2 4-5" stroke="#0f6e56" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="#0f6e56" stroke-width="2"/></svg></div>
+                <h3 data-key="m3t">Оценка</h3>
+                <p data-key="m3d">Объективные результаты<br>Автоматический разбор</p>
+              </article>
+              <article class="module-card right">
+                <span class="connector"></span>
+                <div class="module-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M5 19V9m7 10V5m7 14v-8" stroke="#0f6e56" stroke-width="2" stroke-linecap="round"/><path d="M3 19h18" stroke="#0f6e56" stroke-width="2" stroke-linecap="round"/></svg></div>
+                <h3 data-key="m4t">Аналитика</h3>
+                <p data-key="m4d">Индивидуальный прогресс<br>Аналитика для преподавателей</p>
+              </article>
+            </div>
+          </div>
+
+          <div class="value-row">
+            <article class="value-card">
+              <div class="value-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v5c0 4.6-2.9 8-7 10-4.1-2-7-5.4-7-10V6l7-3z" stroke="#0f6e56" stroke-width="2"/><path d="M9 12l2 2 4-5" stroke="#0f6e56" stroke-width="2" stroke-linecap="round"/></svg></div>
+              <div><h3 data-key="v1t">Навыки</h3><p data-key="v1d">Развивайте клиническое мышление и навыки принятия решений</p></div>
+            </article>
+            <article class="value-card">
+              <div class="value-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v8z" stroke="#0f6e56" stroke-width="2"/><path d="M8 9h8M8 13h5" stroke="#0f6e56" stroke-width="2" stroke-linecap="round"/></svg></div>
+              <div><h3 data-key="v2t">Обратная связь</h3><p data-key="v2d">Получайте детальный разбор после каждого кейса</p></div>
+            </article>
+            <article class="value-card">
+              <div class="value-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M4 17l5-5 4 4 7-9" stroke="#0f6e56" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+              <div><h3 data-key="v3t">Прогресс</h3><p data-key="v3d">Отслеживайте рост компетенций и результаты</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="bottom-banner">
+          <div class="banner-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none"><path d="M22 10L12 4 2 10l10 6 10-6z" stroke="#fff" stroke-width="2"/><path d="M6 12.5V17c2 2 10 2 12 0v-4.5" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg></div>
+          <strong data-key="banner">Все ключевые этапы обучения — в одной системе: от тренировки до оценки результатов</strong>
+        </section>
+      </section>
+
+      <!-- AUTH COLUMN -->
+      <aside class="auth-column">
+        <div class="auth-card">
+          <div class="lang-wrap">
+            <div class="lang-switch">
+              <button class="lang-btn active" id="lang-ru" onclick="setLang('ru')">RU</button>
+              <button class="lang-btn" id="lang-uz" onclick="setLang('uz')">UZ</button>
+            </div>
+          </div>
+
+          <h2 data-key="auth_title">Вход в систему</h2>
+          <p class="auth-welcome" data-key="auth_sub">Войдите, чтобы продолжить обучение</p>
+
+          <!-- RESUME -->
+          <div class="resume-banner" id="resume-banner">
+            <div class="resume-title" data-key="resume_title">⚠️ Найден незавершённый сеанс</div>
+            <div class="resume-name-txt" id="resume-name"></div>
+            <div class="resume-btns">
+              <button class="resume-btn yes" onclick="resumeSession()" data-key="resume_yes">Продолжить</button>
+              <button class="resume-btn no" onclick="clearAndReset()" data-key="resume_no">Это не я</button>
+            </div>
+          </div>
+
+          <div class="tabs">
+            <button class="tab-btn active" id="tab-login" onclick="switchTab('login')" data-key="tab_login">Вход</button>
+            <button class="tab-btn" id="tab-register" onclick="switchTab('register')" data-key="tab_reg">Регистрация</button>
+          </div>
+
+          <!-- LOGIN -->
+          <div id="form-login" class="form active">
+            <div class="field-wrap">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.35 1.9.67 2.8a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.28-1.28a2 2 0 0 1 2.11-.45c.9.32 1.84.54 2.8.67A2 2 0 0 1 22 16.92z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
               <span class="phone-pre">+998</span>
-              <input class="phone-inp" id="login-phone" type="tel" placeholder="90 123 45 67" maxlength="12" inputmode="numeric">
+              <input class="field-inp phone-inp" id="login-phone" type="tel" placeholder="90 123 45 67" maxlength="12" inputmode="numeric">
             </div>
             <div class="err-msg" id="err-login-phone">Неверный формат номера</div>
+            <button class="primary-btn green" id="login-btn" onclick="login()" data-key="login_btn">Войти →</button>
+            <div class="divider" data-key="or">или</div>
+            <button class="sso-btn" onclick="alert('SSO в разработке')">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M10 13a5 5 0 0 1 0-7l1.5-1.5a5 5 0 0 1 7 7L17 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M14 11a5 5 0 0 1 0 7L12.5 19.5a5 5 0 0 1-7-7L7 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+              <span data-key="sso">Войти через SSO</span>
+            </button>
           </div>
-          <button class="primary-btn" id="login-btn" onclick="login()" data-key="login_btn">Войти</button>
-        </div>
 
-        <!-- REGISTER -->
-        <div id="form-register" class="form">
-          <h2 class="form-title" data-key="reg_title">Создать профиль</h2>
-          <p class="form-note" data-key="reg_note">Данные нужны для экзаменационной ведомости и аналитики обучения.</p>
-          <div class="field">
-            <label data-key="lbl_last">Фамилия</label>
-            <input id="last-name" type="text" placeholder="Каримов" autocomplete="family-name">
-            <div class="err-msg" id="err-last">Введите фамилию</div>
-          </div>
-          <div class="field">
-            <label data-key="lbl_first">Имя</label>
-            <input id="first-name" type="text" placeholder="Азиз" autocomplete="given-name">
-            <div class="err-msg" id="err-first">Введите имя</div>
-          </div>
-          <div class="field">
-            <label data-key="lbl_phone">Телефон</label>
-            <div class="phone-wrap">
+          <!-- REGISTER -->
+          <div id="form-register" class="form">
+            <div class="form-row">
+              <div>
+                <div class="field-wrap">
+                  <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M20 21a8 8 0 0 0-16 0M12 13a5 5 0 1 0 0-10 5 5 0 0 0 0 10z" stroke="currentColor" stroke-width="1.8"/></svg>
+                  <input class="field-inp" id="last-name" type="text" placeholder="Фамилия" autocomplete="family-name">
+                </div>
+                <div class="err-msg" id="err-last">Введите фамилию</div>
+              </div>
+              <div>
+                <div class="field-wrap">
+                  <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M20 21a8 8 0 0 0-16 0M12 13a5 5 0 1 0 0-10 5 5 0 0 0 0 10z" stroke="currentColor" stroke-width="1.8"/></svg>
+                  <input class="field-inp" id="first-name" type="text" placeholder="Имя" autocomplete="given-name">
+                </div>
+                <div class="err-msg" id="err-first">Введите имя</div>
+              </div>
+            </div>
+            <div class="field-wrap">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
               <span class="phone-pre">+998</span>
-              <input class="phone-inp" id="reg-phone" type="tel" placeholder="90 123 45 67" maxlength="12" inputmode="numeric">
+              <input class="field-inp phone-inp" id="reg-phone" type="tel" placeholder="90 123 45 67" maxlength="12" inputmode="numeric">
             </div>
             <div class="err-msg" id="err-reg-phone">Неверный формат номера</div>
-          </div>
-          <div class="field">
-            <label data-key="lbl_region">Область</label>
-            <select id="region">
-              <option value="">— Выберите —</option>
-              <option>Ташкент (город)</option><option>Андижанская область</option>
-              <option>Бухарская область</option><option>Джизакская область</option>
-              <option>Кашкадарьинская область</option><option>Навоийская область</option>
-              <option>Наманганская область</option><option>Самаркандская область</option>
-              <option>Сурхандарьинская область</option><option>Сырдарьинская область</option>
-              <option>Ташкентская область</option><option>Ферганская область</option>
-              <option>Хорезмская область</option><option>Республика Каракалпакстан</option>
-            </select>
-            <div class="err-msg" id="err-region">Выберите область</div>
-          </div>
-          <div class="field">
-            <label data-key="lbl_city">Город / район</label>
-            <input id="city" type="text" placeholder="Ташкент">
-            <div class="err-msg" id="err-city">Введите город</div>
-          </div>
-          <div class="field">
-            <label data-key="lbl_work">Место работы</label>
-            <input id="workplace" type="text" placeholder="Место работы">
-            <div class="err-msg" id="err-work">Введите место работы</div>
-          </div>
-          <button class="primary-btn" id="reg-btn" onclick="register()" data-key="reg_btn">Зарегистрироваться</button>
-        </div>
-
-        <!-- STUDENT CARD -->
-        <div class="student-card" id="student-card">
-          <div class="student-mini">
-            <div class="student-avatar"><svg viewBox="0 0 24 24" fill="none" width="22" height="22"><circle cx="12" cy="8" r="3.5" stroke="currentColor" stroke-width="1.8"/><path d="M5 20a7 7 0 0 1 14 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
-            <div>
-              <p class="student-name" id="student-name-display"></p>
-              <p class="student-status"><span class="dot"></span><span data-key="online">Онлайн</span></p>
+            <div class="form-row">
+              <div>
+                <div class="field-wrap">
+                  <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M12 21s7-4.6 7-11a7 7 0 0 0-14 0c0 6.4 7 11 7 11z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="10" r="2.5" stroke="currentColor" stroke-width="1.8"/></svg>
+                  <select class="field-inp" id="region">
+                    <option value="">Область</option>
+                    <option>Ташкент (город)</option><option>Андижанская область</option>
+                    <option>Бухарская область</option><option>Джизакская область</option>
+                    <option>Кашкадарьинская область</option><option>Навоийская область</option>
+                    <option>Наманганская область</option><option>Самаркандская область</option>
+                    <option>Сурхандарьинская область</option><option>Сырдарьинская область</option>
+                    <option>Ташкентская область</option><option>Ферганская область</option>
+                    <option>Хорезмская область</option><option>Республика Каракалпакстан</option>
+                  </select>
+                </div>
+                <div class="err-msg" id="err-region">Выберите область</div>
+              </div>
+              <div>
+                <div class="field-wrap">
+                  <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                  <input class="field-inp" id="city" type="text" placeholder="Город">
+                </div>
+                <div class="err-msg" id="err-city">Введите город</div>
+              </div>
             </div>
+            <div class="field-wrap">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M10 6V5a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2v1M4 7h16v13H4z" stroke="currentColor" stroke-width="1.8"/><path d="M9 13h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+              <input class="field-inp" id="workplace" type="text" placeholder="Место работы">
+            </div>
+            <div class="err-msg" id="err-work">Введите место работы</div>
+            <button class="primary-btn green" id="reg-btn" onclick="register()" data-key="reg_btn">Зарегистрироваться</button>
           </div>
-          <button class="success-btn" onclick="startCase()" data-key="start_btn">Начать кейс →</button>
-          <div class="security-note">
-            <svg viewBox="0 0 24 24" fill="none" width="18" height="18"><rect x="5" y="10" width="14" height="10" rx="3" stroke="currentColor" stroke-width="1.8"/><path d="M8.5 10V7.8A3.5 3.5 0 0 1 12 4.3v0a3.5 3.5 0 0 1 3.5 3.5V10" stroke="#0f6e56" stroke-width="1.8" stroke-linecap="round"/></svg>
-            <span data-key="security">Ваши данные защищены и не передаются третьим лицам</span>
+
+          <!-- STUDENT CARD -->
+          <div class="student-card" id="student-card">
+            <div class="student-mini">
+              <div class="student-avatar"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M20 21a8 8 0 0 0-16 0M12 13a5 5 0 1 0 0-10 5 5 0 0 0 0 10z" stroke="#1a5276" stroke-width="1.8"/></svg></div>
+              <div>
+                <p class="student-name" id="student-name-display"></p>
+                <p class="student-status"><span class="dot"></span><span data-key="online">Онлайн</span></p>
+              </div>
+            </div>
+            <button class="primary-btn green" onclick="startCase()" data-key="start_btn">Начать кейс →</button>
           </div>
+
+          <p class="policy" data-key="policy">Продолжая, вы соглашаетесь с <a href="#">Условиями использования</a></p>
         </div>
 
-      </div>
-    </aside>
+        <article class="trust-card">
+          <div class="trust-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v5c0 4.6-2.9 8-7 10-4.1-2-7-5.4-7-10V6l7-3z" stroke="#0f6e56" stroke-width="2"/><path d="M9 12l2 2 4-5" stroke="#0f6e56" stroke-width="2" stroke-linecap="round"/></svg></div>
+          <div><h3 data-key="t1t">Надёжно</h3><p data-key="t1d">Данные защищены современными стандартами безопасности</p></div>
+        </article>
+
+        <article class="trust-card">
+          <div class="trust-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" stroke="#0f6e56" stroke-width="2"/><circle cx="10" cy="7" r="4" stroke="#0f6e56" stroke-width="2"/><path d="M21 21v-2a4 4 0 0 0-3-3.87M17 3.13a4 4 0 0 1 0 7.75" stroke="#0f6e56" stroke-width="2" stroke-linecap="round"/></svg></div>
+          <div><h3 data-key="t2t">Профессионально</h3><p data-key="t2d">Создано для медицинских образовательных организаций</p></div>
+        </article>
+      </aside>
+    </div>
   </div>
-</div>
+</main>
 
 <script>
 const BACKEND_URL = 'https://medical-simulator-api.onrender.com';
@@ -377,49 +483,61 @@ const SESSION_TIMEOUT = 45 * 60 * 1000;
 
 const T = {
   ru: {
-    brand:'Симулятор пациента', brand_sub:'Платформа для обучения и клинической практики',
+    brand:'Симулятор пациента', brand_sub:'Платформа клинического обучения',
     hero_title:'Тренируйте клиническое мышление',
-    hero_lead:'Интерактивный тренажёр для врачей и медицинских студентов. Отрабатывайте анамнез, назначение анализов и постановку диагноза в безопасной среде.',
-    s1t:'Соберите анамнез', s1d:'Общайтесь с пациентом в свободной форме — задавайте любые вопросы.',
-    s2t:'Назначьте анализы', s2d:'Ищите исследования в базе и получайте результаты для интерпретации.',
-    s3t:'Поставьте диагноз', s3d:'Заполните диагноз и план лечения когда будете готовы.',
-    s4t:'Получите оценку', s4d:'Автоматический разбор с указанием ошибок и правильного ответа.',
-    b1t:'Надёжно', b1d:'Данные защищены и конфиденциальны',
-    b2t:'Профессионально', b2d:'Кейсы для реальной клинической практики',
-    b3t:'Для Узбекистана', b3d:'Русский и узбекский интерфейс',
+    hero_lead:'Цифровая образовательная платформа для врачей и студентов-медиков. Тренируйтесь, получайте оценку и отслеживайте прогресс.',
+    platform_title:'Единая платформа для клинического обучения',
+    m1t:'Обучение', m1d:'Интерактивные кейсы\nКлинические сценарии',
+    m2t:'Практика', m2d:'Симуляторы пациентов\nРешение клинических ситуаций',
+    m3t:'Оценка', m3d:'Объективные результаты\nАвтоматический разбор',
+    m4t:'Аналитика', m4d:'Индивидуальный прогресс\nАналитика для преподавателей',
+    dash_title:'Личный кабинет',
+    m_cases:'Кейсов пройдено', m_score:'Средний балл', m_time:'Время практики', m_rank:'Специальности',
+    m_soon:'Скоро', chart_title:'Динамика обучения', activity_title:'Последние прохождения',
+    act1:'История прохождений', act2:'После первого завершённого кейса',
+    v1t:'Навыки', v1d:'Развивайте клиническое мышление и навыки принятия решений',
+    v2t:'Обратная связь', v2d:'Получайте детальный разбор после каждого кейса',
+    v3t:'Прогресс', v3d:'Отслеживайте рост компетенций и результаты',
+    banner:'Все ключевые этапы обучения — в одной системе: от тренировки до оценки результатов',
+    auth_title:'Вход в систему', auth_sub:'Войдите, чтобы продолжить обучение',
     resume_title:'⚠️ Найден незавершённый сеанс', resume_yes:'Продолжить', resume_no:'Это не я',
     tab_login:'Вход', tab_reg:'Регистрация',
-    login_title:'Войти в кабинет', login_note:'Введите номер телефона, чтобы продолжить тренировку.',
-    lbl_phone:'Телефон', login_btn:'Войти',
-    reg_title:'Создать профиль', reg_note:'Данные нужны для экзаменационной ведомости и аналитики обучения.',
-    lbl_last:'Фамилия', lbl_first:'Имя', lbl_region:'Область', lbl_city:'Город / район', lbl_work:'Место работы',
-    reg_btn:'Зарегистрироваться', online:'Онлайн', start_btn:'Начать кейс →',
-    security:'Ваши данные защищены и не передаются третьим лицам',
-    err_phone:'Неверный формат номера', err_conn:'Ошибка соединения. Проверьте интернет.',
-    err_not_found:'Номер не найден. Пройдите регистрацию.',
+    login_btn:'Войти →', or:'или', sso:'Войти через SSO',
+    reg_btn:'Зарегистрироваться',
+    online:'Онлайн', start_btn:'Начать кейс →',
+    t1t:'Надёжно', t1d:'Данные защищены современными стандартами безопасности',
+    t2t:'Профессионально', t2d:'Создано для медицинских образовательных организаций',
+    policy:'Продолжая, вы соглашаетесь с Условиями использования',
+    err_phone:'Неверный формат номера', err_conn:'Ошибка соединения.', err_not_found:'Номер не найден. Пройдите регистрацию.',
     regions:['Ташкент (город)','Андижанская область','Бухарская область','Джизакская область','Кашкадарьинская область','Навоийская область','Наманганская область','Самаркандская область','Сурхандарьинская область','Сырдарьинская область','Ташкентская область','Ферганская область','Хорезмская область','Республика Каракалпакстан']
   },
   uz: {
-    brand:"Bemor simulyatori", brand_sub:"Ta'lim va klinik amaliyot platformasi",
+    brand:"Bemor simulyatori", brand_sub:"Klinik ta'lim platformasi",
     hero_title:"Klinik tafakkurni mashq qiling",
-    hero_lead:"Shifokorlar va tibbiyot talabalari uchun interaktiv trenajyor. Anamnez yig'ish, tahlil tayinlash va tashxis qo'yishni xavfsiz muhitda mashq qiling.",
-    s1t:"Anamnez yig'ing", s1d:"Bemor bilan erkin muloqot qiling — istalgan savollarni bering.",
-    s2t:"Tahlillar tayinlang", s2d:"Bazadan tekshiruvlarni toping va natijalarni talqin qiling.",
-    s3t:"Tashxis qo'ying", s3d:"Tayyor bo'lgach tashxis va davolash rejasini to'ldiring.",
-    s4t:"Baho oling", s4d:"Xatolar va to'g'ri javob ko'rsatilgan avtomatik tahlil.",
-    b1t:"Ishonchli", b1d:"Ma'lumotlar himoyalangan va maxfiy",
-    b2t:"Professional", b2d:"Klinik amaliyot uchun keyslar",
-    b3t:"O'zbekiston uchun", b3d:"Rus va o'zbek interfeysi",
+    hero_lead:"Shifokorlar va tibbiyot talabalari uchun raqamli ta'lim platformasi. Mashq qiling, baho oling va taraqqiyotingizni kuzating.",
+    platform_title:"Klinik ta'lim uchun yagona platforma",
+    m1t:"Ta'lim", m1d:"Interaktiv keyslar\nKlinik stsenariylar",
+    m2t:"Amaliyot", m2d:"Bemor simulyatorlari\nKlinik vaziyatlarni hal qilish",
+    m3t:"Baholash", m3d:"Ob'ektiv natijalar\nAvtomatik tahlil",
+    m4t:"Analitika", m4d:"Individual taraqqiyot\nO'qituvchilar uchun analitika",
+    dash_title:"Shaxsiy kabinet",
+    m_cases:"O'tilgan keyslar", m_score:"O'rtacha ball", m_time:"Amaliyot vaqti", m_rank:"Ixtisosliklar",
+    m_soon:"Tez orada", chart_title:"O'quv dinamikasi", activity_title:"So'nggi o'tishlar",
+    act1:"O'tishlar tarixi", act2:"Birinchi yakunlangan keysdan so'ng",
+    v1t:"Ko'nikmalar", v1d:"Klinik tafakkur va qaror qabul qilish ko'nikmalarini rivojlantiring",
+    v2t:"Fikr-mulohaza", v2d:"Har bir keysdan so'ng batafsil tahlil oling",
+    v3t:"Taraqqiyot", v3d:"Kompetentsiyalar o'sishini kuzating",
+    banner:"Ta'limning barcha asosiy bosqichlari — bir tizimda: mashqdan tortib natijalarni baholashgacha",
+    auth_title:"Tizimga kirish", auth_sub:"O'qishni davom ettirish uchun kiring",
     resume_title:"⚠️ Tugallanmagan seans topildi", resume_yes:"Davom etish", resume_no:"Bu men emasman",
     tab_login:"Kirish", tab_reg:"Ro'yxatdan o'tish",
-    login_title:"Kabinetga kirish", login_note:"Mashqni davom ettirish uchun telefon raqamingizni kiriting.",
-    lbl_phone:"Telefon", login_btn:"Kirish",
-    reg_title:"Profil yaratish", reg_note:"Ma'lumotlar imtihon qaydnomasi uchun kerak.",
-    lbl_last:"Familiya", lbl_first:"Ism", lbl_region:"Viloyat", lbl_city:"Shahar / tuman", lbl_work:"Ish joyi",
-    reg_btn:"Ro'yxatdan o'tish", online:"Onlayn", start_btn:"Keysni boshlash →",
-    security:"Ma'lumotlaringiz himoyalangan va uchinchi shaxslarga berilmaydi",
-    err_phone:"Noto'g'ri format", err_conn:"Ulanishda xatolik. Internetni tekshiring.",
-    err_not_found:"Raqam topilmadi. Ro'yxatdan o'ting.",
+    login_btn:"Kirish →", or:"yoki", sso:"SSO orqali kirish",
+    reg_btn:"Ro'yxatdan o'tish",
+    online:"Onlayn", start_btn:"Keysni boshlash →",
+    t1t:"Ishonchli", t1d:"Ma'lumotlar zamonaviy xavfsizlik standartlari bilan himoyalangan",
+    t2t:"Professional", t2d:"Tibbiy ta'lim muassasalari uchun yaratilgan",
+    policy:"Davom etib, Foydalanish shartlariga rozilik bildirasiz",
+    err_phone:"Noto'g'ri format", err_conn:"Ulanishda xatolik.", err_not_found:"Raqam topilmadi. Ro'yxatdan o'ting.",
     regions:["Toshkent (shahar)","Andijon viloyati","Buxoro viloyati","Jizzax viloyati","Qashqadaryo viloyati","Navoiy viloyati","Namangan viloyati","Samarqand viloyati","Surxondaryo viloyati","Sirdaryo viloyati","Toshkent viloyati","Farg'ona viloyati","Xorazm viloyati","Qoraqalpog'iston Respublikasi"]
   }
 };
@@ -429,8 +547,8 @@ let currentLang = 'ru';
 function setLang(lang) {
   currentLang = lang;
   localStorage.setItem('preferred_lang', lang);
-  ['lang-ru','lang-ru2'].forEach(id => document.getElementById(id)?.classList.toggle('active', lang==='ru'));
-  ['lang-uz','lang-uz2'].forEach(id => document.getElementById(id)?.classList.toggle('active', lang==='uz'));
+  document.getElementById('lang-ru').classList.toggle('active', lang==='ru');
+  document.getElementById('lang-uz').classList.toggle('active', lang==='uz');
   const l = T[lang];
   document.querySelectorAll('[data-key]').forEach(el => {
     const k = el.getAttribute('data-key');
@@ -439,12 +557,10 @@ function setLang(lang) {
   const sel = document.getElementById('region');
   if (sel && l.regions) {
     const cur = sel.value;
-    sel.innerHTML = `<option value="">— ${lang==='uz'?'Tanlang':'Выберите'} —</option>` +
+    sel.innerHTML = `<option value="">${lang==='uz'?'Viloyat':'Область'}</option>` +
       l.regions.map(r=>`<option value="${r}">${r}</option>`).join('');
     sel.value = cur;
   }
-  const errs = {'err-login-phone':'err_phone','err-reg-phone':'err_phone'};
-  Object.entries(errs).forEach(([id,key])=>{ const el=document.getElementById(id); if(el) el.textContent=l[key]; });
 }
 
 function getSession() {
@@ -456,11 +572,11 @@ function getSession() {
 }
 function saveSession(d) { localStorage.setItem(SESSION_KEY, JSON.stringify({...d, timestamp:Date.now()})); }
 function clearSession() { localStorage.removeItem(SESSION_KEY); }
-function resumeSession() { const s=getSession(); if(s) startCase(s); }
+function resumeSession() { const s=getSession(); if(s) goToExam(s); }
 function clearAndReset() { clearSession(); document.getElementById('resume-banner').classList.remove('show'); }
 
 function switchTab(tab) {
-  ['login','register'].forEach(t=>{
+  ['login','register'].forEach(t => {
     document.getElementById(`tab-${t}`).classList.toggle('active', t===tab);
     document.getElementById(`form-${t}`).classList.toggle('active', t===tab);
   });
@@ -474,11 +590,10 @@ function showStudentCard(name) {
   document.getElementById('form-register').classList.remove('active');
 }
 
-function startCase(s) {
-  const session = s || getSession();
-  if (!session) return;
-  saveSession(session);
-  window.location.href = `exam.html?student_id=${session.student_id}&name=${encodeURIComponent(session.name)}`;
+function startCase() { const s=getSession(); if(s) goToExam(s); }
+function goToExam(s) {
+  saveSession(s);
+  window.location.href = `exam.html?student_id=${s.student_id}&name=${encodeURIComponent(s.name)}`;
 }
 
 function formatPhone(e) {
@@ -516,7 +631,7 @@ async function login() {
   try {
     const {ok,data}=await apiCall('/api/login',{phone,org_slug:ORG_SLUG});
     if(!ok) alert(data.detail||T[currentLang].err_not_found);
-    else { saveSession({student_id:data.student_id,name:data.name}); startCase(); }
+    else { saveSession({student_id:data.student_id,name:data.name}); goToExam({student_id:data.student_id,name:data.name}); }
   } catch { alert(T[currentLang].err_conn); }
   btn.disabled=false; btn.textContent=T[currentLang].login_btn;
 }
@@ -541,7 +656,7 @@ async function register() {
   try {
     const {ok,data}=await apiCall('/api/register',{last_name:last,first_name:first,phone,region,city,workplace,org_slug:ORG_SLUG});
     if(!ok) alert(data.detail||'Ошибка регистрации');
-    else { saveSession({student_id:data.student_id,name:data.name}); startCase(); }
+    else { saveSession({student_id:data.student_id,name:data.name}); goToExam({student_id:data.student_id,name:data.name}); }
   } catch { alert(T[currentLang].err_conn); }
   btn.disabled=false; btn.textContent=T[currentLang].reg_btn;
 }
@@ -553,7 +668,7 @@ async function register() {
   if(s) { document.getElementById('resume-name').textContent=s.name; document.getElementById('resume-banner').classList.add('show'); }
   document.getElementById('login-phone')?.addEventListener('input',formatPhone);
   document.getElementById('reg-phone')?.addEventListener('input',formatPhone);
-  document.addEventListener('keydown',e=>{
+  document.addEventListener('keydown', e => {
     if(e.key!=='Enter') return;
     document.getElementById('form-login').classList.contains('active') ? login() : register();
   });
