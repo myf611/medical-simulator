@@ -79,7 +79,7 @@
     .education-panel{background:rgba(255,255,255,.9); border:1px solid var(--line); border-radius:28px; box-shadow:var(--shadow-soft); padding:24px 28px 28px; position:relative; overflow:hidden;}
     .education-panel::before{content:""; position:absolute; inset:-80px auto auto 48%; width:360px; height:360px; background:radial-gradient(circle, rgba(37,198,207,.10), transparent 67%); pointer-events:none;}
     .section-title{position:relative; margin:0 0 16px; text-align:center; color:var(--blue-900); font-size:24px; letter-spacing:-.03em; font-weight:850;}
-    .platform-map{position:relative; display:grid; grid-template-columns:200px 1fr 200px; gap:20px; align-items:center;}
+    .platform-map{position:relative; display:grid; grid-template-columns:190px 1fr 190px; gap:18px; align-items:start;}
     .side-modules{display:grid; gap:28px;}
     .module-card{position:relative; min-height:150px; border:1px solid var(--line); border-radius:22px; background:#fff; padding:22px; box-shadow:0 12px 26px rgba(26,82,118,.06);}
     .module-icon{width:52px; height:52px; display:grid; place-items:center; border-radius:16px; background:linear-gradient(135deg, var(--mint), rgba(238,247,250,.95)); color:var(--green); margin-bottom:14px;}
@@ -323,18 +323,10 @@
             </div>
           </div>
 
-          <div class="value-row">
+          <div class="value-row" style="grid-template-columns:1fr;">
             <article class="value-card">
               <div class="value-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v5c0 4.6-2.9 8-7 10-4.1-2-7-5.4-7-10V6l7-3z" stroke="#0f6e56" stroke-width="2"/><path d="M9 12l2 2 4-5" stroke="#0f6e56" stroke-width="2" stroke-linecap="round"/></svg></div>
-              <div><h3 data-key="v1t">Навыки</h3><p data-key="v1d">Развивайте клиническое мышление и навыки принятия решений</p></div>
-            </article>
-            <article class="value-card">
-              <div class="value-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v8z" stroke="#0f6e56" stroke-width="2"/><path d="M8 9h8M8 13h5" stroke="#0f6e56" stroke-width="2" stroke-linecap="round"/></svg></div>
-              <div><h3 data-key="v2t">Обратная связь</h3><p data-key="v2d">Получайте детальный разбор после каждого кейса</p></div>
-            </article>
-            <article class="value-card">
-              <div class="value-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M4 17l5-5 4 4 7-9" stroke="#0f6e56" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-              <div><h3 data-key="v3t">Прогресс</h3><p data-key="v3d">Отслеживайте рост компетенций и результаты</p></div>
+              <div><h3 data-key="v1t">Навыки</h3><p data-key="v1d">Развивайте клиническое мышление и навыки принятия решений в безопасной среде</p></div>
             </article>
           </div>
         </section>
@@ -491,6 +483,7 @@ const T = {
     m2t:'Практика', m2d:'Симуляторы пациентов\nРешение клинических ситуаций',
     m3t:'Оценка', m3d:'Объективные результаты\nАвтоматический разбор',
     m4t:'Аналитика', m4d:'Индивидуальный прогресс\nАналитика для преподавателей',
+    m5t:'Прогресс', m5d:'Рост компетенций\nОтслеживание результатов',
     dash_title:'Личный кабинет',
     m_cases:'Кейсов пройдено', m_score:'Средний балл', m_time:'Время практики', m_rank:'Специальности',
     m_soon:'Скоро', chart_title:'Динамика обучения', activity_title:'Последние прохождения',
@@ -520,6 +513,7 @@ const T = {
     m2t:"Amaliyot", m2d:"Bemor simulyatorlari\nKlinik vaziyatlarni hal qilish",
     m3t:"Baholash", m3d:"Ob'ektiv natijalar\nAvtomatik tahlil",
     m4t:"Analitika", m4d:"Individual taraqqiyot\nO'qituvchilar uchun analitika",
+    m5t:"Taraqqiyot", m5d:"Kompetentsiyalar o'sishi\nNatijalarni kuzatish",
     dash_title:"Shaxsiy kabinet",
     m_cases:"O'tilgan keyslar", m_score:"O'rtacha ball", m_time:"Amaliyot vaqti", m_rank:"Ixtisosliklar",
     m_soon:"Tez orada", chart_title:"O'quv dinamikasi", activity_title:"So'nggi o'tishlar",
