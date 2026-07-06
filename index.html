@@ -111,8 +111,8 @@
     .activity-dot{width:12px; height:12px; border:3px solid #d9eef0; border-radius:50%; margin-top:1px; background:#fff;}
 
     /* VALUE ROW */
-    .value-row{margin-top:20px; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:20px;}
-    .value-card{display:flex; gap:14px; align-items:center; border:1px solid var(--line); border-radius:18px; background:#fff; padding:16px 18px; box-shadow:0 12px 26px rgba(26,82,118,.05);}
+    .value-row{margin-top:16px; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:20px;}
+    .value-card{display:flex; gap:14px; align-items:center; border:1px solid var(--line); border-radius:18px; background:#fff; padding:16px 18px; box-shadow:none; background:var(--mint-2);}
     .value-icon{width:50px; height:50px; flex-shrink:0; border-radius:16px; background:linear-gradient(135deg,var(--mint),rgba(238,247,250,.95)); color:var(--green); display:grid; place-items:center;}
     .value-card h3{margin:0 0 4px; color:var(--blue-900); font-size:16px;}
     .value-card p{margin:0; color:#60758a; font-size:12px; line-height:1.4;}
@@ -190,7 +190,7 @@
     .lang-wrap{display:flex; justify-content:flex-end; margin-bottom:10px;}
 
     /* TOP MINI BADGES */
-    .top-mini-badges{position:absolute; top:54px; left:50%; display:flex; gap:16px; transform:translateX(-7%);}
+    .badges-row{display:flex; gap:14px; justify-content:center; margin:0 0 20px; flex-wrap:wrap;}
     .mini-badge{display:flex; align-items:center; gap:12px; background:rgba(255,255,255,.88); border:1px solid var(--line); border-radius:18px; padding:12px 16px; box-shadow:0 16px 34px rgba(26,82,118,.08);}
     .mini-icon{width:40px; height:40px; border-radius:13px; background:linear-gradient(135deg,var(--mint),rgba(238,247,250,.95)); color:var(--green); display:grid; place-items:center; flex-shrink:0;}
     .mini-badge b{display:block; color:var(--blue-900); font-size:13px; margin-bottom:2px;}
@@ -210,7 +210,7 @@
       .auth-card h2{font-size:26px;}
       .hero-grid{grid-template-columns:1fr;}
       .hero-visual{height:220px;}
-      .top-mini-badges{display:none;}
+      .badges-row{justify-content:flex-start;}
       .platform-map{flex-direction:column;}
       .side-modules{width:100%; flex-direction:row;}
       .connector{display:none;}
@@ -242,17 +242,6 @@
 <body>
 <main class="page-shell">
   <div class="content">
-
-    <div class="top-mini-badges" aria-hidden="true">
-      <div class="mini-badge">
-        <div class="mini-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v5c0 4.6-2.9 8-7 10-4.1-2-7-5.4-7-10V6l7-3z" stroke="#0f6e56" stroke-width="2"/><path d="M9 12l2 2 4-5" stroke="#0f6e56" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-        <div><b>Безопасная среда</b><span>Можно ошибаться<br>и учиться</span></div>
-      </div>
-      <div class="mini-badge">
-        <div class="mini-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M5 19V9m7 10V5m7 14v-8" stroke="#0f6e56" stroke-width="2" stroke-linecap="round"/><path d="M3 19h18" stroke="#0f6e56" stroke-width="2" stroke-linecap="round"/></svg></div>
-        <div><b>Доказательный подход</b><span>Клинические<br>рекомендации</span></div>
-      </div>
-    </div>
 
     <div class="layout">
 
@@ -289,6 +278,16 @@
 
         <section class="education-panel">
           <h2 class="section-title" data-key="platform_title">Единая платформа для клинического обучения</h2>
+          <div class="badges-row">
+            <div class="mini-badge">
+              <div class="mini-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v5c0 4.6-2.9 8-7 10-4.1-2-7-5.4-7-10V6l7-3z" stroke="#0f6e56" stroke-width="2"/><path d="M9 12l2 2 4-5" stroke="#0f6e56" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+              <div><b data-key="badge1_t">Безопасная среда</b><span data-key="badge1_d">Можно ошибаться и учиться</span></div>
+            </div>
+            <div class="mini-badge">
+              <div class="mini-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M5 19V9m7 10V5m7 14v-8" stroke="#0f6e56" stroke-width="2" stroke-linecap="round"/><path d="M3 19h18" stroke="#0f6e56" stroke-width="2" stroke-linecap="round"/></svg></div>
+              <div><b data-key="badge2_t">Доказательный подход</b><span data-key="badge2_d">Клинические рекомендации</span></div>
+            </div>
+          </div>
           <div class="platform-map">
             <!-- COL 1: Обучение + Практика -->
             <div class="side-modules">
@@ -519,6 +518,8 @@ const T = {
     hero_title:'Тренируйте клиническое мышление',
     hero_lead:'Цифровая образовательная платформа для врачей и студентов-медиков. Тренируйтесь, получайте оценку и отслеживайте прогресс.',
     platform_title:'Единая платформа для клинического обучения',
+    badge1_t:'Безопасная среда', badge1_d:'Можно ошибаться и учиться',
+    badge2_t:'Доказательный подход', badge2_d:'Клинические рекомендации',
     m1t:'Обучение', m1d:'Интерактивные кейсы\nКлинические сценарии',
     m2t:'Практика', m2d:'Симуляторы пациентов\nРешение клинических ситуаций',
     m3t:'Оценка', m3d:'Объективные результаты\nАвтоматический разбор',
@@ -549,6 +550,8 @@ const T = {
     hero_title:"Klinik tafakkurni mashq qiling",
     hero_lead:"Shifokorlar va tibbiyot talabalari uchun raqamli ta'lim platformasi. Mashq qiling, baho oling va taraqqiyotingizni kuzating.",
     platform_title:"Klinik ta'lim uchun yagona platforma",
+    badge1_t:"Xavfsiz muhit", badge1_d:"Xato qilish va o'rganish mumkin",
+    badge2_t:"Dalillarga asoslangan", badge2_d:"Klinik tavsiyalar",
     m1t:"Ta'lim", m1d:"Interaktiv keyslar\nKlinik stsenariylar",
     m2t:"Amaliyot", m2d:"Bemor simulyatorlari\nKlinik vaziyatlarni hal qilish",
     m3t:"Baholash", m3d:"Ob'ektiv natijalar\nAvtomatik tahlil",
