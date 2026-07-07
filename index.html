@@ -269,6 +269,24 @@
     .cab-attempt-grade.low{background:#fdeaea; color:var(--danger);}
     @media(max-width:640px){.cabinet-shell{padding:22px 18px 26px; border-radius:22px;} .cabinet-greeting h1{font-size:24px;} .metric-grid{grid-template-columns:1fr 1fr;}}
 
+  
+    /* CABINET PROFILE */
+    .cabinet-profile{margin-top:28px; padding-top:24px; border-top:1px solid var(--line);}
+    .cabinet-profile-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;}
+    .cabinet-profile-head h3{margin:0; color:var(--blue-900); font-size:16px;}
+    .profile-edit-btn{background:none; color:var(--blue); font-size:13px; font-weight:700; padding:6px 12px; border:1px solid var(--line); border-radius:10px;}
+    .profile-edit-btn:hover{background:var(--soft-blue,#eaf3f7);}
+    .profile-view{display:flex; flex-direction:column; gap:10px;}
+    .profile-row{display:flex; justify-content:space-between; align-items:center; padding:10px 14px; background:var(--bg); border-radius:12px; font-size:13px;}
+    .profile-row span{color:var(--muted);}
+    .profile-row b{color:var(--blue-900); font-weight:700;}
+    .profile-form{display:flex; flex-direction:column; gap:12px;}
+    .field-wrap-plain{display:flex; flex-direction:column; gap:5px;}
+    .field-wrap-plain label{font-size:12px; font-weight:700; color:var(--blue-900);}
+    .profile-form-btns{display:flex; gap:10px; margin-top:4px;}
+    .profile-form-btns .primary-btn{flex:1;}
+    .profile-cancel-btn{background:none; color:var(--muted); font-size:14px; font-weight:700; padding:0 16px; border:1px solid var(--line); border-radius:13px;}
+
   </style>
 </head>
 <body>
@@ -568,6 +586,40 @@
         <div class="cab-loading" data-key="cab_loading">Загрузка...</div>
       </div>
     </div>
+
+    <div class="cabinet-profile">
+      <div class="cabinet-profile-head">
+        <h3 data-key="cab_profile_title">Мой профиль</h3>
+        <button class="profile-edit-btn" id="profile-edit-toggle" onclick="toggleProfileEdit()" data-key="cab_profile_edit">Изменить</button>
+      </div>
+
+      <div id="profile-view" class="profile-view">
+        <div class="profile-row"><span data-key="lbl_last">Фамилия</span><b id="pv-last">—</b></div>
+        <div class="profile-row"><span data-key="lbl_first">Имя</span><b id="pv-first">—</b></div>
+        <div class="profile-row"><span data-key="lbl_phone">Телефон</span><b id="pv-phone">—</b></div>
+        <div class="profile-row"><span data-key="lbl_region">Область</span><b id="pv-region">—</b></div>
+        <div class="profile-row"><span data-key="lbl_city">Город</span><b id="pv-city">—</b></div>
+        <div class="profile-row"><span data-key="lbl_work">Место работы</span><b id="pv-work">—</b></div>
+      </div>
+
+      <div id="profile-form" class="profile-form" style="display:none;">
+        <div class="form-row">
+          <div class="field-wrap-plain"><label data-key="lbl_last">Фамилия</label><input class="field-inp" id="pf-last" type="text"></div>
+          <div class="field-wrap-plain"><label data-key="lbl_first">Имя</label><input class="field-inp" id="pf-first" type="text"></div>
+        </div>
+        <div class="field-wrap-plain"><label data-key="lbl_region">Область</label>
+          <select class="field-inp" id="pf-region"></select>
+        </div>
+        <div class="form-row">
+          <div class="field-wrap-plain"><label data-key="lbl_city">Город</label><input class="field-inp" id="pf-city" type="text"></div>
+          <div class="field-wrap-plain"><label data-key="lbl_work">Место работы</label><input class="field-inp" id="pf-work" type="text"></div>
+        </div>
+        <div class="profile-form-btns">
+          <button class="primary-btn green" id="profile-save-btn" onclick="saveProfile()" data-key="cab_profile_save">Сохранить</button>
+          <button class="profile-cancel-btn" onclick="toggleProfileEdit()" data-key="cab_profile_cancel">Отмена</button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -598,6 +650,8 @@ const T = {
     cab_history_title:'История прохождений', cab_loading:'Загрузка...',
     cab_empty:'Пока нет пройденных кейсов — начните первый!',
     cab_error:'Не удалось загрузить историю',
+    cab_profile_title:'Мой профиль', cab_profile_edit:'Изменить',
+    cab_profile_save:'Сохранить', cab_profile_cancel:'Отмена',
     m_soon:'Скоро', chart_title:'Динамика обучения', activity_title:'Последние прохождения',
     act1:'История прохождений', act2:'После первого завершённого кейса',
     v1t:'Навыки', v1d:'Развивайте клиническое мышление и навыки принятия решений',
@@ -634,6 +688,8 @@ const T = {
     cab_history_title:"O'tishlar tarixi", cab_loading:"Yuklanmoqda...",
     cab_empty:"Hali o'tilgan keys yo'q — birinchisini boshlang!",
     cab_error:"Tarixni yuklab bo'lmadi",
+    cab_profile_title:"Mening profilim", cab_profile_edit:"O'zgartirish",
+    cab_profile_save:"Saqlash", cab_profile_cancel:"Bekor qilish",
     m_soon:"Tez orada", chart_title:"O'quv dinamikasi", activity_title:"So'nggi o'tishlar",
     act1:"O'tishlar tarixi", act2:"Birinchi yakunlangan keysdan so'ng",
     v1t:"Ko'nikmalar", v1d:"Klinik tafakkur va qaror qabul qilish ko'nikmalarini rivojlantiring",
@@ -830,6 +886,87 @@ async function showCabinet(session) {
   } catch (e) {
     document.getElementById('cab-history-list').innerHTML = `<div class="cab-empty">${T[currentLang].cab_error}</div>`;
   }
+
+  loadProfile(session.student_id);
+}
+
+// ── PROFILE ───────────────────────────────────────────
+let currentProfile = null;
+
+async function loadProfile(studentId) {
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/student-profile?student_id=${studentId}`);
+    if (!res.ok) return;
+    const p = await res.json();
+    currentProfile = p;
+    document.getElementById('pv-last').textContent = p.last_name || '—';
+    document.getElementById('pv-first').textContent = p.first_name || '—';
+    document.getElementById('pv-phone').textContent = p.phone || '—';
+    document.getElementById('pv-region').textContent = p.region || '—';
+    document.getElementById('pv-city').textContent = p.city || '—';
+    document.getElementById('pv-work').textContent = p.workplace || '—';
+  } catch (e) {
+    console.error('Failed to load profile:', e);
+  }
+}
+
+function toggleProfileEdit() {
+  const view = document.getElementById('profile-view');
+  const form = document.getElementById('profile-form');
+  const isEditing = form.style.display !== 'none';
+  if (isEditing) {
+    form.style.display = 'none';
+    view.style.display = 'flex';
+    document.getElementById('profile-edit-toggle').textContent = T[currentLang].cab_profile_edit;
+  } else {
+    if (currentProfile) {
+      document.getElementById('pf-last').value = currentProfile.last_name || '';
+      document.getElementById('pf-first').value = currentProfile.first_name || '';
+      document.getElementById('pf-city').value = currentProfile.city || '';
+      document.getElementById('pf-work').value = currentProfile.workplace || '';
+      const sel = document.getElementById('pf-region');
+      const l = T[currentLang];
+      sel.innerHTML = l.regions.map(r => `<option value="${r}">${r}</option>`).join('');
+      sel.value = currentProfile.region || '';
+    }
+    view.style.display = 'none';
+    form.style.display = 'flex';
+    document.getElementById('profile-edit-toggle').textContent = T[currentLang].cab_profile_cancel;
+  }
+}
+
+async function saveProfile() {
+  const session = getSession();
+  if (!session) return;
+  const btn = document.getElementById('profile-save-btn');
+  btn.disabled = true; btn.innerHTML = '<span class="spin"></span>';
+
+  const payload = {
+    student_id: session.student_id,
+    last_name: document.getElementById('pf-last').value.trim(),
+    first_name: document.getElementById('pf-first').value.trim(),
+    region: document.getElementById('pf-region').value.trim(),
+    city: document.getElementById('pf-city').value.trim(),
+    workplace: document.getElementById('pf-work').value.trim(),
+  };
+
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/student-profile`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) throw new Error('Save failed');
+    await loadProfile(session.student_id);
+    // Update name display if changed
+    const newName = `${payload.last_name} ${payload.first_name}`.trim();
+    document.getElementById('cab-name').textContent = newName;
+    saveSession({ student_id: session.student_id, name: newName });
+    toggleProfileEdit();
+  } catch (e) {
+    alert(T[currentLang].err_conn);
+  }
+  btn.disabled = false; btn.textContent = T[currentLang].cab_profile_save;
 }
 
 function cabinetLogout() {
