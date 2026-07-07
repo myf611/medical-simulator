@@ -287,6 +287,11 @@
     .profile-form-btns .primary-btn{flex:1;}
     .profile-cancel-btn{background:none; color:var(--muted); font-size:14px; font-weight:700; padding:0 16px; border:1px solid var(--line); border-radius:13px;}
 
+  
+    .cabinet-back{background:none; color:var(--blue); font-size:14px; font-weight:700; padding:8px 4px; border:none;}
+    .cabinet-back:hover{text-decoration:underline;}
+    .profile-page-title{margin:20px 0 24px; color:var(--blue-900); font-size:26px; letter-spacing:-.03em;}
+
   </style>
 </head>
 <body>
@@ -564,7 +569,10 @@
           <div class="brand-title" style="font-size:20px;" data-key="brand">Симулятор пациента</div>
         </div>
       </div>
-      <button class="cabinet-logout" onclick="cabinetLogout()" data-key="cab_logout">Выйти</button>
+      <div style="display:flex; gap:8px;">
+        <button class="cabinet-logout" onclick="openProfileScreen()" data-key="cab_profile_title">Мой профиль</button>
+        <button class="cabinet-logout" onclick="cabinetLogout()" data-key="cab_logout">Выйти</button>
+      </div>
     </div>
 
     <div class="cabinet-greeting">
@@ -587,37 +595,43 @@
       </div>
     </div>
 
-    <div class="cabinet-profile">
-      <div class="cabinet-profile-head">
-        <h3 data-key="cab_profile_title">Мой профиль</h3>
-        <button class="profile-edit-btn" id="profile-edit-toggle" onclick="toggleProfileEdit()" data-key="cab_profile_edit">Изменить</button>
-      </div>
+  </div>
+</div>
 
-      <div id="profile-view" class="profile-view">
-        <div class="profile-row"><span data-key="lbl_last">Фамилия</span><b id="pv-last">—</b></div>
-        <div class="profile-row"><span data-key="lbl_first">Имя</span><b id="pv-first">—</b></div>
-        <div class="profile-row"><span data-key="lbl_phone">Телефон</span><b id="pv-phone">—</b></div>
-        <div class="profile-row"><span data-key="lbl_region">Область</span><b id="pv-region">—</b></div>
-        <div class="profile-row"><span data-key="lbl_city">Город</span><b id="pv-city">—</b></div>
-        <div class="profile-row"><span data-key="lbl_work">Место работы</span><b id="pv-work">—</b></div>
-      </div>
+<!-- PROFILE SCREEN (separate page) -->
+<div class="cabinet-overlay" id="profile-screen" style="display:none;">
+  <div class="cabinet-shell">
+    <div class="cabinet-top">
+      <button class="cabinet-back" onclick="closeProfileScreen()">← <span data-key="cab_back">Назад в кабинет</span></button>
+    </div>
 
-      <div id="profile-form" class="profile-form" style="display:none;">
-        <div class="form-row">
-          <div class="field-wrap-plain"><label data-key="lbl_last">Фамилия</label><input class="field-inp" id="pf-last" type="text"></div>
-          <div class="field-wrap-plain"><label data-key="lbl_first">Имя</label><input class="field-inp" id="pf-first" type="text"></div>
-        </div>
-        <div class="field-wrap-plain"><label data-key="lbl_region">Область</label>
-          <select class="field-inp" id="pf-region"></select>
-        </div>
-        <div class="form-row">
-          <div class="field-wrap-plain"><label data-key="lbl_city">Город</label><input class="field-inp" id="pf-city" type="text"></div>
-          <div class="field-wrap-plain"><label data-key="lbl_work">Место работы</label><input class="field-inp" id="pf-work" type="text"></div>
-        </div>
-        <div class="profile-form-btns">
-          <button class="primary-btn green" id="profile-save-btn" onclick="saveProfile()" data-key="cab_profile_save">Сохранить</button>
-          <button class="profile-cancel-btn" onclick="toggleProfileEdit()" data-key="cab_profile_cancel">Отмена</button>
-        </div>
+    <h1 class="profile-page-title" data-key="cab_profile_title">Мой профиль</h1>
+
+    <div id="profile-view" class="profile-view">
+      <div class="profile-row"><span data-key="lbl_last">Фамилия</span><b id="pv-last">—</b></div>
+      <div class="profile-row"><span data-key="lbl_first">Имя</span><b id="pv-first">—</b></div>
+      <div class="profile-row"><span data-key="lbl_phone">Телефон</span><b id="pv-phone">—</b></div>
+      <div class="profile-row"><span data-key="lbl_region">Область</span><b id="pv-region">—</b></div>
+      <div class="profile-row"><span data-key="lbl_city">Город</span><b id="pv-city">—</b></div>
+      <div class="profile-row"><span data-key="lbl_work">Место работы</span><b id="pv-work">—</b></div>
+      <button class="primary-btn green" style="margin-top:16px;" onclick="toggleProfileEdit()" data-key="cab_profile_edit">Изменить</button>
+    </div>
+
+    <div id="profile-form" class="profile-form" style="display:none;">
+      <div class="form-row">
+        <div class="field-wrap-plain"><label data-key="lbl_last">Фамилия</label><input class="field-inp" id="pf-last" type="text"></div>
+        <div class="field-wrap-plain"><label data-key="lbl_first">Имя</label><input class="field-inp" id="pf-first" type="text"></div>
+      </div>
+      <div class="field-wrap-plain"><label data-key="lbl_region">Область</label>
+        <select class="field-inp" id="pf-region"></select>
+      </div>
+      <div class="form-row">
+        <div class="field-wrap-plain"><label data-key="lbl_city">Город</label><input class="field-inp" id="pf-city" type="text"></div>
+        <div class="field-wrap-plain"><label data-key="lbl_work">Место работы</label><input class="field-inp" id="pf-work" type="text"></div>
+      </div>
+      <div class="profile-form-btns">
+        <button class="primary-btn green" id="profile-save-btn" onclick="saveProfile()" data-key="cab_profile_save">Сохранить</button>
+        <button class="profile-cancel-btn" onclick="toggleProfileEdit()" data-key="cab_profile_cancel">Отмена</button>
       </div>
     </div>
   </div>
@@ -651,7 +665,7 @@ const T = {
     cab_empty:'Пока нет пройденных кейсов — начните первый!',
     cab_error:'Не удалось загрузить историю',
     cab_profile_title:'Мой профиль', cab_profile_edit:'Изменить',
-    cab_profile_save:'Сохранить', cab_profile_cancel:'Отмена',
+    cab_profile_save:'Сохранить', cab_profile_cancel:'Отмена', cab_back:'Назад в кабинет',
     m_soon:'Скоро', chart_title:'Динамика обучения', activity_title:'Последние прохождения',
     act1:'История прохождений', act2:'После первого завершённого кейса',
     v1t:'Навыки', v1d:'Развивайте клиническое мышление и навыки принятия решений',
@@ -689,7 +703,7 @@ const T = {
     cab_empty:"Hali o'tilgan keys yo'q — birinchisini boshlang!",
     cab_error:"Tarixni yuklab bo'lmadi",
     cab_profile_title:"Mening profilim", cab_profile_edit:"O'zgartirish",
-    cab_profile_save:"Saqlash", cab_profile_cancel:"Bekor qilish",
+    cab_profile_save:"Saqlash", cab_profile_cancel:"Bekor qilish", cab_back:"Kabinetga qaytish",
     m_soon:"Tez orada", chart_title:"O'quv dinamikasi", activity_title:"So'nggi o'tishlar",
     act1:"O'tishlar tarixi", act2:"Birinchi yakunlangan keysdan so'ng",
     v1t:"Ko'nikmalar", v1d:"Klinik tafakkur va qaror qabul qilish ko'nikmalarini rivojlantiring",
@@ -910,6 +924,18 @@ async function loadProfile(studentId) {
   }
 }
 
+function openProfileScreen() {
+  document.getElementById('cabinet-screen').style.display = 'none';
+  document.getElementById('profile-screen').style.display = 'flex';
+  document.getElementById('profile-view').style.display = 'flex';
+  document.getElementById('profile-form').style.display = 'none';
+}
+
+function closeProfileScreen() {
+  document.getElementById('profile-screen').style.display = 'none';
+  document.getElementById('cabinet-screen').style.display = 'flex';
+}
+
 function toggleProfileEdit() {
   const view = document.getElementById('profile-view');
   const form = document.getElementById('profile-form');
@@ -917,7 +943,6 @@ function toggleProfileEdit() {
   if (isEditing) {
     form.style.display = 'none';
     view.style.display = 'flex';
-    document.getElementById('profile-edit-toggle').textContent = T[currentLang].cab_profile_edit;
   } else {
     if (currentProfile) {
       document.getElementById('pf-last').value = currentProfile.last_name || '';
@@ -931,7 +956,6 @@ function toggleProfileEdit() {
     }
     view.style.display = 'none';
     form.style.display = 'flex';
-    document.getElementById('profile-edit-toggle').textContent = T[currentLang].cab_profile_cancel;
   }
 }
 
