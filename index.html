@@ -249,7 +249,7 @@
     /* CABINET SCREEN */
     .cabinet-overlay{position:fixed; inset:0; background:var(--bg); z-index:200; overflow-y:auto; display:flex; align-items:flex-start; justify-content:center; padding:40px 20px;}
     .cabinet-shell{width:100%; max-width:680px; background:#fff; border:1px solid var(--line); border-radius:28px; box-shadow:var(--shadow); padding:32px 36px 36px;}
-    .cabinet-top{display:flex; justify-content:space-between; align-items:center; margin-bottom:28px;}
+    .cabinet-top{display:flex; justify-content:space-between; align-items:center; margin-bottom:28px; flex-wrap:wrap; gap:12px;}
     .cabinet-logout{background:none; color:var(--muted); font-size:13px; font-weight:700; padding:8px 14px; border:1px solid var(--line); border-radius:10px;}
     .cabinet-logout:hover{color:var(--danger); border-color:var(--danger);}
     .cabinet-greeting{margin-bottom:24px;}
@@ -267,7 +267,7 @@
     .cab-attempt-grade.high{background:var(--mint-2); color:var(--green-2);}
     .cab-attempt-grade.mid{background:#fff3df; color:#a06a1a;}
     .cab-attempt-grade.low{background:#fdeaea; color:var(--danger);}
-    @media(max-width:640px){.cabinet-shell{padding:22px 18px 26px; border-radius:22px;} .cabinet-greeting h1{font-size:24px;} .metric-grid{grid-template-columns:1fr 1fr;}}
+    @media(max-width:640px){.cabinet-overlay{padding:16px 10px;} .cabinet-shell{padding:20px 16px 24px; border-radius:20px;} .cabinet-greeting h1{font-size:22px;} .metric-grid{grid-template-columns:1fr 1fr;} .cabinet-top{gap:8px;} .cabinet-top .brand-mark{width:38px; height:38px; border-radius:11px;} .cabinet-top .brand-title{font-size:15px !important;} .cabinet-logout{font-size:12px; padding:7px 10px; white-space:nowrap;} .profile-page-title{font-size:20px; margin:14px 0 18px;}}
 
   
     /* CABINET PROFILE */
@@ -569,7 +569,7 @@
           <div class="brand-title" style="font-size:20px;" data-key="brand">Симулятор пациента</div>
         </div>
       </div>
-      <div style="display:flex; gap:8px;">
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
         <button class="cabinet-logout" onclick="openProfileScreen()" data-key="cab_profile_title">Мой профиль</button>
         <button class="cabinet-logout" onclick="cabinetLogout()" data-key="cab_logout">Выйти</button>
       </div>
