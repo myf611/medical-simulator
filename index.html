@@ -293,12 +293,20 @@
     .profile-page-title{margin:20px 0 24px; color:var(--blue-900); font-size:26px; letter-spacing:-.03em;}
 
   
-    /* MOBILE LEARN MORE TOGGLE */
-    .mobile-learn-more{display:none; width:100%; background:none; border:1px dashed var(--line); border-radius:14px; padding:12px; color:var(--blue); font-weight:700; font-size:13px; margin:4px 0 18px; align-items:center; justify-content:center; gap:6px;}
+    /* MOBILE PAGE-LEVEL TABS */
+    .page-tabs{display:none;}
     @media(max-width:760px){
-      .mobile-learn-more{display:flex;}
-      .marketing-collapsible{display:none;}
-      .marketing-collapsible.open{display:block;}
+      .page-tabs{
+        display:grid; grid-template-columns:1fr 1fr; gap:6px; padding:5px;
+        margin-bottom:16px; border:1px solid var(--line); border-radius:16px; background:var(--surface-soft,#fff);
+        position:sticky; top:8px; z-index:20; box-shadow:0 8px 20px rgba(26,82,118,.08);
+      }
+      .page-tab-btn{min-height:42px; border-radius:12px; background:transparent; color:var(--blue); font-weight:800; font-size:14px; border:none;}
+      .page-tab-btn.active{color:#fff; background:var(--blue); box-shadow:0 8px 18px rgba(26,82,118,.2);}
+      .main-column{display:none;}
+      .main-column.active{display:block;}
+      .auth-column{display:none;}
+      .auth-column.active{display:block;}
     }
 
   </style>
@@ -309,8 +317,14 @@
 
     <div class="layout">
 
+      <!-- MOBILE PAGE TABS -->
+      <div class="page-tabs">
+        <button class="page-tab-btn" id="ptab-info" onclick="switchPageTab('info')" data-key="ptab_info">О платформе</button>
+        <button class="page-tab-btn active" id="ptab-auth" onclick="switchPageTab('auth')" data-key="ptab_auth">Вход</button>
+      </div>
+
       <!-- MAIN COLUMN -->
-      <section>
+      <section class="main-column">
         <header class="brand">
           <div class="brand-mark" aria-hidden="true">
             <svg viewBox="0 0 48 48" fill="none" width="44" height="44">
@@ -346,10 +360,6 @@
           </div>
         </div>
 
-        <button class="mobile-learn-more" id="learn-more-toggle" onclick="toggleMarketing()">
-          <span data-key="learn_more">Подробнее о платформе</span> <span id="learn-more-arrow">↓</span>
-        </button>
-        <div class="marketing-collapsible" id="marketing-content">
         <section class="education-panel">
           <h2 class="section-title" data-key="platform_title">Единая платформа для клинического обучения</h2>
           <div class="platform-map">
@@ -441,11 +451,10 @@
           <div class="banner-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none"><path d="M22 10L12 4 2 10l10 6 10-6z" stroke="#fff" stroke-width="2"/><path d="M6 12.5V17c2 2 10 2 12 0v-4.5" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg></div>
           <strong data-key="banner">Все ключевые этапы обучения — в одной системе: от тренировки до оценки результатов</strong>
         </section>
-        </div>
       </section>
 
       <!-- AUTH COLUMN -->
-      <aside class="auth-column">
+      <aside class="auth-column active">
         <div class="auth-card">
           <div class="lang-wrap">
             <div class="lang-switch">
@@ -687,7 +696,7 @@ const T = {
     v2t:'Обратная связь', v2d:'Получайте детальный разбор после каждого кейса',
     v3t:'Прогресс', v3d:'Отслеживайте рост компетенций и результаты',
     banner:'Все ключевые этапы обучения — в одной системе: от тренировки до оценки результатов',
-    learn_more:'Подробнее о платформе',
+    ptab_info:'О платформе', ptab_auth:'Вход',
     auth_title:'Вход в систему', auth_sub:'Войдите, чтобы продолжить обучение',
     resume_title:'⚠️ Найден незавершённый сеанс', resume_yes:'Продолжить', resume_no:'Это не я',
     tab_login:'Вход', tab_reg:'Регистрация',
@@ -726,7 +735,7 @@ const T = {
     v2t:"Fikr-mulohaza", v2d:"Har bir keysdan so'ng batafsil tahlil oling",
     v3t:"Taraqqiyot", v3d:"Kompetentsiyalar o'sishini kuzating",
     banner:"Ta'limning barcha asosiy bosqichlari — bir tizimda: mashqdan tortib natijalarni baholashgacha",
-    learn_more:"Platforma haqida batafsil",
+    ptab_info:"Platforma haqida", ptab_auth:"Kirish",
     auth_title:"Tizimga kirish", auth_sub:"O'qishni davom ettirish uchun kiring",
     resume_title:"⚠️ Tugallanmagan seans topildi", resume_yes:"Davom etish", resume_no:"Bu men emasman",
     tab_login:"Kirish", tab_reg:"Ro'yxatdan o'tish",
@@ -783,11 +792,12 @@ function clearSession() { localStorage.removeItem(SESSION_KEY); }
 function resumeSession() { const s=getSession(); if(s) showCabinet(s); }
 function clearAndReset() { clearSession(); document.getElementById('resume-banner').classList.remove('show'); }
 
-function toggleMarketing() {
-  const content = document.getElementById('marketing-content');
-  const arrow = document.getElementById('learn-more-arrow');
-  const isOpen = content.classList.toggle('open');
-  arrow.textContent = isOpen ? '↑' : '↓';
+function switchPageTab(tab) {
+  document.getElementById('ptab-info').classList.toggle('active', tab === 'info');
+  document.getElementById('ptab-auth').classList.toggle('active', tab === 'auth');
+  document.querySelector('.main-column').classList.toggle('active', tab === 'info');
+  document.querySelector('.auth-column').classList.toggle('active', tab === 'auth');
+  window.scrollTo(0, 0);
 }
 
 function switchTab(tab) {
