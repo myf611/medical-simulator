@@ -192,6 +192,9 @@
     .lang-btn{background:transparent; padding:7px 12px; font-weight:800; color:#7891a4; font-size:12px;}
     .lang-btn.active{background:var(--mint); color:var(--green);}
     .lang-wrap{display:flex; justify-content:flex-end; margin-bottom:10px;}
+    .lang-switch-global{position:fixed; top:16px; right:16px; z-index:100;}
+    .lang-switch-global .lang-switch{box-shadow:0 8px 20px rgba(26,82,118,.12);}
+    @media(max-width:760px){.lang-switch-global{top:12px; right:12px;}}
 
     /* TOP MINI BADGES */
     .badges-row{display:flex; gap:14px; justify-content:center; margin:0 0 20px; flex-wrap:wrap;}
@@ -312,6 +315,13 @@
   </style>
 </head>
 <body>
+
+<div class="lang-switch-global">
+  <div class="lang-switch">
+    <button class="lang-btn active" id="lang-ru" onclick="setLang('ru')">RU</button>
+    <button class="lang-btn" id="lang-uz" onclick="setLang('uz')">UZ</button>
+  </div>
+</div>
 <main class="page-shell">
   <div class="content">
 
@@ -456,12 +466,6 @@
       <!-- AUTH COLUMN -->
       <aside class="auth-column active">
         <div class="auth-card">
-          <div class="lang-wrap">
-            <div class="lang-switch">
-              <button class="lang-btn active" id="lang-ru" onclick="setLang('ru')">RU</button>
-              <button class="lang-btn" id="lang-uz" onclick="setLang('uz')">UZ</button>
-            </div>
-          </div>
 
           <h2 data-key="auth_title">Вход в систему</h2>
           <p class="auth-welcome" data-key="auth_sub">Войдите, чтобы продолжить обучение</p>
