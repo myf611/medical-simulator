@@ -1074,12 +1074,14 @@ function setupClearButton(inputId) {
     input.value = '';
     input.dispatchEvent(new Event('input', { bubbles: true }));
     input.focus();
-    btn.classList.remove('show');
   });
   input.insertAdjacentElement('afterend', btn);
-  const toggle = () => btn.classList.toggle('show', input.value.length > 0);
-  input.addEventListener('input', toggle);
-  toggle();
+  const showIfFilled = () => btn.classList.toggle('show', input.value.length > 0);
+  input.addEventListener('input', showIfFilled);
+  input.addEventListener('focus', showIfFilled);
+  input.addEventListener('blur', () => {
+    setTimeout(() => btn.classList.remove('show'), 150);
+  });
 }
 
 // ── WORKPLACE AUTOCOMPLETE ───────────────────────────
