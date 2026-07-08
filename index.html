@@ -279,7 +279,7 @@
     .profile-edit-btn{background:none; color:var(--blue); font-size:13px; font-weight:700; padding:6px 12px; border:1px solid var(--line); border-radius:10px;}
     .profile-edit-btn:hover{background:var(--soft-blue,#eaf3f7);}
     .profile-view{display:flex; flex-direction:column; gap:10px;}
-    .profile-row{display:flex; justify-content:space-between; align-items:center; padding:10px 14px; background:var(--bg); border-radius:12px; font-size:13px;}
+    .profile-row{display:flex; flex-direction:column; gap:4px; padding:12px 14px; background:var(--bg); border-radius:12px; font-size:13px;}
     .profile-row span{color:var(--muted);}
     .profile-row b{color:var(--blue-900); font-weight:700;}
     .profile-form{display:flex; flex-direction:column; gap:12px;}
@@ -312,6 +312,14 @@
       .auth-column{display:none;}
       .auth-column.active{display:block;}
     }
+
+  
+    .ac-dropdown{display:none; position:absolute; top:calc(100% + 4px); left:0; right:0; background:#fff; border:1px solid var(--line); border-radius:12px; box-shadow:0 12px 28px rgba(26,82,118,.14); max-height:220px; overflow-y:auto; z-index:50;}
+    .ac-dropdown.show{display:block;}
+    .ac-item{padding:10px 14px; font-size:13px; color:var(--text); cursor:pointer; border-bottom:1px solid var(--line-soft,#f0f0f0);}
+    .ac-item:last-child{border-bottom:none;}
+    .ac-item:hover, .ac-item.highlighted{background:var(--mint,#e8f6f1);}
+    .ac-item-region{display:block; font-size:11px; color:var(--muted); margin-top:2px;}
 
   </style>
 </head>
@@ -556,9 +564,10 @@
                 <div class="err-msg" id="err-city">Введите город</div>
               </div>
             </div>
-            <div class="field-wrap">
+            <div class="field-wrap" style="position:relative;">
               <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M10 6V5a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2v1M4 7h16v13H4z" stroke="currentColor" stroke-width="1.8"/><path d="M9 13h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-              <input class="field-inp" id="workplace" type="text" placeholder="Место работы">
+              <input class="field-inp" id="workplace" type="text" placeholder="Место работы" autocomplete="off">
+              <div class="ac-dropdown" id="workplace-dropdown"></div>
             </div>
             <div class="err-msg" id="err-work">Введите место работы</div>
             <button class="primary-btn green" id="reg-btn" onclick="register()" data-key="reg_btn">Зарегистрироваться</button>
@@ -653,7 +662,7 @@
       </div>
       <div class="form-row">
         <div class="field-wrap-plain"><label data-key="lbl_city">Город</label><input class="field-inp" id="pf-city" type="text"></div>
-        <div class="field-wrap-plain"><label data-key="lbl_work">Место работы</label><input class="field-inp" id="pf-work" type="text"></div>
+        <div class="field-wrap-plain" style="position:relative;"><label data-key="lbl_work">Место работы</label><input class="field-inp" id="pf-work" type="text" autocomplete="off"><div class="ac-dropdown" id="pf-work-dropdown"></div></div>
       </div>
       <div class="profile-form-btns">
         <button class="primary-btn green" id="profile-save-btn" onclick="saveProfile()" data-key="cab_profile_save">Сохранить</button>
@@ -1038,12 +1047,55 @@ function cabinetLogout() {
   location.reload();
 }
 
+
+// ── WORKPLACE AUTOCOMPLETE ───────────────────────────
+function setupWorkplaceAutocomplete(inputId, dropdownId) {
+  const input = document.getElementById(inputId);
+  const dropdown = document.getElementById(dropdownId);
+  if (!input || !dropdown) return;
+  let debounceTimer = null;
+
+  input.addEventListener('input', () => {
+    const q = input.value.trim();
+    clearTimeout(debounceTimer);
+    if (q.length < 2) { dropdown.classList.remove('show'); dropdown.innerHTML = ''; return; }
+    debounceTimer = setTimeout(async () => {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/workplace-search?q=${encodeURIComponent(q)}&limit=8`);
+        const items = await res.json();
+        if (!items.length) { dropdown.classList.remove('show'); dropdown.innerHTML = ''; return; }
+        dropdown.innerHTML = items.map(it => `
+          <div class="ac-item" data-name="${it.name.replace(/"/g,'&quot;')}">
+            ${it.name}${it.region ? `<span class="ac-item-region">${it.region}</span>` : ''}
+          </div>
+        `).join('');
+        dropdown.classList.add('show');
+        dropdown.querySelectorAll('.ac-item').forEach(el => {
+          el.addEventListener('click', () => {
+            input.value = el.getAttribute('data-name');
+            dropdown.classList.remove('show');
+            dropdown.innerHTML = '';
+          });
+        });
+      } catch (e) { /* silent fail, user can keep typing free text */ }
+    }, 250);
+  });
+
+  document.addEventListener('click', (e) => {
+    if (e.target !== input && !dropdown.contains(e.target)) {
+      dropdown.classList.remove('show');
+    }
+  });
+}
+
 (function init() {
   const lang=localStorage.getItem('preferred_lang')||'ru';
   currentLang=lang; setLang(lang);
   const s=getSession();
   if(s) { document.getElementById('resume-name').textContent=s.name; document.getElementById('resume-banner').classList.add('show'); }
   else { setTimeout(() => document.getElementById('login-phone')?.focus(), 300); }
+  setupWorkplaceAutocomplete('workplace', 'workplace-dropdown');
+  setupWorkplaceAutocomplete('pf-work', 'pf-work-dropdown');
   document.getElementById('login-phone')?.addEventListener('input',formatPhone);
   document.getElementById('reg-phone')?.addEventListener('input',formatPhone);
   document.addEventListener('keydown', e => {
