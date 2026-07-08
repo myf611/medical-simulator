@@ -321,6 +321,13 @@
     .ac-item:hover, .ac-item.highlighted{background:var(--mint,#e8f6f1);}
     .ac-item-region{display:block; font-size:11px; color:var(--muted); margin-top:2px;}
 
+  
+    .input-wrap{position:relative;}
+    .clear-btn{position:absolute; right:10px; top:50%; transform:translateY(-50%); width:22px; height:22px; border-radius:50%; background:var(--line); color:var(--muted); font-size:15px; line-height:1; display:none; align-items:center; justify-content:center; border:none; cursor:pointer; padding:0; flex-shrink:0;}
+    .clear-btn.show{display:flex;}
+    .clear-btn:hover{background:var(--danger); color:#fff;}
+    .field-inp.has-clear{padding-right:38px;}
+
   </style>
 </head>
 <body>
@@ -658,13 +665,13 @@
 
     <div id="profile-form" class="profile-form" style="display:none;">
       <div class="form-row">
-        <div class="field-wrap-plain"><label data-key="lbl_last">Фамилия</label><input class="field-inp" id="pf-last" type="text"></div>
-        <div class="field-wrap-plain"><label data-key="lbl_first">Имя</label><input class="field-inp" id="pf-first" type="text"></div>
+        <div class="field-wrap-plain"><label data-key="lbl_last">Фамилия</label><div class="input-wrap"><input class="field-inp" id="pf-last" type="text"></div></div>
+        <div class="field-wrap-plain"><label data-key="lbl_first">Имя</label><div class="input-wrap"><input class="field-inp" id="pf-first" type="text"></div></div>
       </div>
       <div class="field-wrap-plain"><label data-key="lbl_region">Область</label>
         <select class="field-inp" id="pf-region"></select>
       </div>
-      <div class="field-wrap-plain"><label data-key="lbl_city">Город</label><input class="field-inp" id="pf-city" type="text"></div>
+      <div class="field-wrap-plain"><label data-key="lbl_city">Город</label><div class="input-wrap"><input class="field-inp" id="pf-city" type="text"></div></div>
       <div class="field-wrap-plain" style="position:relative;"><label data-key="lbl_work">Место работы</label><input class="field-inp" id="pf-work" type="text" autocomplete="off"><div class="ac-dropdown" id="pf-work-dropdown"></div></div>
       <div class="profile-form-btns">
         <button class="primary-btn green" id="profile-save-btn" onclick="saveProfile()" data-key="cab_profile_save">Сохранить</button>
@@ -1050,6 +1057,31 @@ function cabinetLogout() {
 }
 
 
+
+// ── CLEAR BUTTON (×) FOR TEXT INPUTS ─────────────────
+function setupClearButton(inputId) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  const wrap = input.parentElement;
+  if (!wrap) return;
+  input.classList.add('has-clear');
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'clear-btn';
+  btn.innerHTML = '&times;';
+  btn.setAttribute('aria-label', 'Очистить');
+  btn.addEventListener('click', () => {
+    input.value = '';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.focus();
+    btn.classList.remove('show');
+  });
+  input.insertAdjacentElement('afterend', btn);
+  const toggle = () => btn.classList.toggle('show', input.value.length > 0);
+  input.addEventListener('input', toggle);
+  toggle();
+}
+
 // ── WORKPLACE AUTOCOMPLETE ───────────────────────────
 function setupWorkplaceAutocomplete(inputId, dropdownId) {
   const input = document.getElementById(inputId);
@@ -1096,6 +1128,7 @@ function setupWorkplaceAutocomplete(inputId, dropdownId) {
   const s=getSession();
   if(s) { document.getElementById('resume-name').textContent=s.name; document.getElementById('resume-banner').classList.add('show'); }
   else { setTimeout(() => document.getElementById('login-phone')?.focus(), 300); }
+  ['login-phone','last-name','first-name','reg-phone','city','workplace','pf-last','pf-first','pf-city','pf-work'].forEach(setupClearButton);
   setupWorkplaceAutocomplete('workplace', 'workplace-dropdown');
   setupWorkplaceAutocomplete('pf-work', 'pf-work-dropdown');
   document.getElementById('login-phone')?.addEventListener('input',formatPhone);
