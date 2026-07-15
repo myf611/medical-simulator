@@ -195,7 +195,7 @@
     .exam-col { display: none; border-right: none; }
     .exam-col.active { display: flex; flex: 1 1 100%; max-width: 100%; }
     .progress-step { min-width: 0; flex: 0 0 auto; padding: 8px; }
-    .progress-step:not(.active) span:not(.p-icon) { display: none; }
+    .progress-step:not(.active) .p-label { display: none; }
     .progress-step.active { flex: 1 1 auto; }
     .progress-step.done { cursor: pointer; }
     .progress-bar { justify-content: center; }
@@ -580,7 +580,7 @@ function renderProgressBar() {
     const state = i < currentBlockIdx ? 'done' : i === currentBlockIdx ? 'active' : 'locked';
     const icon = state === 'done' ? '✓' : state === 'locked' ? '🔒' : (i + 1);
     const click = state === 'done' ? ` onclick="viewBlockModal('${b.id}')"` : '';
-    return `<div class="progress-step ${state}" id="pstep-${b.id}"${click}><span class="p-icon">${icon}</span>${b.title}</div>`;
+    return `<div class="progress-step ${state}" id="pstep-${b.id}"${click}><span class="p-icon">${icon}</span><span class="p-label">${b.title}</span></div>`;
   }).join('');
 }
 
