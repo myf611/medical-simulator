@@ -328,6 +328,29 @@
     .clear-btn:hover{background:var(--danger); color:#fff;}
     .field-inp.has-clear{padding-right:38px;}
 
+  
+    /* REVIEW SCREEN */
+    .results-grade{text-align:center;}
+    .results-grade .num{font-size:36px; font-weight:800; color:var(--blue); line-height:1;}
+    .results-grade .lbl{font-size:12px; color:var(--muted); margin-top:4px;}
+    .block-grades-row{display:flex; gap:8px; flex-wrap:wrap; justify-content:center;}
+    .block-grade-chip{flex:1; min-width:85px; text-align:center; background:var(--bg); border-radius:10px; padding:8px 6px;}
+    .block-grade-chip .bg-num{font-size:15px; font-weight:700; color:var(--blue);}
+    .block-grade-chip .bg-lbl{font-size:9px; color:var(--muted); margin-top:2px;}
+    .points-section{margin-bottom:18px;}
+    .points-title{display:flex; align-items:center; gap:8px; font-size:13px; font-weight:700; margin-bottom:10px;}
+    .points-title.good{color:var(--green);}
+    .points-title.bad{color:var(--danger);}
+    .points-list{display:flex; flex-direction:column; gap:7px;}
+    .point-item{font-size:12.5px; line-height:1.5; padding:9px 12px; border-radius:10px;}
+    .point-item.good{background:var(--mint-2); color:#0a4a3a;}
+    .point-item.bad{background:#fdeaea; color:#7a2424;}
+    .rv-detail-block{border:1px solid var(--line); border-radius:12px; padding:12px 14px;}
+    .rv-detail-block h4{font-size:12px; font-weight:700; color:var(--blue-900); margin-bottom:8px;}
+    .rv-detail-block .rv-empty{font-size:12px; color:var(--muted); font-style:italic;}
+    .rv-chat-line{font-size:12px; line-height:1.6; margin-bottom:4px;}
+    .rv-chat-line b{color:var(--blue);}
+
   </style>
 </head>
 <body>
@@ -681,6 +704,44 @@
   </div>
 </div>
 
+<!-- REVIEW SCREEN: past attempt breakdown -->
+<div class="cabinet-overlay" id="review-screen" style="display:none;">
+  <div class="cabinet-shell" style="max-width:760px;">
+    <div class="cabinet-top">
+      <button class="cabinet-back" onclick="closeReviewScreen()">← <span>Назад в кабинет</span></button>
+    </div>
+
+    <div id="review-loading" style="text-align:center; padding:40px 0; color:var(--muted); font-size:13px;">Загрузка...</div>
+
+    <div id="review-content" style="display:none;">
+      <h1 class="profile-page-title" id="rv-title" style="margin-bottom:2px;">—</h1>
+      <div style="color:var(--muted); font-size:13px; margin-bottom:20px;" id="rv-date">—</div>
+
+      <div class="results-grade" style="margin-bottom:18px;">
+        <div class="num" id="rv-grade" style="font-size:36px;">—</div>
+        <div class="lbl">Общая оценка</div>
+      </div>
+
+      <div class="block-grades-row" id="rv-block-grades" style="margin-bottom:22px;"></div>
+
+      <div class="points-section">
+        <div class="points-title good">✅ Что сделано правильно</div>
+        <div class="points-list" id="rv-positive"></div>
+      </div>
+
+      <div class="points-section">
+        <div class="points-title bad">⚠️ Что упущено или сделано неверно</div>
+        <div class="points-list" id="rv-negative"></div>
+      </div>
+
+      <div style="margin-top:24px; padding-top:20px; border-top:1px solid var(--line);">
+        <h3 style="font-size:14px; margin-bottom:14px; color:var(--blue-900);">Детали прохождения</h3>
+        <div id="rv-details" style="display:flex; flex-direction:column; gap:14px;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 
 <script>
 const BACKEND_URL = 'https://medical-simulator-api.onrender.com';
@@ -944,7 +1005,7 @@ async function showCabinet(session) {
       listEl.innerHTML = `<div class="cab-empty">${T[currentLang].cab_empty}</div>`;
     } else {
       listEl.innerHTML = attempts.map(a => `
-        <div class="cab-attempt">
+        <div class="cab-attempt" onclick="openReviewScreen('${a.id}')" style="cursor:pointer;">
           <div class="cab-attempt-info">
             <div class="cab-attempt-title">${a.case_title || 'Кейс'}</div>
             <div class="cab-attempt-date">${formatCabDate(a.finished_at)}</div>
@@ -992,6 +1053,81 @@ function closeProfileScreen() {
   document.getElementById('profile-screen').style.display = 'none';
   document.getElementById('cabinet-screen').style.display = 'flex';
 }
+
+// ── REVIEW PAST ATTEMPT ───────────────────────────────
+async function openReviewScreen(attemptId) {
+  window.scrollTo(0, 0);
+  document.getElementById('cabinet-screen').style.display = 'none';
+  document.getElementById('review-screen').style.display = 'flex';
+  document.getElementById('review-loading').style.display = 'block';
+  document.getElementById('review-content').style.display = 'none';
+
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/attempt-detail?attempt_id=${attemptId}`);
+    const a = await res.json();
+    renderReview(a);
+  } catch (e) {
+    document.getElementById('review-loading').textContent = 'Не удалось загрузить попытку';
+  }
+}
+
+function closeReviewScreen() {
+  document.getElementById('review-screen').style.display = 'none';
+  document.getElementById('cabinet-screen').style.display = 'flex';
+}
+
+function renderReview(a) {
+  document.getElementById('review-loading').style.display = 'none';
+  document.getElementById('review-content').style.display = 'block';
+
+  document.getElementById('rv-title').textContent = a.case_title || 'Кейс';
+  document.getElementById('rv-date').textContent = formatCabDate(a.finished_at);
+
+  const ev = a.evaluation || {};
+  document.getElementById('rv-grade').textContent = (ev.overall_grade !== null && ev.overall_grade !== undefined) ? ev.overall_grade + '%' : (a.grade !== null && a.grade !== undefined ? a.grade + '%' : '—');
+
+  const blockLabels = { anamnesis: 'Анамнез', exam: 'Осмотр', preliminary_diagnosis: 'Предв. диагноз', labs: 'Анализы', final: 'Итог' };
+  const bg = ev.block_grades || {};
+  document.getElementById('rv-block-grades').innerHTML = Object.keys(blockLabels).map(k => `
+    <div class="block-grade-chip"><div class="bg-num">${bg[k] !== undefined ? bg[k] + '%' : '—'}</div><div class="bg-lbl">${blockLabels[k]}</div></div>
+  `).join('');
+
+  document.getElementById('rv-positive').innerHTML = (ev.positive_points || []).length
+    ? ev.positive_points.map(p => `<div class="point-item good">✅ ${p}</div>`).join('')
+    : `<div class="point-item good">Нет отмеченных пунктов</div>`;
+
+  document.getElementById('rv-negative').innerHTML = (ev.negative_points || []).length
+    ? ev.negative_points.map(p => `<div class="point-item bad">⚠️ ${p}</div>`).join('')
+    : `<div class="point-item bad">Нет отмеченных ошибок</div>`;
+
+  const blocks = a.blocks || {};
+  const anamnesis = blocks.anamnesis || {};
+  const exam = blocks.exam || {};
+  const prelim = blocks.preliminary_diagnosis || {};
+  const labs = blocks.labs || {};
+  const final = blocks.final || {};
+
+  const chatHtml = (transcript) => {
+    if (!transcript || !transcript.length) return '<div class="rv-empty">Пусто — этап не пройден</div>';
+    return transcript.map(m => `<div class="rv-chat-line"><b>${m.role === 'student' ? 'Вы' : 'Пациент'}:</b> ${m.text}</div>`).join('');
+  };
+  const listHtml = (items) => {
+    if (!items || !items.length) return '<div class="rv-empty">Ничего не назначено</div>';
+    return items.map(i => `<div class="rv-chat-line">• ${i}</div>`).join('');
+  };
+
+  document.getElementById('rv-details').innerHTML = `
+    <div class="rv-detail-block"><h4>💬 Анамнез (${anamnesis.duration_seconds || 0} сек)</h4>${chatHtml(anamnesis.transcript)}</div>
+    <div class="rv-detail-block"><h4>🩺 Осмотр (${exam.duration_seconds || 0} сек)</h4>${listHtml(exam.ordered)}</div>
+    <div class="rv-detail-block"><h4>📋 Предварительный диагноз (${prelim.duration_seconds || 0} сек)</h4>${prelim.text ? `<div class="rv-chat-line">${prelim.text}</div>` : '<div class="rv-empty">Не указан</div>'}</div>
+    <div class="rv-detail-block"><h4>🧪 Анализы (${labs.duration_seconds || 0} сек)</h4>${listHtml(labs.ordered)}</div>
+    <div class="rv-detail-block"><h4>✅ Диагноз и лечение (${final.duration_seconds || 0} сек)</h4>
+      <div class="rv-chat-line"><b>Диагноз:</b> ${final.diagnosis || '(не указан)'}</div>
+      <div class="rv-chat-line"><b>Лечение:</b> ${final.treatment_plan || '(не указан)'}</div>
+    </div>
+  `;
+}
+
 
 function toggleProfileEdit() {
   const view = document.getElementById('profile-view');
