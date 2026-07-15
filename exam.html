@@ -21,7 +21,7 @@
   button, input, textarea { font-family: var(--font); }
 
   /* ── SHARED ── */
-  .screen { display: none; min-height: 100vh; }
+  .screen { display: none; min-height: 100vh; max-height: 100vh; max-height: 100dvh; overflow-y: auto; }
   .screen.active { display: flex; flex-direction: column; }
   .primary-btn { background: var(--accent); color: #fff; border: none; border-radius: 12px; padding: 13px 20px; font-size: 15px; font-weight: 600; cursor: pointer; font-family: var(--font); display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: background .15s; }
   .primary-btn:hover { background: #15407a; }
