@@ -187,8 +187,29 @@
 
   @media (max-width: 640px) {
     .instr-card { padding: 24px 18px; }
-    .exam-col { flex: 0 0 88vw; }
   }
+
+  /* ── MOBILE: different interaction model — one active block full-width, others hidden. Tap "done" step in progress bar to view. ── */
+  @media (max-width: 899px) {
+    .columns-wrap { overflow-x: hidden; }
+    .exam-col { display: none; border-right: none; }
+    .exam-col.active { display: flex; flex: 1 1 100%; max-width: 100%; }
+    .progress-step { min-width: 0; flex: 0 0 auto; padding: 8px; }
+    .progress-step:not(.active) span:not(.p-icon) { display: none; }
+    .progress-step.active { flex: 1 1 auto; }
+    .progress-step.done { cursor: pointer; }
+    .progress-bar { justify-content: center; }
+  }
+  @media (min-width: 900px) {
+    .progress-step { cursor: default; }
+  }
+
+  /* Reused from cabinet review screen styling */
+  .rv-detail-block { border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; }
+  .rv-detail-block h4 { font-size: 12px; font-weight: 700; color: var(--accent); margin-bottom: 8px; }
+  .rv-empty { font-size: 12px; color: var(--text3); font-style: italic; }
+  .rv-chat-line { font-size: 12.5px; line-height: 1.6; margin-bottom: 4px; }
+  .rv-chat-line b { color: var(--accent); }
 </style>
 </head>
 <body>
@@ -558,7 +579,8 @@ function renderProgressBar() {
   bar.innerHTML = BLOCKS.map((b, i) => {
     const state = i < currentBlockIdx ? 'done' : i === currentBlockIdx ? 'active' : 'locked';
     const icon = state === 'done' ? '✓' : state === 'locked' ? '🔒' : (i + 1);
-    return `<div class="progress-step ${state}" id="pstep-${b.id}"><span class="p-icon">${icon}</span>${b.title}</div>`;
+    const click = state === 'done' ? ` onclick="viewBlockModal('${b.id}')"` : '';
+    return `<div class="progress-step ${state}" id="pstep-${b.id}"${click}><span class="p-icon">${icon}</span>${b.title}</div>`;
   }).join('');
 }
 
@@ -569,7 +591,34 @@ function updateProgressBar() {
     const state = i < currentBlockIdx ? 'done' : i === currentBlockIdx ? 'active' : 'locked';
     el.className = `progress-step ${state}`;
     el.querySelector('.p-icon').textContent = state === 'done' ? '✓' : state === 'locked' ? '🔒' : (i + 1);
+    el.onclick = state === 'done' ? () => viewBlockModal(b.id) : null;
   });
+}
+
+// ── VIEW COMPLETED BLOCK (mobile: tap done step in progress bar) ──
+function viewBlockModal(blockId) {
+  const block = BLOCKS.find(b => b.id === blockId);
+  const data = blockData[blockId];
+  let bodyHtml = '';
+
+  if (blockId === 'anamnesis') {
+    bodyHtml = (data.transcript || []).length
+      ? data.transcript.map(m => `<div class="rv-chat-line"><b>${m.role === 'student' ? 'Вы' : 'Пациент'}:</b> ${m.text}</div>`).join('')
+      : '<div class="rv-empty">Пусто</div>';
+  } else if (blockId === 'exam' || blockId === 'labs') {
+    bodyHtml = (data.ordered || []).length
+      ? data.ordered.map(i => `<div class="rv-chat-line">• ${i}</div>`).join('')
+      : '<div class="rv-empty">Ничего не назначено</div>';
+  } else if (blockId === 'preliminary_diagnosis') {
+    bodyHtml = data.text ? `<div class="rv-chat-line">${data.text}</div>` : '<div class="rv-empty">Не указан</div>';
+  } else if (blockId === 'final') {
+    bodyHtml = `<div class="rv-chat-line"><b>Диагноз:</b> ${data.diagnosis || '(не указан)'}</div><div class="rv-chat-line"><b>Лечение:</b> ${data.treatment_plan || '(не указан)'}</div>`;
+  }
+
+  document.getElementById('modal-title').textContent = `${block.icon} ${block.title} (просмотр)`;
+  document.getElementById('modal-body').innerHTML = `<div class="rv-detail-block" style="border:none;padding:0;">${bodyHtml}</div>`;
+  document.getElementById('catalog-modal').classList.add('show');
+  document.querySelector('.catalog-modal-footer').style.display = 'none';
 }
 
 // ── COLUMNS ───────────────────────────────────────────
@@ -807,6 +856,7 @@ function toggleModalGroup(gi) {
 
 function closeCatalogModal() {
   document.getElementById('catalog-modal').classList.remove('show');
+  document.querySelector('.catalog-modal-footer').style.display = 'block';
   modalBlockId = null;
 }
 
