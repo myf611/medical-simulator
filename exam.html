@@ -170,6 +170,18 @@
   /* TIME UP OVERLAY */
   .timeup-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); display: none; align-items: center; justify-content: center; z-index: 300; padding: 20px; }
   .timeup-overlay.show { display: flex; }
+
+  /* CATALOG MODAL (shared: exam + labs) */
+  .catalog-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: none; align-items: flex-end; justify-content: center; z-index: 250; }
+  .catalog-modal-overlay.show { display: flex; }
+  @media (min-width: 700px) { .catalog-modal-overlay { align-items: center; padding: 20px; } }
+  .catalog-modal { background: var(--surface); border-radius: 20px 20px 0 0; width: 100%; max-width: 480px; max-height: 82vh; display: flex; flex-direction: column; }
+  @media (min-width: 700px) { .catalog-modal { border-radius: 18px; } }
+  .catalog-modal-head { padding: 16px 18px 12px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+  .catalog-modal-head h3 { font-size: 15px; font-weight: 700; }
+  .catalog-modal-close { background: none; border: none; font-size: 20px; color: var(--text3); cursor: pointer; line-height: 1; }
+  .catalog-modal-body { flex: 1; overflow-y: auto; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+  .catalog-modal-footer { padding: 12px 14px; border-top: 1px solid var(--border); flex-shrink: 0; }
   .timeup-card { background: var(--surface); border-radius: 20px; padding: 26px; max-width: 340px; text-align: center; }
   .timeup-card .ic { font-size: 30px; margin-bottom: 10px; }
 
@@ -204,7 +216,7 @@
       </div>
       <div class="timing-row">
         <div class="timing-icon">🩺</div>
-        <div><div class="timing-name">Физикальный осмотр</div><div class="timing-desc">Запрашивайте осмотр по системам явно</div></div>
+        <div><div class="timing-name">Физикальный осмотр</div><div class="timing-desc">Выберите нужные группы обследования из списка</div></div>
         <div class="timing-min">5 мин</div>
       </div>
       <div class="timing-row">
@@ -231,7 +243,7 @@
         <div class="instr-rule"><b>—</b> Когда время этапа истекает, он закрывается автоматически и открывается следующий. Вернуться назад нельзя.</div>
         <div class="instr-rule"><b>—</b> Вы можете завершить этап раньше срока кнопкой «Далее» — оставшееся время не переносится на следующий этап.</div>
         <div class="instr-rule"><b>—</b> Все 5 этапов видны на экране сразу, но работать можно только с активным (подсвечен рамкой).</div>
-        <div class="instr-rule"><b>—</b> Осмотр и анализы выдаются только по явному запросу — подсказок нет.</div>
+        <div class="instr-rule"><b>—</b> В осмотре и анализах — большой общий список, не только то что относится к этому кейсу. Выбирайте осознанно.</div>
       </div>
     </div>
 
@@ -403,34 +415,99 @@ const SYSTEM_PROMPT = `Ты — Жасур Омонов, 20 лет, узбек. 
 Семейный анамнез: ${CASE.history.family}
 Социальный анамнез: ${CASE.history.social}`;
 
-const EXAM_KEYWORDS = {
-  'витальные':  ['давлени', 'пульс', 'температур', 'spo2', 'чсс', 'чдд', 'сатурац', ' ад ', 'витальн', 'измерьте', 'жизненн'],
-  'общий':      ['общий осмотр', 'внешний вид', 'осмотрите', 'кожн покров', 'слизист'],
-  'кардио':     ['тоны сердц', 'аускультац сердц', 'выслушайте сердц', 'шумы сердц'],
-  'дыхание':    ['лёгки', 'легки', 'аускультац лёгк', 'аускультац легк', 'выслушайте лёгк', 'хрипы', 'перкусси лёгк', 'дыхательн'],
-  'живот':      ['живот', 'пальпац', 'перкусси живот', 'пропальпируй', 'болезненност живот', 'абдомин'],
-  'неврология': ['неврол', 'сознани', 'рефлекс', 'шкг', 'глазго', 'очагов'],
-  'конечности': ['конечност', 'стопы', 'стоп', 'отёки', 'отеки', 'пульс на стоп']
-};
+// Comprehensive physical exam catalog (not case-specific)
+const EXAM_GROUPS = [
+  { title: '📊 Общий осмотр', items: [
+    { key: 'витальные', label: 'Витальные показатели (АД, ЧСС, ЧД, SpO2, t°)' },
+    { key: 'общий', label: 'Внешний вид, кожа, слизистые' },
+    { key: null, label: 'Антропометрия (рост, вес, ИМТ)' },
+    { key: null, label: 'Лимфатические узлы' },
+  ]},
+  { title: '❤️ Сердечно-сосудистая система', items: [
+    { key: 'кардио', label: 'Аускультация сердца' },
+    { key: null, label: 'Пульс на периферических артериях' },
+    { key: null, label: 'ЦВД / набухание вен шеи' },
+  ]},
+  { title: '🫁 Дыхательная система', items: [
+    { key: 'дыхание', label: 'Аускультация лёгких' },
+    { key: null, label: 'Перкуссия грудной клетки' },
+  ]},
+  { title: '🫃 Живот', items: [
+    { key: 'живот', label: 'Пальпация и перкуссия живота' },
+    { key: null, label: 'Симптомы раздражения брюшины' },
+    { key: null, label: 'Пальпация печени и селезёнки' },
+  ]},
+  { title: '🧠 Неврологический статус', items: [
+    { key: 'неврология', label: 'Сознание, ориентация, рефлексы' },
+    { key: null, label: 'Менингeальные знаки' },
+    { key: null, label: 'Шкала Глазго' },
+  ]},
+  { title: '🦵 Конечности', items: [
+    { key: 'конечности', label: 'Осмотр конечностей, отёки, пульсация' },
+    { key: null, label: 'Осмотр стоп и чувствительность' },
+  ]},
+  { title: '🦋 Голова и шея', items: [
+    { key: null, label: 'Пальпация щитовидной железы' },
+    { key: null, label: 'Осмотр зева и миндалин' },
+  ]}
+];
 
-// Lab groups — DEFAULT grouping, to be refined separately
+// Comprehensive lab/instrumental catalog (not case-specific — avoids being a hint)
 const LAB_GROUPS = [
-  { title: '🩸 Общий анализ крови', items: [{ key: 'оак', label: 'ОАК (общий анализ крови)' }] },
-  { title: '🧬 Биохимия крови', items: [
-    { key: 'электролиты', label: 'Электролиты (K⁺, Na⁺)' },
-    { key: 'почки', label: 'Функция почек (мочевина, креатинин)' },
-    { key: 'печень', label: 'Функция печени (АЛТ, АСТ)' },
-    { key: 'магний', label: 'Магний крови' }
+  { title: '🩸 Общий анализ крови', items: [
+    { key: 'оак', label: 'ОАК (общий анализ крови)' },
+    { key: null, label: 'Лейкоцитарная формула' },
+    { key: null, label: 'СОЭ' },
+    { key: null, label: 'Коагулограмма' },
   ]},
   { title: '🍬 Углеводный обмен', items: [
     { key: 'глюкоза', label: 'Глюкоза крови' },
-    { key: 'hba1c', label: 'HbA1c' }
+    { key: 'hba1c', label: 'HbA1c' },
+    { key: null, label: 'Инсулин' },
+    { key: null, label: 'С-пептид' },
+    { key: null, label: 'Глюкозотолерантный тест' },
   ]},
-  { title: '⚗️ Кислотно-щелочное состояние', items: [{ key: 'агк', label: 'Газы артериальной крови' }] },
-  { title: '🧫 Анализ мочи', items: [{ key: 'моча', label: 'Общий анализ мочи (ОАМ)' }] },
+  { title: '🧬 Биохимия крови', items: [
+    { key: 'электролиты', label: 'Электролиты (K⁺, Na⁺, Cl⁻)' },
+    { key: 'почки', label: 'Функция почек (мочевина, креатинин)' },
+    { key: 'печень', label: 'Функция печени (АЛТ, АСТ, билирубин)' },
+    { key: 'магний', label: 'Магний крови' },
+    { key: null, label: 'Кальций общий и ионизированный' },
+    { key: null, label: 'Фосфор' },
+    { key: null, label: 'Общий белок, альбумин' },
+  ]},
+  { title: '⚗️ Кислотно-щелочное состояние', items: [
+    { key: 'агк', label: 'Газы артериальной крови' },
+    { key: null, label: 'Лактат' },
+    { key: null, label: 'Осмолярность крови' },
+  ]},
+  { title: '🧫 Анализ мочи', items: [
+    { key: 'моча', label: 'Общий анализ мочи (ОАМ)' },
+    { key: null, label: 'Микроальбуминурия' },
+    { key: null, label: 'Посев мочи' },
+  ]},
+  { title: '🧪 Липидный профиль и воспаление', items: [
+    { key: null, label: 'Липидограмма (ОХС, ЛПНП, ЛПВП, ТГ)' },
+    { key: null, label: 'СРБ' },
+    { key: null, label: 'Прокальцитонин' },
+  ]},
+  { title: '🦋 Эндокринные гормоны', items: [
+    { key: null, label: 'ТТГ, Т3, Т4' },
+    { key: null, label: 'Кортизол' },
+    { key: null, label: 'Антитела к GAD, ICA' },
+  ]},
+  { title: '❤️ Кардиомаркеры', items: [
+    { key: null, label: 'Тропонин' },
+    { key: null, label: 'NT-proBNP' },
+    { key: null, label: 'Д-димер' },
+  ]},
   { title: '📈 Инструментальные', items: [
     { key: 'экг', label: 'ЭКГ' },
-    { key: 'рентген', label: 'Рентген грудной клетки' }
+    { key: 'рентген', label: 'Рентген грудной клетки' },
+    { key: null, label: 'УЗИ органов брюшной полости' },
+    { key: null, label: 'УЗИ щитовидной железы' },
+    { key: null, label: 'ЭхоКГ' },
+    { key: null, label: 'КТ головного мозга' },
   ]}
 ];
 
@@ -446,7 +523,7 @@ const BLOCKS = [
 let currentBlockIdx = 0;
 let blockData = {
   anamnesis: { transcript: [], duration_seconds: 0 },
-  exam: { transcript: [], duration_seconds: 0 },
+  exam: { ordered: [], duration_seconds: 0 },
   preliminary_diagnosis: { text: '', duration_seconds: 0 },
   labs: { ordered: [], duration_seconds: 0 },
   final: { diagnosis: '', treatment_plan: '', duration_seconds: 0 }
@@ -454,8 +531,7 @@ let blockData = {
 let blockTimers = {};
 BLOCKS.forEach(b => blockTimers[b.id] = b.duration);
 let activeInterval = null;
-let conversationHistory = []; // shared Groq context across anamnesis+exam
-let usedLabs = new Set();
+let conversationHistory = []; // Groq context for anamnesis chat
 let isLoading = false;
 
 function getStudentFromUrl() {
@@ -589,28 +665,27 @@ function renderLockedPlaceholder(blockId) {
 // ── BLOCK CONTENT RENDERERS ───────────────────────────
 function renderBlockContent(blockId) {
   const content = document.getElementById(`colcontent-${blockId}`);
-  if (blockId === 'anamnesis' || blockId === 'exam') renderChatBlock(blockId, content);
+  if (blockId === 'anamnesis') renderChatBlock(blockId, content);
+  else if (blockId === 'exam') renderGroupBlock('exam', content, EXAM_GROUPS);
   else if (blockId === 'preliminary_diagnosis') renderPrelimBlock(content);
-  else if (blockId === 'labs') renderLabsBlock(content);
+  else if (blockId === 'labs') renderGroupBlock('labs', content, LAB_GROUPS);
   else if (blockId === 'final') renderFinalBlock(content);
 }
 
-// -- CHAT (anamnesis + exam) --
+// -- CHAT (anamnesis only) --
 function renderChatBlock(blockId, content) {
   content.innerHTML = `
     <div class="col-body" id="chatbody-${blockId}"></div>
     <div class="col-footer">
       <div class="chat-input-row">
-        <textarea class="chat-input" id="chatinput-${blockId}" rows="1" placeholder="${blockId === 'anamnesis' ? 'Спросите о жалобах, истории...' : 'Запросите осмотр...'}"></textarea>
+        <textarea class="chat-input" id="chatinput-${blockId}" rows="1" placeholder="Спросите о жалобах, истории..."></textarea>
         <button class="chat-send" id="chatsend-${blockId}" onclick="sendChatMsg('${blockId}')">➤</button>
       </div>
       <button class="primary-btn next-btn" style="margin-top:8px;" onclick="advanceBlock(false)">Далее →</button>
     </div>
   `;
-  const initialMsg = blockId === 'anamnesis'
-    ? `Здравствуйте, доктор. Меня зовут ${CASE.patient.name.split(' ')[0]}, мне ${CASE.patient.age} лет. Мне очень плохо — сильная слабость, тошнит, несколько раз вырвало, голова болит...`
-    : null;
-  if (blockId === 'anamnesis' && conversationHistory.length === 0) {
+  const initialMsg = `Здравствуйте, доктор. Меня зовут ${CASE.patient.name.split(' ')[0]}, мне ${CASE.patient.age} лет. Мне очень плохо — сильная слабость, тошнит, несколько раз вырвало, голова болит...`;
+  if (conversationHistory.length === 0) {
     addChatMessage(blockId, 'patient', initialMsg);
     conversationHistory.push({ role: 'assistant', content: initialMsg });
   }
@@ -654,18 +729,6 @@ async function sendChatMsg(blockId) {
   addChatMessage(blockId, 'student', text);
   conversationHistory.push({ role: 'user', content: text });
 
-  // If exam block, check for keyword-triggered findings
-  if (blockId === 'exam') {
-    const lower = text.toLowerCase();
-    let matched = null;
-    for (const [key, words] of Object.entries(EXAM_KEYWORDS)) {
-      if (words.some(w => lower.includes(w))) { matched = key; break; }
-    }
-    if (matched) {
-      setTimeout(() => renderExamCard(blockId, matched), 400);
-    }
-  }
-
   isLoading = true;
   showTypingIn(blockId);
   try {
@@ -689,24 +752,103 @@ async function sendChatMsg(blockId) {
   isLoading = false;
 }
 
-function renderExamCard(blockId, key) {
-  const body = document.getElementById(`chatbody-${blockId}`);
-  let title, rows;
-  if (key === 'витальные') {
-    title = '📊 Витальные показатели';
-    rows = CASE.vitals;
-  } else {
-    const labels = { общий: '👁 Общий осмотр', кардио: '❤️ Сердечно-сосудистая система', дыхание: '🫁 Дыхательная система', живот: '🫃 Абдоминальный осмотр', неврология: '🧠 Неврологический осмотр', конечности: '🦵 Конечности' };
-    const dataMap = { общий: 'general', кардио: 'cardio', дыхание: 'resp', живот: 'abdomen', неврология: 'neuro', конечности: 'extremities' };
-    title = labels[key];
-    rows = [{ k: 'Данные', v: CASE.exam[dataMap[key]] }];
-  }
-  const rowsHtml = rows.map(r => `<div class="result-row"><span class="result-key">${r.k}</span><div style="text-align:right"><div class="result-val ${r.s || ''}">${r.v}</div>${r.r ? `<div class="result-ref">${r.r}</div>` : ''}</div></div>`).join('');
-  const d = document.createElement('div');
-  d.className = 'msg result';
-  d.innerHTML = `<div class="result-card"><div class="result-card-title">${title}</div>${rowsHtml}</div>`;
-  body.appendChild(d);
-  body.scrollTop = body.scrollHeight;
+// ── EXAM FINDING TEXT LOOKUP ──────────────────────────
+function getExamFinding(key) {
+  if (key === 'витальные') return { rows: CASE.vitals };
+  const dataMap = { общий: 'general', кардио: 'cardio', дыхание: 'resp', живот: 'abdomen', неврология: 'neuro', конечности: 'extremities' };
+  if (dataMap[key]) return { rows: [{ k: 'Данные', v: CASE.exam[dataMap[key]] }] };
+  return null;
+}
+
+// ── GROUP BLOCK (used by both Осмотр и Анализы) ───────
+function renderGroupBlock(blockId, content, groups) {
+  const label = blockId === 'exam' ? 'осмотр' : 'анализы';
+  content.innerHTML = `
+    <div class="col-body" id="groupresults-${blockId}">
+      <div style="font-size:12px;color:var(--text3);text-align:center;padding:16px 8px;" id="groupempty-${blockId}">Пока ничего не назначено</div>
+    </div>
+    <div class="col-footer">
+      <button class="primary-btn" style="width:100%;margin-bottom:8px;" onclick="openCatalogModal('${blockId}')">+ Назначить ${label}</button>
+      <button class="primary-btn next-btn" style="background:var(--text3);" onclick="advanceBlock(false)">Далее →</button>
+    </div>
+  `;
+}
+
+let modalBlockId = null;
+let modalUsedKeys = { exam: new Set(), labs: new Set() };
+
+function openCatalogModal(blockId) {
+  modalBlockId = blockId;
+  const groups = blockId === 'exam' ? EXAM_GROUPS : LAB_GROUPS;
+  const title = blockId === 'exam' ? '🩺 Назначить осмотр' : '🧪 Назначить анализы';
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-body').innerHTML = groups.map((g, gi) => `
+    <div class="lab-group">
+      <div class="lab-group-head" onclick="toggleModalGroup(${gi})"><span>${g.title}</span><span id="modalgroup-arrow-${gi}">▾</span></div>
+      <div class="lab-group-items open" id="modalgroup-items-${gi}">
+        ${g.items.map((it, ii) => {
+          const usedKey = it.key || `${g.title}::${it.label}`;
+          const used = modalUsedKeys[blockId].has(usedKey);
+          return `<label class="lab-item ${used ? 'used' : ''}">
+            <input type="checkbox" value="${usedKey}" data-label="${it.label.replace(/"/g,'&quot;')}" data-realkey="${it.key || ''}" class="modal-checkbox" ${used ? 'disabled checked' : ''}>
+            ${it.label} ${used ? '✓' : ''}
+          </label>`;
+        }).join('')}
+      </div>
+    </div>
+  `).join('');
+  document.getElementById('catalog-modal').classList.add('show');
+}
+
+function toggleModalGroup(gi) {
+  document.getElementById(`modalgroup-items-${gi}`).classList.toggle('open');
+  document.getElementById(`modalgroup-arrow-${gi}`).textContent = document.getElementById(`modalgroup-items-${gi}`).classList.contains('open') ? '▴' : '▾';
+}
+
+function closeCatalogModal() {
+  document.getElementById('catalog-modal').classList.remove('show');
+  modalBlockId = null;
+}
+
+function confirmCatalogModal() {
+  const checked = [...document.querySelectorAll('.modal-checkbox:checked:not(:disabled)')];
+  if (checked.length === 0) { closeCatalogModal(); return; }
+  const blockId = modalBlockId;
+  const resultsWrap = document.getElementById(`groupresults-${blockId}`);
+  document.getElementById(`groupempty-${blockId}`)?.remove();
+
+  checked.forEach(cb => {
+    const usedKey = cb.value;
+    const realKey = cb.getAttribute('data-realkey');
+    const label = cb.getAttribute('data-label');
+    modalUsedKeys[blockId].add(usedKey);
+
+    const d = document.createElement('div');
+    d.className = 'result-card';
+    d.style.marginBottom = '8px';
+
+    if (blockId === 'labs') {
+      blockData.labs.ordered.push(label);
+      const labInfo = realKey ? CASE.labs[realKey] : null;
+      if (labInfo) {
+        const rowsHtml = labInfo.rows.map(r => `<div class="result-row"><span class="result-key">${r.k}</span><div style="text-align:right"><div class="result-val ${r.s || ''}">${r.v}</div><div class="result-ref">${r.r}</div></div></div>`).join('');
+        d.innerHTML = `<div class="result-card-title">${labInfo.name}</div>${rowsHtml}`;
+      } else {
+        d.innerHTML = `<div class="result-card-title">${label}</div><div class="result-row"><span class="result-key">Результат</span><span class="result-val ok">Без патологии</span></div>`;
+      }
+    } else {
+      blockData.exam.ordered.push(label);
+      const finding = realKey ? getExamFinding(realKey) : null;
+      if (finding) {
+        const rowsHtml = finding.rows.map(r => `<div class="result-row"><span class="result-key">${r.k}</span><div style="text-align:right"><div class="result-val ${r.s || ''}">${r.v}</div>${r.r ? `<div class="result-ref">${r.r}</div>` : ''}</div></div>`).join('');
+        d.innerHTML = `<div class="result-card-title">${label}</div>${rowsHtml}`;
+      } else {
+        d.innerHTML = `<div class="result-card-title">${label}</div><div class="result-row"><span class="result-key">Результат</span><span class="result-val ok">Без особенностей</span></div>`;
+      }
+    }
+    resultsWrap.appendChild(d);
+  });
+  closeCatalogModal();
 }
 
 // -- PRELIMINARY DIAGNOSIS --
@@ -729,59 +871,6 @@ function submitPrelim() {
 }
 
 // -- LABS (grouped) --
-function renderLabsBlock(content) {
-  const groupsHtml = LAB_GROUPS.map((g, gi) => `
-    <div class="lab-group">
-      <div class="lab-group-head" onclick="toggleLabGroup(${gi})"><span>${g.title}</span><span id="labgroup-arrow-${gi}">▾</span></div>
-      <div class="lab-group-items" id="labgroup-items-${gi}">
-        ${g.items.map(it => `
-          <label class="lab-item ${usedLabs.has(it.key) ? 'used' : ''}">
-            <input type="checkbox" value="${it.key}" class="lab-checkbox" ${usedLabs.has(it.key) ? 'disabled checked' : ''}>
-            ${it.label}
-          </label>
-        `).join('')}
-      </div>
-    </div>
-  `).join('');
-  content.innerHTML = `
-    <div class="col-body">${groupsHtml}</div>
-    <div class="col-footer">
-      <button class="primary-btn lab-submit-btn" onclick="submitLabs()">Назначить выбранное</button>
-      <button class="primary-btn next-btn" style="margin-top:6px;background:var(--text3);" onclick="advanceBlock(false)">Далее →</button>
-    </div>
-  `;
-}
-function toggleLabGroup(gi) {
-  document.getElementById(`labgroup-items-${gi}`).classList.toggle('open');
-  document.getElementById(`labgroup-arrow-${gi}`).textContent = document.getElementById(`labgroup-items-${gi}`).classList.contains('open') ? '▴' : '▾';
-}
-function submitLabs() {
-  const content = document.getElementById('colcontent-labs');
-  const checked = [...content.querySelectorAll('.lab-checkbox:checked:not(:disabled)')];
-  if (checked.length === 0) return;
-  const body = document.getElementById('colcontent-labs').querySelector('.col-body');
-  checked.forEach(cb => {
-    const key = cb.value;
-    if (usedLabs.has(key)) return;
-    usedLabs.add(key);
-    const labInfo = CASE.labs[key];
-    const label = cb.parentElement.textContent.trim();
-    blockData.labs.ordered.push(labInfo ? labInfo.name : label);
-    const d = document.createElement('div');
-    d.className = 'result-card';
-    d.style.marginBottom = '8px';
-    if (labInfo) {
-      const rowsHtml = labInfo.rows.map(r => `<div class="result-row"><span class="result-key">${r.k}</span><div style="text-align:right"><div class="result-val ${r.s || ''}">${r.v}</div><div class="result-ref">${r.r}</div></div></div>`).join('');
-      d.innerHTML = `<div class="result-card-title">${labInfo.name}</div>${rowsHtml}`;
-    } else {
-      d.innerHTML = `<div class="result-card-title">${label}</div><div class="result-row"><span class="result-key">Результат</span><span class="result-val ok">Без патологии</span></div>`;
-    }
-    body.appendChild(d);
-    cb.parentElement.classList.add('used');
-    cb.disabled = true;
-  });
-}
-
 // -- FINAL --
 function renderFinalBlock(content) {
   content.innerHTML = `
@@ -868,5 +957,19 @@ function backToCabinet() {
   document.getElementById('exam-student-name').textContent = student.name;
 })();
 </script>
+
+<div class="catalog-modal-overlay" id="catalog-modal">
+  <div class="catalog-modal">
+    <div class="catalog-modal-head">
+      <h3 id="modal-title">Назначить</h3>
+      <button class="catalog-modal-close" onclick="closeCatalogModal()">✕</button>
+    </div>
+    <div class="catalog-modal-body" id="modal-body"></div>
+    <div class="catalog-modal-footer">
+      <button class="primary-btn green-btn" style="width:100%;" onclick="confirmCatalogModal()">Назначить выбранное</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
