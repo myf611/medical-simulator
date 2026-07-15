@@ -74,6 +74,7 @@
   .exam-col:last-child { border-right: none; }
   .exam-col.locked { background: var(--surface2); }
   .exam-col.active { box-shadow: inset 0 0 0 2px var(--accent); }
+  .col-content { flex: 1; display: flex; flex-direction: column; min-height: 0; }
   @media (min-width: 1400px) { .exam-col { flex: 1 1 0; max-width: none; } }
 
   .col-timer-bar { padding: 10px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
@@ -630,7 +631,7 @@ function renderColumns() {
         <span class="col-title">${b.icon} ${b.title}</span>
         <span id="coltimer-${b.id}"></span>
       </div>
-      <div id="colcontent-${b.id}"></div>
+      <div id="colcontent-${b.id}" class="col-content"></div>
     </div>
   `).join('');
 }
