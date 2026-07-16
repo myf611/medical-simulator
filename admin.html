@@ -1,0 +1,430 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Панель преподавателя — Симулятор пациента</title>
+<style>
+  :root{
+    --blue:#1a5276; --blue-dark:#0d3d60; --blue-900:#083554;
+    --green:#0f6e56; --green-2:#119474;
+    --mint:#e8f6f1; --mint-2:#dff4ef;
+    --bg:#f7f6f2; --white:#fff; --text:#13354d; --muted:#657789;
+    --line:#d8e4ec; --line-soft:#edf3f6;
+    --shadow:0 22px 70px rgba(26,82,118,.11);
+    --shadow-soft:0 12px 34px rgba(26,82,118,.08);
+    --danger:#a04444;
+    font-family:Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--bg); color:var(--text); min-height:100vh;}
+  button,input{font-family:inherit;}
+
+  /* AUTH SCREEN */
+  #screen-login{min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px;}
+  .login-card{background:#fff; border:1px solid var(--line); border-radius:24px; box-shadow:var(--shadow); max-width:400px; width:100%; padding:34px 30px;}
+  .login-logo{font-size:30px; text-align:center; margin-bottom:6px;}
+  .login-title{font-size:22px; font-weight:800; text-align:center; color:var(--blue-900); letter-spacing:-.02em;}
+  .login-sub{font-size:13px; color:var(--muted); text-align:center; margin:6px 0 22px;}
+  .tabs{display:grid; grid-template-columns:1fr 1fr; border:1px solid var(--line); border-radius:14px; background:#fff; overflow:hidden; margin-bottom:16px;}
+  .tab-btn{appearance:none; border:0; background:transparent; color:var(--blue); font-weight:700; padding:12px; cursor:pointer; font-size:13.5px;}
+  .tab-btn.active{background:var(--blue); color:#fff;}
+  .field{display:flex; flex-direction:column; gap:5px; margin-bottom:12px;}
+  .field label{font-size:12px; font-weight:700; color:var(--blue-900);}
+  .field input{height:46px; border:1px solid var(--line); border-radius:11px; padding:0 14px; font-size:14px; outline:none;}
+  .field input:focus{border-color:#86c9cf; box-shadow:0 0 0 3px rgba(37,198,207,.12);}
+  .primary-btn{width:100%; border:0; border-radius:12px; height:48px; background:linear-gradient(135deg,var(--blue),#0d4166); color:#fff; font-weight:800; font-size:14.5px; cursor:pointer; margin-top:6px;}
+  .primary-btn:disabled{opacity:.6; cursor:not-allowed;}
+  .err-msg{color:var(--danger); font-size:12.5px; text-align:center; margin-top:10px; min-height:16px;}
+
+  /* DASHBOARD */
+  #screen-dash{display:none; min-height:100vh;}
+  .dash-header{background:#fff; border-bottom:1px solid var(--line); padding:14px 20px; display:flex; align-items:center; justify-content:space-between;}
+  .dash-header .brand{font-weight:800; color:var(--blue-900); font-size:15px;}
+  .dash-header .who{font-size:12.5px; color:var(--muted);}
+  .logout-btn{background:none; border:1px solid var(--line); border-radius:10px; padding:7px 14px; font-size:12.5px; font-weight:700; color:var(--muted); cursor:pointer;}
+  .dash-body{max-width:960px; margin:0 auto; padding:24px 18px;}
+  .dash-title{font-size:20px; font-weight:800; color:var(--blue-900); margin-bottom:4px;}
+  .dash-stats-row{display:flex; gap:12px; margin:16px 0 22px; flex-wrap:wrap;}
+  .dash-stat{flex:1; min-width:120px; background:#fff; border:1px solid var(--line); border-radius:14px; padding:14px 16px;}
+  .dash-stat b{display:block; font-size:22px; color:var(--blue);}
+  .dash-stat span{font-size:11.5px; color:var(--muted);}
+
+  .student-row{display:flex; align-items:center; gap:14px; background:#fff; border:1px solid var(--line); border-radius:14px; padding:14px 16px; margin-bottom:10px; cursor:pointer;}
+  .student-row:hover{border-color:#b5d4f4;}
+  .student-avatar{width:38px; height:38px; border-radius:50%; background:var(--mint); color:var(--green); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px; flex-shrink:0;}
+  .student-info{flex:1; min-width:0;}
+  .student-name{font-weight:700; font-size:14px; color:var(--blue-900);}
+  .student-meta{font-size:11.5px; color:var(--muted); margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .student-grade{font-weight:800; font-size:16px; padding:6px 12px; border-radius:10px; flex-shrink:0;}
+  .student-grade.high{background:var(--mint-2); color:var(--green-2);}
+  .student-grade.mid{background:#fff3df; color:#a06a1a;}
+  .student-grade.low{background:#fdeaea; color:var(--danger);}
+  .student-grade.none{background:var(--line-soft); color:var(--muted); font-size:12px;}
+  .empty-msg{text-align:center; color:var(--muted); font-size:13px; padding:30px 10px;}
+
+  /* STUDENT DETAIL / ATTEMPTS */
+  #screen-student{display:none; min-height:100vh;}
+  .back-btn{background:none; border:0; color:var(--blue); font-weight:700; font-size:13.5px; cursor:pointer; padding:6px 0; margin-bottom:14px;}
+  .attempt-row{display:flex; justify-content:space-between; align-items:center; background:#fff; border:1px solid var(--line); border-radius:14px; padding:14px 16px; margin-bottom:10px; cursor:pointer;}
+  .attempt-row:hover{border-color:#b5d4f4;}
+  .attempt-title{font-weight:700; font-size:13.5px; color:var(--blue-900);}
+  .attempt-date{font-size:11.5px; color:var(--muted); margin-top:2px;}
+
+  /* REVIEW (attempt detail) */
+  #screen-attempt{display:none; min-height:100vh;}
+  .review-card{max-width:720px; margin:0 auto; padding:24px 18px;}
+  .results-grade{text-align:center; margin-bottom:18px;}
+  .results-grade .num{font-size:38px; font-weight:800; color:var(--blue); line-height:1;}
+  .results-grade .lbl{font-size:12px; color:var(--muted); margin-top:4px;}
+  .block-grades-row{display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-bottom:22px;}
+  .block-grade-chip{flex:1; min-width:85px; text-align:center; background:#fff; border:1px solid var(--line); border-radius:10px; padding:8px 6px;}
+  .block-grade-chip .bg-num{font-size:15px; font-weight:700; color:var(--blue);}
+  .block-grade-chip .bg-lbl{font-size:9px; color:var(--muted); margin-top:2px;}
+  .points-section{margin-bottom:18px;}
+  .points-title{display:flex; align-items:center; gap:8px; font-size:13px; font-weight:700; margin-bottom:10px;}
+  .points-title.good{color:var(--green);}
+  .points-title.bad{color:var(--danger);}
+  .point-item{font-size:12.5px; line-height:1.5; padding:9px 12px; border-radius:10px; margin-bottom:7px;}
+  .point-item.good{background:var(--mint-2); color:#0a4a3a;}
+  .point-item.bad{background:#fdeaea; color:#7a2424;}
+  .rv-detail-block{border:1px solid var(--line); border-radius:12px; padding:12px 14px; margin-bottom:12px; background:#fff;}
+  .rv-detail-block h4{font-size:12px; font-weight:700; color:var(--blue-900); margin-bottom:8px;}
+  .rv-empty{font-size:12px; color:var(--muted); font-style:italic;}
+  .rv-chat-line{font-size:12.5px; line-height:1.6; margin-bottom:4px;}
+  .rv-chat-line b{color:var(--blue);}
+  .loading{text-align:center; padding:40px; color:var(--muted); font-size:13px;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN / REGISTER -->
+<div id="screen-login">
+  <div class="login-card">
+    <div class="login-logo">👨‍🏫</div>
+    <div class="login-title">Панель преподавателя</div>
+    <div class="login-sub">Симулятор пациента</div>
+
+    <div class="tabs">
+      <button class="tab-btn active" id="tab-login" onclick="switchAdminTab('login')">Вход</button>
+      <button class="tab-btn" id="tab-register" onclick="switchAdminTab('register')">Регистрация</button>
+    </div>
+
+    <form id="form-login">
+      <div class="field"><label>Логин</label><input type="text" id="li-username" autocomplete="username"></div>
+      <div class="field"><label>Пароль</label><input type="password" id="li-password" autocomplete="current-password"></div>
+      <button type="button" class="primary-btn" id="li-btn" onclick="adminLogin()">Войти →</button>
+    </form>
+
+    <form id="form-register" style="display:none;">
+      <div class="field"><label>Ваше имя</label><input type="text" id="re-fullname"></div>
+      <div class="field"><label>Логин</label><input type="text" id="re-username"></div>
+      <div class="field"><label>Пароль (минимум 6 символов)</label><input type="password" id="re-password"></div>
+      <button type="button" class="primary-btn" id="re-btn" onclick="adminRegister()">Зарегистрироваться →</button>
+    </form>
+
+    <div class="err-msg" id="auth-err"></div>
+  </div>
+</div>
+
+<!-- DASHBOARD: student list -->
+<div id="screen-dash">
+  <div class="dash-header">
+    <div><div class="brand">👨‍🏫 Панель преподавателя</div><div class="who" id="dash-who">—</div></div>
+    <button class="logout-btn" onclick="adminLogout()">Выйти</button>
+  </div>
+  <div class="dash-body">
+    <div class="dash-title">Студенты</div>
+    <div class="dash-stats-row" id="dash-stats"></div>
+    <div id="students-list"><div class="loading">Загрузка...</div></div>
+  </div>
+</div>
+
+<!-- STUDENT DETAIL: attempt list -->
+<div id="screen-student">
+  <div class="dash-header">
+    <div><div class="brand" id="stud-name">—</div><div class="who" id="stud-meta">—</div></div>
+    <button class="logout-btn" onclick="adminLogout()">Выйти</button>
+  </div>
+  <div class="dash-body">
+    <button class="back-btn" onclick="backToDash()">← Ко всем студентам</button>
+    <div id="student-attempts-list"><div class="loading">Загрузка...</div></div>
+  </div>
+</div>
+
+<!-- ATTEMPT DETAIL (review) -->
+<div id="screen-attempt">
+  <div class="dash-header">
+    <div><div class="brand">Разбор попытки</div></div>
+    <button class="logout-btn" onclick="adminLogout()">Выйти</button>
+  </div>
+  <div class="review-card">
+    <button class="back-btn" onclick="backToStudent()">← К попыткам студента</button>
+    <div id="attempt-loading" class="loading">Загрузка...</div>
+    <div id="attempt-content" style="display:none;">
+      <h2 style="color:var(--blue-900); margin-bottom:2px;" id="at-title">—</h2>
+      <div style="color:var(--muted); font-size:13px; margin-bottom:20px;" id="at-date">—</div>
+
+      <div class="results-grade"><div class="num" id="at-grade">—</div><div class="lbl">Общая оценка</div></div>
+      <div class="block-grades-row" id="at-block-grades"></div>
+
+      <div class="points-section">
+        <div class="points-title good">✅ Что сделано правильно</div>
+        <div id="at-positive"></div>
+      </div>
+      <div class="points-section">
+        <div class="points-title bad">⚠️ Что упущено или сделано неверно</div>
+        <div id="at-negative"></div>
+      </div>
+
+      <div style="margin-top:24px; padding-top:20px; border-top:1px solid var(--line);">
+        <h3 style="font-size:14px; margin-bottom:14px; color:var(--blue-900);">Детали прохождения</h3>
+        <div id="at-details"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const BACKEND_URL = 'https://medical-simulator-api.onrender.com';
+const SESSION_KEY = 'admin_session';
+let currentAdmin = null;
+let currentStudentId = null;
+let currentStudentName = '';
+
+function switchAdminTab(tab){
+  document.getElementById('tab-login').classList.toggle('active', tab==='login');
+  document.getElementById('tab-register').classList.toggle('active', tab==='register');
+  document.getElementById('form-login').style.display = tab==='login' ? 'block' : 'none';
+  document.getElementById('form-register').style.display = tab==='register' ? 'block' : 'none';
+  document.getElementById('auth-err').textContent = '';
+}
+
+function saveAdminSession(admin){
+  localStorage.setItem(SESSION_KEY, JSON.stringify(admin));
+}
+function getAdminSession(){
+  try { return JSON.parse(localStorage.getItem(SESSION_KEY)); } catch(e){ return null; }
+}
+function clearAdminSession(){ localStorage.removeItem(SESSION_KEY); }
+
+async function adminLogin(){
+  const username = document.getElementById('li-username').value.trim();
+  const password = document.getElementById('li-password').value;
+  const btn = document.getElementById('li-btn');
+  const err = document.getElementById('auth-err');
+  err.textContent = '';
+  if(!username || !password){ err.textContent = 'Заполните логин и пароль'; return; }
+  btn.disabled = true; btn.textContent = 'Входим...';
+  try{
+    const res = await fetch(`${BACKEND_URL}/api/admin-login`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({username, password})
+    });
+    if(!res.ok){ const d = await res.json(); throw new Error(d.detail || 'Ошибка входа'); }
+    const admin = await res.json();
+    saveAdminSession(admin);
+    enterDashboard(admin);
+  }catch(e){
+    err.textContent = e.message || 'Не удалось войти';
+  }
+  btn.disabled = false; btn.textContent = 'Войти →';
+}
+
+async function adminRegister(){
+  const full_name = document.getElementById('re-fullname').value.trim();
+  const username = document.getElementById('re-username').value.trim();
+  const password = document.getElementById('re-password').value;
+  const btn = document.getElementById('re-btn');
+  const err = document.getElementById('auth-err');
+  err.textContent = '';
+  if(!username || password.length < 6){ err.textContent = 'Логин обязателен, пароль минимум 6 символов'; return; }
+  btn.disabled = true; btn.textContent = 'Создаём...';
+  try{
+    const res = await fetch(`${BACKEND_URL}/api/admin-register`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({username, password, full_name, org_slug:'tashkent-endo'})
+    });
+    if(!res.ok){ const d = await res.json(); throw new Error(d.detail || 'Ошибка регистрации'); }
+    const admin = await res.json();
+    saveAdminSession(admin);
+    enterDashboard(admin);
+  }catch(e){
+    err.textContent = e.message || 'Не удалось зарегистрироваться';
+  }
+  btn.disabled = false; btn.textContent = 'Зарегистрироваться →';
+}
+
+function adminLogout(){
+  clearAdminSession();
+  document.getElementById('screen-dash').style.display = 'none';
+  document.getElementById('screen-student').style.display = 'none';
+  document.getElementById('screen-attempt').style.display = 'none';
+  document.getElementById('screen-login').style.display = 'flex';
+}
+
+function gradeClass(g){
+  if(g === null || g === undefined) return 'none';
+  if(g >= 75) return 'high';
+  if(g >= 50) return 'mid';
+  return 'low';
+}
+
+async function enterDashboard(admin){
+  currentAdmin = admin;
+  document.getElementById('screen-login').style.display = 'none';
+  document.getElementById('screen-dash').style.display = 'block';
+  document.getElementById('dash-who').textContent = admin.full_name || admin.username;
+
+  const listEl = document.getElementById('students-list');
+  listEl.innerHTML = '<div class="loading">Загрузка...</div>';
+  try{
+    const res = await fetch(`${BACKEND_URL}/api/admin/students?organization_id=${admin.organization_id}`);
+    const students = await res.json();
+
+    const totalCases = students.reduce((s,x)=>s+x.cases_completed,0);
+    const gradedStudents = students.filter(x=>x.average_grade !== null);
+    const avgAll = gradedStudents.length ? Math.round(gradedStudents.reduce((s,x)=>s+x.average_grade,0)/gradedStudents.length) : null;
+
+    document.getElementById('dash-stats').innerHTML = `
+      <div class="dash-stat"><b>${students.length}</b><span>Студентов</span></div>
+      <div class="dash-stat"><b>${totalCases}</b><span>Кейсов пройдено всего</span></div>
+      <div class="dash-stat"><b>${avgAll !== null ? avgAll+'%' : '—'}</b><span>Средний балл по группе</span></div>
+    `;
+
+    if(!students.length){
+      listEl.innerHTML = '<div class="empty-msg">В организации пока нет студентов</div>';
+      return;
+    }
+    listEl.innerHTML = students.map(s => `
+      <div class="student-row" onclick="openStudent('${s.id}','${(s.name||'Студент').replace(/'/g,"\\\\'")}')">
+        <div class="student-avatar">${(s.name||'?').trim().charAt(0).toUpperCase() || '?'}</div>
+        <div class="student-info">
+          <div class="student-name">${s.name || 'Без имени'}</div>
+          <div class="student-meta">${s.workplace || s.phone || ''}</div>
+        </div>
+        <div class="student-grade ${gradeClass(s.average_grade)}">${s.average_grade !== null ? s.average_grade+'%' : '—'} · ${s.cases_completed}</div>
+      </div>
+    `).join('');
+  }catch(e){
+    listEl.innerHTML = '<div class="empty-msg">Не удалось загрузить студентов</div>';
+  }
+}
+
+async function openStudent(studentId, name){
+  currentStudentId = studentId;
+  currentStudentName = name;
+  document.getElementById('screen-dash').style.display = 'none';
+  document.getElementById('screen-student').style.display = 'block';
+  document.getElementById('stud-name').textContent = name;
+  document.getElementById('stud-meta').textContent = 'История прохождений';
+
+  const listEl = document.getElementById('student-attempts-list');
+  listEl.innerHTML = '<div class="loading">Загрузка...</div>';
+  try{
+    const res = await fetch(`${BACKEND_URL}/api/admin/student-attempts?student_id=${studentId}`);
+    const attempts = await res.json();
+    if(!attempts.length){
+      listEl.innerHTML = '<div class="empty-msg">У этого студента пока нет попыток</div>';
+      return;
+    }
+    listEl.innerHTML = attempts.map(a => `
+      <div class="attempt-row" onclick="openAttempt('${a.id}')">
+        <div>
+          <div class="attempt-title">${a.case_title || 'Кейс'}</div>
+          <div class="attempt-date">${new Date(a.finished_at).toLocaleDateString('ru-RU')}</div>
+        </div>
+        <div class="student-grade ${gradeClass(a.grade)}">${a.grade !== null && a.grade !== undefined ? a.grade+'%' : '—'}</div>
+      </div>
+    `).join('');
+  }catch(e){
+    listEl.innerHTML = '<div class="empty-msg">Не удалось загрузить попытки</div>';
+  }
+}
+
+function backToDash(){
+  document.getElementById('screen-student').style.display = 'none';
+  document.getElementById('screen-dash').style.display = 'block';
+}
+function backToStudent(){
+  document.getElementById('screen-attempt').style.display = 'none';
+  document.getElementById('screen-student').style.display = 'block';
+}
+
+async function openAttempt(attemptId){
+  document.getElementById('screen-student').style.display = 'none';
+  document.getElementById('screen-attempt').style.display = 'block';
+  document.getElementById('attempt-loading').style.display = 'block';
+  document.getElementById('attempt-content').style.display = 'none';
+
+  try{
+    const res = await fetch(`${BACKEND_URL}/api/attempt-detail?attempt_id=${attemptId}`);
+    const a = await res.json();
+    renderAttempt(a);
+  }catch(e){
+    document.getElementById('attempt-loading').textContent = 'Не удалось загрузить попытку';
+  }
+}
+
+function renderAttempt(a){
+  document.getElementById('attempt-loading').style.display = 'none';
+  document.getElementById('attempt-content').style.display = 'block';
+
+  document.getElementById('at-title').textContent = a.case_title || 'Кейс';
+  document.getElementById('at-date').textContent = new Date(a.finished_at).toLocaleDateString('ru-RU');
+
+  const ev = a.evaluation || {};
+  document.getElementById('at-grade').textContent = (ev.overall_grade !== null && ev.overall_grade !== undefined) ? ev.overall_grade+'%' : (a.grade !== null && a.grade !== undefined ? a.grade+'%' : '—');
+
+  const blockLabels = {anamnesis:'Анамнез', exam:'Осмотр', preliminary_diagnosis:'Предв. диагноз', labs:'Анализы', final:'Итог'};
+  const bg = ev.block_grades || {};
+  document.getElementById('at-block-grades').innerHTML = Object.keys(blockLabels).map(k => `
+    <div class="block-grade-chip"><div class="bg-num">${bg[k] !== undefined ? bg[k]+'%' : '—'}</div><div class="bg-lbl">${blockLabels[k]}</div></div>
+  `).join('');
+
+  document.getElementById('at-positive').innerHTML = (ev.positive_points||[]).length
+    ? ev.positive_points.map(p=>`<div class="point-item good">✅ ${p}</div>`).join('')
+    : `<div class="point-item good">Нет отмеченных пунктов</div>`;
+  document.getElementById('at-negative').innerHTML = (ev.negative_points||[]).length
+    ? ev.negative_points.map(p=>`<div class="point-item bad">⚠️ ${p}</div>`).join('')
+    : `<div class="point-item bad">Нет отмеченных ошибок</div>`;
+
+  const blocks = a.blocks || {};
+  const anamnesis = blocks.anamnesis || {};
+  const exam = blocks.exam || {};
+  const prelim = blocks.preliminary_diagnosis || {};
+  const labs = blocks.labs || {};
+  const final = blocks.final || {};
+
+  const chatHtml = (t) => (!t || !t.length) ? '<div class="rv-empty">Пусто — этап не пройден</div>' : t.map(m=>`<div class="rv-chat-line"><b>${m.role==='student'?'Студент':'Пациент'}:</b> ${m.text}</div>`).join('');
+  const listHtml = (items) => (!items || !items.length) ? '<div class="rv-empty">Ничего не назначено</div>' : items.map(i=>`<div class="rv-chat-line">• ${i}</div>`).join('');
+
+  document.getElementById('at-details').innerHTML = `
+    <div class="rv-detail-block"><h4>💬 Анамнез (${anamnesis.duration_seconds||0} сек)</h4>${chatHtml(anamnesis.transcript)}</div>
+    <div class="rv-detail-block"><h4>🩺 Осмотр (${exam.duration_seconds||0} сек)</h4>${listHtml(exam.ordered)}</div>
+    <div class="rv-detail-block"><h4>📋 Предварительный диагноз (${prelim.duration_seconds||0} сек)</h4>${prelim.text ? `<div class="rv-chat-line">${prelim.text}</div>` : '<div class="rv-empty">Не указан</div>'}</div>
+    <div class="rv-detail-block"><h4>🧪 Анализы (${labs.duration_seconds||0} сек)</h4>${listHtml(labs.ordered)}</div>
+    <div class="rv-detail-block"><h4>✅ Диагноз и лечение (${final.duration_seconds||0} сек)</h4>
+      <div class="rv-chat-line"><b>Диагноз:</b> ${final.diagnosis || '(не указан)'}</div>
+      <div class="rv-chat-line"><b>Лечение:</b> ${final.treatment_plan || '(не указан)'}</div>
+    </div>
+  `;
+}
+
+// ── INIT ──────────────────────────────────────────────
+(function init(){
+  const saved = getAdminSession();
+  if(saved && saved.admin_id){
+    enterDashboard(saved);
+  }
+  document.addEventListener('keydown', e => {
+    if(e.key !== 'Enter') return;
+    if(document.getElementById('screen-login').style.display !== 'none'){
+      const loginActive = document.getElementById('form-login').style.display !== 'none';
+      loginActive ? adminLogin() : adminRegister();
+    }
+  });
+})();
+</script>
+</body>
+</html>
