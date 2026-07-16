@@ -181,7 +181,7 @@
   .catalog-modal-head { padding: 16px 18px 12px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
   .catalog-modal-head h3 { font-size: 15px; font-weight: 700; }
   .catalog-modal-close { background: none; border: none; font-size: 20px; color: var(--text3); cursor: pointer; line-height: 1; }
-  .catalog-modal-body { flex: 1; overflow-y: auto; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+  .catalog-modal-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
   .catalog-modal-footer { padding: 12px 14px; border-top: 1px solid var(--border); flex-shrink: 0; }
   .timeup-card { background: var(--surface); border-radius: 20px; padding: 26px; max-width: 340px; text-align: center; }
   .timeup-card .ic { font-size: 30px; margin-bottom: 10px; }
@@ -818,8 +818,8 @@ function renderGroupBlock(blockId, content, groups) {
       <div style="font-size:12px;color:var(--text3);text-align:center;padding:16px 8px;" id="groupempty-${blockId}">Пока ничего не назначено</div>
     </div>
     <div class="col-footer">
-      <button class="primary-btn" style="width:100%;margin-bottom:8px;" onclick="openCatalogModal('${blockId}')">+ Назначить ${label}</button>
-      <button class="primary-btn next-btn" style="background:var(--text3);" onclick="advanceBlock(false)">Далее →</button>
+      <button class="primary-btn green-btn" style="width:100%;margin-bottom:8px;" onclick="openCatalogModal('${blockId}')">+ Назначить ${label}</button>
+      <button class="primary-btn next-btn" onclick="advanceBlock(false)">Далее →</button>
     </div>
   `;
 }
@@ -835,7 +835,7 @@ function openCatalogModal(blockId) {
   document.getElementById('modal-body').innerHTML = groups.map((g, gi) => `
     <div class="lab-group">
       <div class="lab-group-head" onclick="toggleModalGroup(${gi})"><span>${g.title}</span><span id="modalgroup-arrow-${gi}">▾</span></div>
-      <div class="lab-group-items open" id="modalgroup-items-${gi}">
+      <div class="lab-group-items" id="modalgroup-items-${gi}">
         ${g.items.map((it, ii) => {
           const usedKey = it.key || `${g.title}::${it.label}`;
           const used = modalUsedKeys[blockId].has(usedKey);
@@ -997,7 +997,8 @@ function showResults(ev) {
 }
 
 function backToCabinet() {
-  window.location.href = 'index.html';
+  const student = getStudentFromUrl();
+  window.location.href = `index.html?student_id=${student.student_id}&name=${encodeURIComponent(student.name)}&autologin=1`;
 }
 
 // ── INIT ──────────────────────────────────────────────
