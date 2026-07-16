@@ -1264,6 +1264,17 @@ function setupWorkplaceAutocomplete(inputId, dropdownId) {
 (function init() {
   const lang=localStorage.getItem('preferred_lang')||'ru';
   currentLang=lang; setLang(lang);
+
+  // Auto-return to cabinet right after finishing a case (no login screen flash)
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('autologin') === '1' && urlParams.get('student_id')) {
+    const sessionFromUrl = { student_id: urlParams.get('student_id'), name: urlParams.get('name') || 'Студент' };
+    saveSession(sessionFromUrl);
+    showCabinet(sessionFromUrl);
+    history.replaceState(null, '', window.location.pathname);
+    return;
+  }
+
   const s=getSession();
   if(s) { document.getElementById('resume-name').textContent=s.name; document.getElementById('resume-banner').classList.add('show'); }
   else { setTimeout(() => document.getElementById('login-phone')?.focus(), 300); }
