@@ -211,6 +211,23 @@
   .rv-empty { font-size: 12px; color: var(--text3); font-style: italic; }
   .rv-chat-line { font-size: 12.5px; line-height: 1.6; margin-bottom: 4px; }
   .rv-chat-line b { color: var(--accent); }
+
+  /* FLOATING FEEDBACK BUTTON */
+  .fb-float-btn { position: fixed; bottom: 20px; right: 20px; width: 52px; height: 52px; border-radius: 50%; background: var(--accent); color: #fff; border: none; font-size: 22px; box-shadow: 0 8px 24px rgba(26,82,118,.3); cursor: pointer; z-index: 400; display: none; align-items: center; justify-content: center; }
+  .fb-float-btn.show { display: flex; }
+  .fb-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: none; align-items: flex-end; justify-content: center; z-index: 401; }
+  .fb-modal-overlay.show { display: flex; }
+  @media (min-width: 600px) { .fb-modal-overlay { align-items: center; padding: 20px; } }
+  .fb-modal { background: #fff; border-radius: 20px 20px 0 0; width: 100%; max-width: 420px; padding: 22px 20px; }
+  @media (min-width: 600px) { .fb-modal { border-radius: 18px; } }
+  .fb-modal h3 { font-size: 16px; color: var(--text); margin-bottom: 4px; }
+  .fb-modal p { font-size: 12.5px; color: var(--text3); margin-bottom: 14px; }
+  .fb-modal textarea { width: 100%; min-height: 100px; border: 1px solid var(--border2); border-radius: 12px; padding: 12px 14px; font-size: 13.5px; outline: none; resize: vertical; font-family: inherit; margin-bottom: 12px; }
+  .fb-modal-btns { display: flex; gap: 10px; }
+  .fb-modal-btns button { flex: 1; }
+  .fb-cancel-btn { background: none; border: 1px solid var(--border2); border-radius: 12px; height: 46px; color: var(--text3); font-weight: 700; font-size: 14px; }
+  .fb-sent-msg { text-align: center; color: var(--green); font-size: 13px; font-weight: 700; padding: 8px 0; display: none; }
+
 </style>
 </head>
 <body>
@@ -558,7 +575,7 @@ let isLoading = false;
 
 function getStudentFromUrl() {
   const params = new URLSearchParams(window.location.search);
-  return { student_id: params.get('student_id'), name: params.get('name') || 'Студент' };
+  return { student_id: params.get('student_id'), name: params.get('name') || 'Студент', phone: params.get('phone') || '' };
 }
 
 // ── SCREEN NAV ────────────────────────────────────────
@@ -998,15 +1015,64 @@ function showResults(ev) {
 
 function backToCabinet() {
   const student = getStudentFromUrl();
-  window.location.href = `index.html?student_id=${student.student_id}&name=${encodeURIComponent(student.name)}&autologin=1`;
+  window.location.href = `index.html?student_id=${student.student_id}&name=${encodeURIComponent(student.name)}&phone=${encodeURIComponent(student.phone||'')}&autologin=1`;
 }
 
 // ── INIT ──────────────────────────────────────────────
+
+// ── FEEDBACK (restricted to whitelisted phones) ──────
+const FEEDBACK_PHONES = []; // TODO: add whitelisted phone numbers here, e.g. '+998900060611'
+
+function checkFeedbackAccess(phone) {
+  const btn = document.getElementById('fb-float-btn');
+  if (phone && FEEDBACK_PHONES.includes(phone)) btn.classList.add('show');
+  else btn.classList.remove('show');
+}
+
+function currentPageLabel() {
+  if (document.getElementById('screen-instruction').classList.contains('active')) return 'Инструкция';
+  if (document.getElementById('screen-results').classList.contains('active')) return 'Результаты';
+  const block = BLOCKS[currentBlockIdx];
+  return block ? `Кейс — ${block.title}` : 'exam.html';
+}
+
+function openFeedbackModal() {
+  document.getElementById('fb-text').value = '';
+  document.getElementById('fb-sent-msg').style.display = 'none';
+  document.getElementById('fb-text').style.display = 'block';
+  document.querySelector('.fb-modal-btns').style.display = 'flex';
+  document.getElementById('fb-modal-overlay').classList.add('show');
+}
+function closeFeedbackModal() {
+  document.getElementById('fb-modal-overlay').classList.remove('show');
+}
+async function submitFeedback() {
+  const message = document.getElementById('fb-text').value.trim();
+  if (!message) return;
+  const student = getStudentFromUrl();
+  const btn = document.getElementById('fb-submit-btn');
+  btn.disabled = true; btn.textContent = 'Отправка...';
+  try {
+    await fetch(`${BACKEND_URL}/api/feedback`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ student_id: student.student_id, phone: student.phone, message, page: currentPageLabel() })
+    });
+    document.getElementById('fb-text').style.display = 'none';
+    document.querySelector('.fb-modal-btns').style.display = 'none';
+    document.getElementById('fb-sent-msg').style.display = 'block';
+    setTimeout(closeFeedbackModal, 1200);
+  } catch (e) {
+    alert('Не удалось отправить. Попробуйте ещё раз.');
+  }
+  btn.disabled = false; btn.textContent = 'Отправить';
+}
+
 (function init() {
   const student = getStudentFromUrl();
   if (!student.student_id) { window.location.href = 'index.html'; return; }
   document.getElementById('instr-student-name').textContent = `Добро пожаловать, ${student.name}`;
   document.getElementById('exam-student-name').textContent = student.name;
+  checkFeedbackAccess(student.phone);
 })();
 </script>
 
@@ -1019,6 +1085,21 @@ function backToCabinet() {
     <div class="catalog-modal-body" id="modal-body"></div>
     <div class="catalog-modal-footer">
       <button class="primary-btn green-btn" style="width:100%;" onclick="confirmCatalogModal()">Назначить выбранное</button>
+    </div>
+  </div>
+</div>
+
+
+<button class="fb-float-btn" id="fb-float-btn" onclick="openFeedbackModal()">💬</button>
+<div class="fb-modal-overlay" id="fb-modal-overlay">
+  <div class="fb-modal">
+    <h3>Обратная связь</h3>
+    <p>Заметили баг или есть идея? Напишите здесь.</p>
+    <textarea id="fb-text" placeholder="Опишите что заметили..."></textarea>
+    <div class="fb-sent-msg" id="fb-sent-msg">Спасибо! Отправлено.</div>
+    <div class="fb-modal-btns">
+      <button class="ghost-btn fb-cancel-btn" onclick="closeFeedbackModal()">Отмена</button>
+      <button class="primary-btn green-btn" id="fb-submit-btn" onclick="submitFeedback()">Отправить</button>
     </div>
   </div>
 </div>
