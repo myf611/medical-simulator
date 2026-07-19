@@ -173,7 +173,7 @@
   .timeup-overlay.show { display: flex; }
 
   /* CATALOG MODAL (shared: exam + labs) */
-  .catalog-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: none; align-items: flex-end; justify-content: center; z-index: 250; }
+  .catalog-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: none; align-items: flex-end; justify-content: center; z-index: 250; touch-action: none; overscroll-behavior: none; }
   .catalog-modal-overlay.show { display: flex; }
   @media (min-width: 700px) { .catalog-modal-overlay { align-items: center; padding: 20px; } }
   .catalog-modal { background: var(--surface); border-radius: 20px 20px 0 0; width: 100%; max-width: 480px; max-height: 82vh; max-height: 82dvh; min-height: 0; display: flex; flex-direction: column; }
@@ -181,7 +181,7 @@
   .catalog-modal-head { padding: 16px 18px 12px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
   .catalog-modal-head h3 { font-size: 15px; font-weight: 700; }
   .catalog-modal-close { background: none; border: none; font-size: 20px; color: var(--text3); cursor: pointer; line-height: 1; }
-  .catalog-modal-body { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+  .catalog-modal-body { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; touch-action: pan-y; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
   .catalog-modal-footer { padding: 12px 14px; border-top: 1px solid var(--border); flex-shrink: 0; }
   .timeup-card { background: var(--surface); border-radius: 20px; padding: 26px; max-width: 340px; text-align: center; }
   .timeup-card .ic { font-size: 30px; margin-bottom: 10px; }
@@ -471,7 +471,7 @@ const EXAM_GROUPS = [
     { key: 'дыхание', label: 'Аускультация лёгких' },
     { key: null, label: 'Перкуссия грудной клетки' },
   ]},
-  { title: '🫃 Живот', items: [
+  { title: '🩻 Живот', items: [
     { key: 'живот', label: 'Пальпация и перкуссия живота' },
     { key: null, label: 'Симптомы раздражения брюшины' },
     { key: null, label: 'Пальпация печени и селезёнки' },
@@ -865,6 +865,7 @@ function openCatalogModal(blockId) {
     </div>
   `).join('');
   document.getElementById('catalog-modal').classList.add('show');
+  document.body.style.overflow = 'hidden';
 }
 
 function toggleModalGroup(gi) {
@@ -875,6 +876,7 @@ function toggleModalGroup(gi) {
 function closeCatalogModal() {
   document.getElementById('catalog-modal').classList.remove('show');
   document.querySelector('.catalog-modal-footer').style.display = 'block';
+  document.body.style.overflow = '';
   modalBlockId = null;
 }
 
