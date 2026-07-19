@@ -176,12 +176,12 @@
   .catalog-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: none; align-items: flex-end; justify-content: center; z-index: 250; touch-action: none; overscroll-behavior: none; }
   .catalog-modal-overlay.show { display: flex; }
   @media (min-width: 700px) { .catalog-modal-overlay { align-items: center; padding: 20px; } }
-  .catalog-modal { background: var(--surface); border-radius: 20px 20px 0 0; width: 100%; max-width: 480px; max-height: 82vh; max-height: 82dvh; min-height: 0; display: flex; flex-direction: column; }
+  .catalog-modal { background: var(--surface); border-radius: 20px 20px 0 0; width: 100%; max-width: 480px; display: block; position: relative; }
   @media (min-width: 700px) { .catalog-modal { border-radius: 18px; } }
   .catalog-modal-head { padding: 16px 18px 12px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
   .catalog-modal-head h3 { font-size: 15px; font-weight: 700; }
   .catalog-modal-close { background: none; border: none; font-size: 20px; color: var(--text3); cursor: pointer; line-height: 1; }
-  .catalog-modal-body { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; touch-action: pan-y; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+  .catalog-modal-body { overflow-y: scroll; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; touch-action: pan-y; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; box-sizing: border-box; }
   .catalog-modal-footer { padding: 12px 14px; border-top: 1px solid var(--border); flex-shrink: 0; }
   .timeup-card { background: var(--surface); border-radius: 20px; padding: 26px; max-width: 340px; text-align: center; }
   .timeup-card .ic { font-size: 30px; margin-bottom: 10px; }
@@ -637,6 +637,8 @@ function viewBlockModal(blockId) {
   document.getElementById('modal-body').innerHTML = `<div class="rv-detail-block" style="border:none;padding:0;">${bodyHtml}</div>`;
   document.getElementById('catalog-modal').classList.add('show');
   document.querySelector('.catalog-modal-footer').style.display = 'none';
+  document.body.style.overflow = 'hidden';
+  sizeCatalogModal();
 }
 
 // ── COLUMNS ───────────────────────────────────────────
@@ -866,6 +868,27 @@ function openCatalogModal(blockId) {
   `).join('');
   document.getElementById('catalog-modal').classList.add('show');
   document.body.style.overflow = 'hidden';
+  sizeCatalogModal();
+}
+
+function sizeCatalogModal() {
+  requestAnimationFrame(() => {
+    const overlay = document.getElementById('catalog-modal');
+    const modalEl = overlay.querySelector('.catalog-modal');
+    const head = overlay.querySelector('.catalog-modal-head');
+    const body = document.getElementById('modal-body');
+    const footer = overlay.querySelector('.catalog-modal-footer');
+
+    const vh = window.innerHeight;
+    const maxModalHeight = Math.round(vh * 0.82);
+    const headH = head.offsetHeight;
+    const footerH = footer.style.display === 'none' ? 0 : footer.offsetHeight;
+    const bodyH = maxModalHeight - headH - footerH;
+
+    modalEl.style.maxHeight = maxModalHeight + 'px';
+    body.style.height = bodyH + 'px';
+    body.style.maxHeight = bodyH + 'px';
+  });
 }
 
 function toggleModalGroup(gi) {
@@ -874,9 +897,15 @@ function toggleModalGroup(gi) {
 }
 
 function closeCatalogModal() {
-  document.getElementById('catalog-modal').classList.remove('show');
+  const overlay = document.getElementById('catalog-modal');
+  overlay.classList.remove('show');
   document.querySelector('.catalog-modal-footer').style.display = 'block';
   document.body.style.overflow = '';
+  const modalEl = overlay.querySelector('.catalog-modal');
+  const body = document.getElementById('modal-body');
+  modalEl.style.maxHeight = '';
+  body.style.height = '';
+  body.style.maxHeight = '';
   modalBlockId = null;
 }
 
