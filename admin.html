@@ -143,6 +143,7 @@
 
     <form id="form-register" style="display:none;">
       <div class="field"><label id="at-lbl-fullname"></label><input type="text" id="re-fullname"></div>
+      <div class="field"><label id="at-lbl-phone"></label><input type="tel" id="re-phone" placeholder="+998 90 123 45 67"></div>
       <div class="field"><label id="at-lbl-username2"></label><input type="text" id="re-username"></div>
       <div class="field"><label id="at-lbl-password2"></label><input type="password" id="re-password"></div>
       <button type="button" class="primary-btn" id="re-btn" onclick="adminRegister()"></button>
@@ -232,7 +233,7 @@ ru: {
   login_title: 'Панель преподавателя', login_sub: 'Симулятор пациента',
   tab_login: 'Вход', tab_register: 'Регистрация',
   lbl_username: 'Логин', lbl_password: 'Пароль', login_btn: 'Войти →',
-  lbl_fullname: 'Ваше имя', lbl_password_min: 'Пароль (минимум 6 символов)', register_btn: 'Зарегистрироваться →',
+  lbl_fullname: 'Ваше имя', lbl_phone: 'Номер телефона', lbl_password_min: 'Пароль (минимум 6 символов)', register_btn: 'Зарегистрироваться →',
   dash_brand: '👨‍🏫 Панель преподавателя', logout_btn: 'Выйти',
   nav_students: 'Студенты', nav_feedback: '💬 Обратная связь',
   students_title: 'Студенты', feedback_title: 'Обратная связь',
@@ -258,14 +259,14 @@ ru: {
   date_locale: 'ru-RU',
   err_fill_fields: 'Заполните логин и пароль', err_logging_in: 'Входим...', err_login_failed: 'Ошибка входа',
   err_login_generic: 'Не удалось войти',
-  err_reg_fields: 'Логин обязателен, пароль минимум 6 символов', err_creating: 'Создаём...', err_reg_failed: 'Ошибка регистрации',
+  err_reg_fields: 'Заполните телефон, логин и пароль (минимум 6 символов)', err_creating: 'Создаём...', err_reg_failed: 'Ошибка регистрации',
   err_reg_generic: 'Не удалось зарегистрироваться',
 },
 en: {
   login_title: 'Instructor Panel', login_sub: 'Patient Simulator',
   tab_login: 'Log in', tab_register: 'Sign up',
   lbl_username: 'Username', lbl_password: 'Password', login_btn: 'Log in →',
-  lbl_fullname: 'Your name', lbl_password_min: 'Password (min 6 characters)', register_btn: 'Sign up →',
+  lbl_fullname: 'Your name', lbl_phone: 'Phone number', lbl_password_min: 'Password (min 6 characters)', register_btn: 'Sign up →',
   dash_brand: '👨‍🏫 Instructor Panel', logout_btn: 'Log out',
   nav_students: 'Students', nav_feedback: '💬 Feedback',
   students_title: 'Students', feedback_title: 'Feedback',
@@ -291,7 +292,7 @@ en: {
   date_locale: 'en-US',
   err_fill_fields: 'Please fill in username and password', err_logging_in: 'Logging in...', err_login_failed: 'Login failed',
   err_login_generic: 'Failed to log in',
-  err_reg_fields: 'Username is required, password must be at least 6 characters', err_creating: 'Creating...', err_reg_failed: 'Registration failed',
+  err_reg_fields: 'Please fill in phone, username, and password (min 6 characters)', err_creating: 'Creating...', err_reg_failed: 'Registration failed',
   err_reg_generic: 'Failed to register',
 }
 };
@@ -316,6 +317,7 @@ function translateAdminPage(){
   document.getElementById('at-lbl-password1').textContent = UI_T.lbl_password;
   document.getElementById('li-btn').textContent = UI_T.login_btn;
   document.getElementById('at-lbl-fullname').textContent = UI_T.lbl_fullname;
+  document.getElementById('at-lbl-phone').textContent = UI_T.lbl_phone;
   document.getElementById('at-lbl-username2').textContent = UI_T.lbl_username;
   document.getElementById('at-lbl-password2').textContent = UI_T.lbl_password_min;
   document.getElementById('re-btn').textContent = UI_T.register_btn;
@@ -378,17 +380,18 @@ async function adminLogin(){
 
 async function adminRegister(){
   const full_name = document.getElementById('re-fullname').value.trim();
+  const phone = document.getElementById('re-phone').value.trim();
   const username = document.getElementById('re-username').value.trim();
   const password = document.getElementById('re-password').value;
   const btn = document.getElementById('re-btn');
   const err = document.getElementById('auth-err');
   err.textContent = '';
-  if(!username || password.length < 6){ err.textContent = UI_T.err_reg_fields; return; }
+  if(!username || password.length < 6 || !phone){ err.textContent = UI_T.err_reg_fields; return; }
   btn.disabled = true; btn.textContent = UI_T.err_creating;
   try{
     const res = await fetch(`${BACKEND_URL}/api/admin-register`, {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({username, password, full_name, org_slug:'tashkent-endo'})
+      body: JSON.stringify({username, password, full_name, phone, org_slug:'tashkent-endo'})
     });
     if(!res.ok){ const d = await res.json(); throw new Error(d.detail || UI_T.err_reg_failed); }
     const admin = await res.json();
