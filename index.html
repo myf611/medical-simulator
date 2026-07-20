@@ -159,6 +159,9 @@
     .divider::before,.divider::after{content:""; height:1px; background:var(--line);}
     .sso-btn{height:54px; border:1px solid var(--line); background:#fff; color:var(--blue-900); border-radius:13px; display:flex; align-items:center; justify-content:center; gap:10px; font-weight:750; width:100%;}
     .policy{margin:14px 0 0; color:#7b8c9a; text-align:center; font-size:12px; line-height:1.5;}
+    .admin-link-row{margin:6px 0 0; text-align:center; font-size:11.5px;}
+    .admin-link-row a{color:#9fb3c2; text-decoration:none;}
+    .admin-link-row a:hover{color:var(--blue); text-decoration:underline;}
     .policy a{color:var(--blue); font-weight:700;}
 
     /* RESUME BANNER */
@@ -543,6 +546,7 @@
           </div>
 
           <p class="policy" data-key="policy">Продолжая, вы соглашаетесь с <a href="#">Условиями использования</a></p>
+          <p class="admin-link-row"><a href="admin.html" data-key="admin_link">Я преподаватель →</a></p>
         </div>
 
       </aside>
@@ -806,6 +810,7 @@ const T = {
     t1t:'Надёжно', t1d:'Данные защищены современными стандартами безопасности',
     t2t:'Профессионально', t2d:'Создано для медицинских образовательных организаций',
     policy:'Продолжая, вы соглашаетесь с Условиями использования',
+    admin_link:'Я преподаватель →',
     err_phone:'Неверный формат номера', err_conn:'Ошибка соединения.', err_not_found:'Номер не найден. Пройдите регистрацию.',
     lbl_last:'Фамилия', lbl_first:'Имя', lbl_phone:'Телефон', lbl_region:'Область', lbl_city:'Город', lbl_work:'Место работы',
     regions:['Ташкент (город)','Андижанская область','Бухарская область','Джизакская область','Кашкадарьинская область','Навоийская область','Наманганская область','Самаркандская область','Сурхандарьинская область','Сырдарьинская область','Ташкентская область','Ферганская область','Хорезмская область','Республика Каракалпакстан']
@@ -846,6 +851,7 @@ const T = {
     t1t:"Ishonchli", t1d:"Ma'lumotlar zamonaviy xavfsizlik standartlari bilan himoyalangan",
     t2t:"Professional", t2d:"Tibbiy ta'lim muassasalari uchun yaratilgan",
     policy:"Davom etib, Foydalanish shartlariga rozilik bildirasiz",
+    admin_link:"Men o'qituvchiman →",
     err_phone:"Noto'g'ri format", err_conn:"Ulanishda xatolik.", err_not_found:"Raqam topilmadi. Ro'yxatdan o'ting.",
     lbl_last:"Familiya", lbl_first:"Ism", lbl_phone:"Telefon", lbl_region:"Viloyat", lbl_city:"Shahar", lbl_work:"Ish joyi",
     regions:["Toshkent (shahar)","Andijon viloyati","Buxoro viloyati","Jizzax viloyati","Qashqadaryo viloyati","Navoiy viloyati","Namangan viloyati","Samarqand viloyati","Surxondaryo viloyati","Sirdaryo viloyati","Toshkent viloyati","Farg'ona viloyati","Xorazm viloyati","Qoraqalpog'iston Respublikasi"]
@@ -886,6 +892,7 @@ const T = {
     t1t:'Secure', t1d:'Data protected by modern security standards',
     t2t:'Professional', t2d:'Built for medical training organizations',
     policy:'By continuing, you agree to the Terms of Use',
+    admin_link:'I’m an instructor →',
     err_phone:'Invalid phone format', err_conn:'Connection error.', err_not_found:'Number not found. Please register.',
     lbl_last:'Last name', lbl_first:'First name', lbl_phone:'Phone', lbl_region:'Region', lbl_city:'City', lbl_work:'Workplace',
     regions:['Tashkent (city)','Andijan region','Bukhara region','Jizzakh region','Kashkadarya region','Navoiy region','Namangan region','Samarkand region','Surkhandarya region','Syrdarya region','Tashkent region','Fergana region','Khorezm region','Republic of Karakalpakstan']
