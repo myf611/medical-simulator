@@ -226,6 +226,11 @@
   .fb-cancel-btn { background: none; border: 1px solid var(--border2); border-radius: 12px; height: 46px; color: var(--text3); font-weight: 700; font-size: 14px; }
   .fb-sent-msg { text-align: center; color: var(--green); font-size: 13px; font-weight: 700; padding: 8px 0; display: none; }
 
+
+  .lang-switch-instr { display: flex; border: 1px solid var(--border); border-radius: 999px; overflow: hidden; }
+  .lang-mini-btn { background: transparent; border: none; padding: 5px 11px; font-weight: 800; font-size: 11px; color: var(--text3); cursor: pointer; }
+  .lang-mini-btn.active { background: var(--accent-light); color: var(--accent); }
+
 </style>
 </head>
 <body>
@@ -233,58 +238,33 @@
 <!-- ═══════════════ SCREEN 1: INSTRUCTION ═══════════════ -->
 <div class="screen active" id="screen-instruction">
   <div class="instr-card">
+    <div style="display:flex; justify-content:flex-end; margin-bottom:-8px;">
+      <div class="lang-switch-instr">
+        <button class="lang-mini-btn" id="ilang-ru" onclick="switchExamLang('ru')">RU</button>
+        <button class="lang-mini-btn" id="ilang-en" onclick="switchExamLang('en')">EN</button>
+      </div>
+    </div>
     <div class="instr-logo">🏥</div>
-    <div class="instr-title">Симулятор пациента</div>
-    <div class="instr-sub" id="instr-student-name">Добро пожаловать</div>
+    <div class="instr-title" id="instr-title-text"></div>
+    <div class="instr-sub" id="instr-student-name"></div>
 
     <div class="instr-section">
-      <h3>Зачем эта платформа</h3>
-      <div class="instr-purpose">
-        Тренажёр клинического мышления. Вы проводите приём виртуального пациента как в реальной практике: собираете анамнез, проводите осмотр, формулируете гипотезу, назначаете обследования и в конце ставите диагноз с планом лечения. После завершения — подробный разбор с указанием сильных и слабых сторон.
-      </div>
+      <h3 id="instr-purpose-h"></h3>
+      <div class="instr-purpose" id="instr-purpose-text"></div>
     </div>
 
     <div class="instr-section">
-      <h3>Тайминги по этапам</h3>
-      <div class="timing-row">
-        <div class="timing-icon">💬</div>
-        <div><div class="timing-name">Сбор анамнеза</div><div class="timing-desc">Свободный диалог с пациентом о жалобах и истории</div></div>
-        <div class="timing-min">5 мин</div>
-      </div>
-      <div class="timing-row">
-        <div class="timing-icon">🩺</div>
-        <div><div class="timing-name">Физикальный осмотр</div><div class="timing-desc">Выберите нужные группы обследования из списка</div></div>
-        <div class="timing-min">5 мин</div>
-      </div>
-      <div class="timing-row">
-        <div class="timing-icon">📋</div>
-        <div><div class="timing-name">Предварительный диагноз</div><div class="timing-desc">Ваша рабочая гипотеза до результатов анализов</div></div>
-        <div class="timing-min">5 мин</div>
-      </div>
-      <div class="timing-row">
-        <div class="timing-icon">🧪</div>
-        <div><div class="timing-name">Анализы и исследования</div><div class="timing-desc">Выберите нужные группы обследований</div></div>
-        <div class="timing-min">5 мин</div>
-      </div>
-      <div class="timing-row">
-        <div class="timing-icon">✅</div>
-        <div><div class="timing-name">Диагноз и план лечения</div><div class="timing-desc">Финальный диагноз и развёрнутый план</div></div>
-        <div class="timing-min">10 мин</div>
-      </div>
-      <div class="timing-total"><span>Всего на кейс</span><span>30 минут</span></div>
+      <h3 id="instr-timing-h"></h3>
+      <div id="instr-timing-rows"></div>
+      <div class="timing-total"><span id="instr-total-label"></span><span id="instr-total-value"></span></div>
     </div>
 
     <div class="instr-section">
-      <h3>Правила</h3>
-      <div class="instr-rules">
-        <div class="instr-rule"><b>—</b> Когда время этапа истекает, он закрывается автоматически и открывается следующий. Вернуться назад нельзя.</div>
-        <div class="instr-rule"><b>—</b> Вы можете завершить этап раньше срока кнопкой «Далее» — оставшееся время не переносится на следующий этап.</div>
-        <div class="instr-rule"><b>—</b> Все 5 этапов видны на экране сразу, но работать можно только с активным (подсвечен рамкой).</div>
-        <div class="instr-rule"><b>—</b> В осмотре и анализах — большой общий список, не только то что относится к этому кейсу. Выбирайте осознанно.</div>
-      </div>
+      <h3 id="instr-rules-h"></h3>
+      <div class="instr-rules" id="instr-rules-list"></div>
     </div>
 
-    <button class="primary-btn green-btn instr-start-btn" onclick="startExam()">Начать кейс →</button>
+    <button class="primary-btn green-btn instr-start-btn" id="instr-start-btn" onclick="startExam()"></button>
   </div>
 </div>
 
@@ -293,7 +273,7 @@
   <div class="exam-header">
     <div style="display:flex;align-items:center;gap:8px;">
       <span style="font-size:16px;">🏥</span>
-      <span class="logo">Симулятор пациента</span>
+      <span class="logo" id="exam-header-logo"></span>
     </div>
     <div class="student-name" id="exam-student-name">—</div>
   </div>
@@ -308,23 +288,23 @@
   <div class="results-card">
     <div class="results-grade">
       <div class="num" id="res-grade">—</div>
-      <div class="lbl">Общая оценка за кейс</div>
+      <div class="lbl" id="res-grade-lbl"></div>
     </div>
 
     <div class="block-grades-row" id="res-block-grades"></div>
 
     <div class="points-section">
-      <div class="points-title good">✅ Что сделано правильно</div>
+      <div class="points-title good" id="res-positive-title"></div>
       <div class="points-list" id="res-positive"></div>
     </div>
 
     <div class="points-section">
-      <div class="points-title bad">⚠️ Что упущено или сделано неверно</div>
+      <div class="points-title bad" id="res-negative-title"></div>
       <div class="points-list" id="res-negative"></div>
     </div>
 
     <div class="results-btns">
-      <button class="primary-btn" onclick="backToCabinet()">← Вернуться в кабинет</button>
+      <button class="primary-btn" id="res-back-btn" onclick="backToCabinet()"></button>
     </div>
   </div>
 </div>
@@ -333,8 +313,8 @@
 <div class="timeup-overlay" id="timeup-overlay">
   <div class="timeup-card">
     <div class="ic">⏱</div>
-    <div style="font-weight:700;margin-bottom:6px;">Время кейса истекло</div>
-    <div style="font-size:13px;color:var(--text2);margin-bottom:16px;">Формируем итоговую оценку по тому, что успели сделать...</div>
+    <div style="font-weight:700;margin-bottom:6px;" id="timeup-title-text"></div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:16px;" id="timeup-desc-text"></div>
     <div class="typing-dots" style="justify-content:center;"><span></span><span></span><span></span></div>
   </div>
 </div>
@@ -342,8 +322,15 @@
 <script>
 const BACKEND_URL = 'https://medical-simulator-api.onrender.com';
 
-// ── CASE DATA ─────────────────────────────────────────
-const CASE = {
+// Language: read from index.html's choice; UZ has no exam content yet, falls back to RU
+let currentLang = (() => {
+  const saved = localStorage.getItem('preferred_lang');
+  return saved === 'en' ? 'en' : 'ru';
+})();
+
+// ── CASE DATA (RU/EN) ──────────────────────────────────
+const CASE_DATA = {
+ru: {
   patient: { name: "Жасур Омонов", age: 20, gender: "мужчина", occupation: "менеджер в банке" },
   history: {
     presenting: "Последние 2–3 недели очень много пьёт воды и часто ходит в туалет. Сильная слабость, головная боль, тошнота, несколько раз рвало. Похудел примерно на 5–6 кг. Дышать стало тяжелее при движении. Диабет никогда не диагностировали.",
@@ -420,14 +407,99 @@ const CASE = {
     "Лейкоцитоз при ДКА может быть реакцией стресса, а не признаком инфекции",
     "Тактика: регидратация 0,9% NaCl → коррекция K+ и Mg²⁺ → инсулинотерапия → мониторинг КЩС и электролитов"
   ]
+},
+en: {
+  patient: { name: "Jasur Omonov", age: 20, gender: "male", occupation: "bank manager" },
+  history: {
+    presenting: "Over the past 2–3 weeks he has been drinking a lot of water and urinating frequently. Severe weakness, headache, nausea, vomited several times. Lost about 5–6 kg. Breathing has become harder with movement. Diabetes has never been diagnosed.",
+    past_medical: "No chronic diseases, surgeries, or injuries. No family history of diabetes.",
+    medications: "Not taking any medications.",
+    allergies: "No allergies.",
+    family: "No family history of diabetes. Parents and sister are healthy.",
+    social: "Works as a bank manager, constantly under stress at work. Doesn't smoke, doesn't drink alcohol. Often eats fast food. Financially stable."
+  },
+  vitals: [
+    { k: "BP", v: "100/70 mmHg", s: "wa" },
+    { k: "HR", v: "120 bpm", s: "ab" },
+    { k: "RR", v: "24/min", s: "wa" },
+    { k: "SpO2", v: "99%", s: "ok" },
+    { k: "Temperature", v: "36.5 °C", s: "ok" },
+    { k: "Height / Weight / BMI", v: "160 cm / 62 kg / 24.2", s: "ok" }
+  ],
+  exam: {
+    general: "Emaciated appearance, pale pink skin, cheek flushing. Clear consciousness, fully oriented. Dry mucous membranes. Reduced capillary refill. Acetone smell on breath.",
+    cardio: "Heart sounds clear, tachycardia. No murmurs.",
+    resp: "Labored breathing. Marked shortness of breath when talking and at rest (Kussmaul breathing).",
+    abdomen: "Abdomen soft, moderate tenderness in the epigastrium, no peritoneal signs.",
+    neuro: "Clear consciousness, fully oriented. Glasgow Coma Scale: 15 points. No focal symptoms.",
+    extremities: "No changes. No edema. Pulse on foot arteries preserved."
+  },
+  labs: {
+    "глюкоза": { name: "Blood Glucose (capillary)", rows: [{ k: "Glucose", v: "20.1 mmol/L", r: "3.9–6.1", s: "ab" }] },
+    "hba1c":   { name: "HbA1c", rows: [{ k: "HbA1c", v: "17.6%", r: "4.0–5.9%", s: "ab" }] },
+    "моча":    { name: "Urinalysis", rows: [
+      { k: "Urine glucose", v: "1.5 g/L", r: "Negative", s: "ab" },
+      { k: "Ketone bodies", v: "+++ strongly positive", r: "Negative", s: "ab" }
+    ]},
+    "агк":     { name: "Arterial Blood Gas (ABG)", rows: [
+      { k: "pH", v: "7.14 (acidosis)", r: "7.35–7.45", s: "ab" },
+      { k: "Anion gap", v: "22.0 mmol/L", r: "8–16", s: "ab" }
+    ]},
+    "электролиты": { name: "Electrolytes", rows: [
+      { k: "K⁺", v: "2.9 mmol/L ↓", r: "3.4–5.2", s: "ab" },
+      { k: "Na⁺", v: "134 mmol/L ↓", r: "136–145", s: "wa" }
+    ]},
+    "почки":   { name: "Kidney Function", rows: [
+      { k: "Urea", v: "3.4 mmol/L", r: "2.5–8.3", s: "ok" },
+      { k: "Creatinine", v: "59 µmol/L", r: "62–115", s: "ok" }
+    ]},
+    "оак":     { name: "CBC", rows: [
+      { k: "Hb", v: "126 g/L", r: "130–170", s: "wa" },
+      { k: "WBC", v: "14.1 × 10⁹/L ↑", r: "4.0–9.0", s: "ab" },
+      { k: "Platelets", v: "228 × 10⁹/L", r: "150–400", s: "ok" }
+    ]},
+    "печень":  { name: "Liver Function", rows: [
+      { k: "ALT", v: "30 U/L", r: "0–45", s: "ok" },
+      { k: "AST", v: "24 U/L", r: "0–40", s: "ok" }
+    ]},
+    "магний":  { name: "Blood Magnesium", rows: [
+      { k: "Mg²⁺", v: "0.74 mmol/L", r: "0.7–1.0", s: "ok" }
+    ]},
+    "экг":     { name: "ECG", rows: [
+      { k: "Rhythm", v: "Sinus tachycardia", r: "Sinus rhythm", s: "wa" },
+      { k: "HR", v: "122 bpm", r: "60–100", s: "ab" },
+      { k: "Changes", v: "Diffuse dystrophic changes", r: "Normal", s: "wa" }
+    ]},
+    "рентген": { name: "Chest X-ray", rows: [
+      { k: "Conclusion", v: "No pathology detected", r: "Normal", s: "ok" }
+    ]}
+  },
+  correct_diagnosis: "Newly diagnosed diabetes mellitus. Complication: diabetic ketoacidosis (DKA).",
+  key_points: [
+    "Correct diagnosis wording: 'Newly diagnosed diabetes mellitus. Complication: diabetic ketoacidosis' — the type of diabetes is not specified at initial diagnosis",
+    "HbA1c 17.6% confirms prolonged hyperglycemia, but is NOT a basis for determining diabetes type",
+    "Classic DKA triad: hyperglycemia (20.1 mmol/L), ketonuria (+++), metabolic acidosis (pH 7.14)",
+    "Hypokalemia (K+ 2.9 mmol/L) — requires correction BEFORE starting insulin therapy",
+    "In DKA, correction is needed not only for K+ and Na+, but also magnesium",
+    "Kussmaul breathing — compensatory hyperventilation in metabolic acidosis",
+    "Leukocytosis in DKA may be a stress reaction, not a sign of infection",
+    "Tactics: rehydration with 0.9% NaCl → K+ and Mg²⁺ correction → insulin therapy → monitoring of acid-base status and electrolytes"
+  ]
+}
 };
 
-const CASE_CONTEXT = `Пациент: ${CASE.patient.name}, ${CASE.patient.age} лет, ${CASE.patient.gender}, ${CASE.patient.occupation}.
-Анамнез: ${CASE.history.presenting}
-Правильный диагноз: ${CASE.correct_diagnosis}
-Ключевые пункты: ${CASE.key_points.join(' | ')}`;
+const CASE = CASE_DATA[currentLang];
 
-const SYSTEM_PROMPT = `Ты — Жасур Омонов, 20 лет, узбек. Работаешь менеджером в банке. Тебе очень плохо, ты напуган и растерян — никогда раньше так серьёзно не болел. Ты в приёмном покое, говоришь с врачом.
+function buildCaseContext() {
+  return `Patient: ${CASE.patient.name}, ${CASE.patient.age}, ${CASE.patient.gender}, ${CASE.patient.occupation}.
+History: ${CASE.history.presenting}
+Correct diagnosis: ${CASE.correct_diagnosis}
+Key points: ${CASE.key_points.join(' | ')}`;
+}
+const CASE_CONTEXT = buildCaseContext();
+
+const SYSTEM_PROMPTS = {
+ru: `Ты — Жасур Омонов, 20 лет, узбек. Работаешь менеджером в банке. Тебе очень плохо, ты напуган и растерян — никогда раньше так серьёзно не болел. Ты в приёмном покое, говоришь с врачом.
 
 ХАРАКТЕР И СОСТОЯНИЕ:
 - Ты молодой, городской парень. Говоришь живо, немного взволнованно.
@@ -450,10 +522,38 @@ const SYSTEM_PROMPT = `Ты — Жасур Омонов, 20 лет, узбек. 
 Препараты: ${CASE.history.medications}
 Аллергии: ${CASE.history.allergies}
 Семейный анамнез: ${CASE.history.family}
-Социальный анамнез: ${CASE.history.social}`;
+Социальный анамнез: ${CASE.history.social}`,
+en: `You are Jasur Omonov, 20 years old, Uzbek. You work as a bank manager. You feel very unwell, scared and confused — you have never been this seriously ill before. You are in the emergency department, talking to a doctor.
+
+CHARACTER AND STATE:
+- You are a young, urban guy. You speak in a lively, slightly anxious way.
+- You are scared — you don't understand what's happening.
+- You sometimes add details yourself that seem important to you.
+- Don't use medical terminology — you are not a doctor.
+
+ABSOLUTE RULES:
+1. Respond ONLY based on the case data. Do not make anything up.
+2. If asked about something not in the case — respond naturally like an ordinary 20-year-old.
+3. Keep answers short — 1-3 sentences. Natural, conversational language.
+4. If asked about diagnosis or treatment — "I don't know, you're the doctor, you'd know better."
+5. Do NOT comment on tests, results, or orders.
+6. Only reveal information if the doctor directly asked.
+7. Don't repeat the same phrases in every response.
+8. IMPORTANT: Respond entirely in English, in character.
+
+CASE DATA (use only this):
+Complaint: ${CASE.history.presenting}
+Medical history: ${CASE.history.past_medical}
+Medications: ${CASE.history.medications}
+Allergies: ${CASE.history.allergies}
+Family history: ${CASE.history.family}
+Social history: ${CASE.history.social}`
+};
+const SYSTEM_PROMPT = SYSTEM_PROMPTS[currentLang];
 
 // Comprehensive physical exam catalog (not case-specific)
-const EXAM_GROUPS = [
+const EXAM_GROUPS_DATA = {
+ru: [
   { title: '📊 Общий осмотр', items: [
     { key: 'витальные', label: 'Витальные показатели (АД, ЧСС, ЧД, SpO2, t°)' },
     { key: 'общий', label: 'Внешний вид, кожа, слизистые' },
@@ -487,10 +587,48 @@ const EXAM_GROUPS = [
     { key: null, label: 'Пальпация щитовидной железы' },
     { key: null, label: 'Осмотр зева и миндалин' },
   ]}
-];
+],
+en: [
+  { title: '📊 General Examination', items: [
+    { key: 'витальные', label: 'Vital signs (BP, HR, RR, SpO2, t°)' },
+    { key: 'общий', label: 'General appearance, skin, mucous membranes' },
+    { key: null, label: 'Anthropometry (height, weight, BMI)' },
+    { key: null, label: 'Lymph nodes' },
+  ]},
+  { title: '❤️ Cardiovascular System', items: [
+    { key: 'кардио', label: 'Heart auscultation' },
+    { key: null, label: 'Peripheral artery pulse' },
+    { key: null, label: 'JVP / jugular vein distension' },
+  ]},
+  { title: '🫁 Respiratory System', items: [
+    { key: 'дыхание', label: 'Lung auscultation' },
+    { key: null, label: 'Chest percussion' },
+  ]},
+  { title: '🩻 Abdomen', items: [
+    { key: 'живот', label: 'Abdominal palpation and percussion' },
+    { key: null, label: 'Signs of peritoneal irritation' },
+    { key: null, label: 'Liver and spleen palpation' },
+  ]},
+  { title: '🧠 Neurological Status', items: [
+    { key: 'неврология', label: 'Consciousness, orientation, reflexes' },
+    { key: null, label: 'Meningeal signs' },
+    { key: null, label: 'Glasgow Coma Scale' },
+  ]},
+  { title: '🦵 Extremities', items: [
+    { key: 'конечности', label: 'Limb exam, edema, pulsation' },
+    { key: null, label: 'Foot exam and sensation' },
+  ]},
+  { title: '🦋 Head and Neck', items: [
+    { key: null, label: 'Thyroid gland palpation' },
+    { key: null, label: 'Throat and tonsil exam' },
+  ]}
+]
+};
+const EXAM_GROUPS = EXAM_GROUPS_DATA[currentLang];
 
 // Comprehensive lab/instrumental catalog (not case-specific — avoids being a hint)
-const LAB_GROUPS = [
+const LAB_GROUPS_DATA = {
+ru: [
   { title: '🩸 Общий анализ крови', items: [
     { key: 'оак', label: 'ОАК (общий анализ крови)' },
     { key: null, label: 'Лейкоцитарная формула' },
@@ -546,16 +684,204 @@ const LAB_GROUPS = [
     { key: null, label: 'ЭхоКГ' },
     { key: null, label: 'КТ головного мозга' },
   ]}
-];
+],
+en: [
+  { title: '🩸 Complete Blood Count', items: [
+    { key: 'оак', label: 'CBC (complete blood count)' },
+    { key: null, label: 'WBC differential' },
+    { key: null, label: 'ESR' },
+    { key: null, label: 'Coagulogram' },
+  ]},
+  { title: '🍬 Carbohydrate Metabolism', items: [
+    { key: 'глюкоза', label: 'Blood glucose' },
+    { key: 'hba1c', label: 'HbA1c' },
+    { key: null, label: 'Insulin' },
+    { key: null, label: 'C-peptide' },
+    { key: null, label: 'Glucose tolerance test' },
+  ]},
+  { title: '🧬 Blood Chemistry', items: [
+    { key: 'электролиты', label: 'Electrolytes (K⁺, Na⁺, Cl⁻)' },
+    { key: 'почки', label: 'Kidney function (urea, creatinine)' },
+    { key: 'печень', label: 'Liver function (ALT, AST, bilirubin)' },
+    { key: 'магний', label: 'Blood magnesium' },
+    { key: null, label: 'Total and ionized calcium' },
+    { key: null, label: 'Phosphorus' },
+    { key: null, label: 'Total protein, albumin' },
+  ]},
+  { title: '⚗️ Acid-Base Status', items: [
+    { key: 'агк', label: 'Arterial blood gas' },
+    { key: null, label: 'Lactate' },
+    { key: null, label: 'Blood osmolality' },
+  ]},
+  { title: '🧫 Urinalysis', items: [
+    { key: 'моча', label: 'Urinalysis (UA)' },
+    { key: null, label: 'Microalbuminuria' },
+    { key: null, label: 'Urine culture' },
+  ]},
+  { title: '🧪 Lipid Profile & Inflammation', items: [
+    { key: null, label: 'Lipid panel (TC, LDL, HDL, TG)' },
+    { key: null, label: 'CRP' },
+    { key: null, label: 'Procalcitonin' },
+  ]},
+  { title: '🦋 Endocrine Hormones', items: [
+    { key: null, label: 'TSH, T3, T4' },
+    { key: null, label: 'Cortisol' },
+    { key: null, label: 'GAD, ICA antibodies' },
+  ]},
+  { title: '❤️ Cardiac Markers', items: [
+    { key: null, label: 'Troponin' },
+    { key: null, label: 'NT-proBNP' },
+    { key: null, label: 'D-dimer' },
+  ]},
+  { title: '📈 Instrumental', items: [
+    { key: 'экг', label: 'ECG' },
+    { key: 'рентген', label: 'Chest X-ray' },
+    { key: null, label: 'Abdominal ultrasound' },
+    { key: null, label: 'Thyroid ultrasound' },
+    { key: null, label: 'Echocardiography' },
+    { key: null, label: 'Brain CT' },
+  ]}
+]
+};
+const LAB_GROUPS = LAB_GROUPS_DATA[currentLang];
 
 // ── BLOCK CONFIG ──────────────────────────────────────
-const BLOCKS = [
+const BLOCKS_DATA = {
+ru: [
   { id: 'anamnesis', title: 'Анамнез', icon: '💬', duration: 300 },
   { id: 'exam', title: 'Осмотр', icon: '🩺', duration: 300 },
   { id: 'preliminary_diagnosis', title: 'Предв. диагноз', icon: '📋', duration: 300 },
   { id: 'labs', title: 'Анализы', icon: '🧪', duration: 300 },
   { id: 'final', title: 'Итог', icon: '✅', duration: 600 }
-];
+],
+en: [
+  { id: 'anamnesis', title: 'History', icon: '💬', duration: 300 },
+  { id: 'exam', title: 'Examination', icon: '🩺', duration: 300 },
+  { id: 'preliminary_diagnosis', title: 'Prelim. Dx', icon: '📋', duration: 300 },
+  { id: 'labs', title: 'Labs', icon: '🧪', duration: 300 },
+  { id: 'final', title: 'Final', icon: '✅', duration: 600 }
+]
+};
+const BLOCKS = BLOCKS_DATA[currentLang];
+
+const UI = {
+ru: {
+  student_default: 'Студент',
+  welcome_prefix: 'Добро пожаловать,',
+  chat_you: 'Вы', chat_patient: 'Пациент',
+  avatar_patient: 'ЖО',
+  rv_empty: 'Пусто', rv_none_ordered: 'Ничего не назначено', rv_not_specified: 'Не указан',
+  rv_diagnosis_label: 'Диагноз:', rv_treatment_label: 'Лечение:',
+  modal_view_suffix: '(просмотр)',
+  locked_will_open: 'Откроется после',
+  chat_anamnesis_placeholder: 'Спросите о жалобах, истории...',
+  next_btn: 'Далее →',
+  patient_greeting: (firstName, age) => `Здравствуйте, доктор. Меня зовут ${firstName}, мне ${age} лет. Мне очень плохо — сильная слабость, тошнит, несколько раз вырвало, голова болит...`,
+  error_no_response: 'Простите, не расслышал...',
+  error_connection: 'Ошибка связи. Попробуйте ещё раз.',
+  label_exam: 'осмотр', label_labs: 'анализы',
+  nothing_assigned: 'Пока ничего не назначено',
+  assign_exam_title: '🩺 Назначить осмотр', assign_labs_title: '🧪 Назначить анализы',
+  assign_exam_btn: '+ Назначить осмотр', assign_labs_btn: '+ Назначить анализы',
+  result_label: 'Результат', no_pathology: 'Без патологии', no_findings: 'Без особенностей', finding_label: 'Данные',
+  prelim_label: 'Ваш предварительный диагноз',
+  prelim_placeholder: 'На основе анамнеза и осмотра — какая у вас рабочая гипотеза?',
+  final_diagnosis_label: 'Финальный диагноз',
+  final_diagnosis_placeholder: 'Полная формулировка диагноза',
+  final_treatment_label: 'План лечения',
+  final_treatment_placeholder: 'Развёрнутый план: инфузии, коррекция электролитов, инсулинотерапия и т.д.',
+  submit_final_btn: 'Завершить и получить оценку →', evaluating: 'Оцениваем...',
+  case_title: 'Жасур Омонов — Диабетический кетоацидоз',
+  eval_failed: 'Не удалось получить оценку. Проверьте соединение.',
+  block_labels: { anamnesis: 'Анамнез', exam: 'Осмотр', preliminary_diagnosis: 'Предв. диагноз', labs: 'Анализы', final: 'Итог' },
+  no_positive: 'Нет отмеченных положительных пунктов', no_negative: 'Нет отмеченных ошибок',
+  page_instruction: 'Инструкция', page_results: 'Результаты', page_case_prefix: 'Кейс —',
+  fb_sending: 'Отправка...', fb_failed: 'Не удалось отправить. Попробуйте ещё раз.', fb_send_btn: 'Отправить',
+  // Static screen text
+  instr_title: 'Симулятор пациента',
+  instr_purpose_h: 'Зачем эта платформа',
+  instr_purpose: 'Тренажёр клинического мышления. Вы проводите приём виртуального пациента как в реальной практике: собираете анамнез, проводите осмотр, формулируете гипотезу, назначаете обследования и в конце ставите диагноз с планом лечения. После завершения — подробный разбор с указанием сильных и слабых сторон.',
+  instr_timing_h: 'Тайминги по этапам',
+  timing_anamnesis_name: 'Сбор анамнеза', timing_anamnesis_desc: 'Свободный диалог с пациентом о жалобах и истории',
+  timing_exam_name: 'Физикальный осмотр', timing_exam_desc: 'Выберите нужные группы обследования из списка',
+  timing_prelim_name: 'Предварительный диагноз', timing_prelim_desc: 'Ваша рабочая гипотеза до результатов анализов',
+  timing_labs_name: 'Анализы и исследования', timing_labs_desc: 'Выберите нужные группы обследований',
+  timing_final_name: 'Диагноз и план лечения', timing_final_desc: 'Финальный диагноз и развёрнутый план',
+  timing_total_label: 'Всего на кейс', timing_total_value: '30 минут',
+  min5: '5 мин', min10: '10 мин',
+  instr_rules_h: 'Правила',
+  rule1: 'Когда время этапа истекает, он закрывается автоматически и открывается следующий. Вернуться назад нельзя.',
+  rule2: 'Вы можете завершить этап раньше срока кнопкой «Далее» — оставшееся время не переносится на следующий этап.',
+  rule3: 'Все 5 этапов видны на экране сразу, но работать можно только с активным (подсвечен рамкой).',
+  rule4: 'В осмотре и анализах — большой общий список, не только то что относится к этому кейсу. Выбирайте осознанно.',
+  instr_start_btn: 'Начать кейс →',
+  results_grade_lbl: 'Общая оценка за кейс',
+  positive_title: '✅ Что сделано правильно', negative_title: '⚠️ Что упущено или сделано неверно',
+  back_to_cabinet: '← Вернуться в кабинет',
+  timeup_title: 'Время кейса истекло', timeup_desc: 'Формируем итоговую оценку по тому, что успели сделать...',
+  fb_modal_title: 'Обратная связь', fb_modal_desc: 'Заметили баг или есть идея? Напишите здесь.',
+  fb_placeholder: 'Опишите что заметили...', fb_sent: 'Спасибо! Отправлено.', fb_cancel: 'Отмена',
+},
+en: {
+  student_default: 'Student',
+  welcome_prefix: 'Welcome,',
+  chat_you: 'You', chat_patient: 'Patient',
+  avatar_patient: 'JO',
+  rv_empty: 'Empty', rv_none_ordered: 'Nothing ordered', rv_not_specified: 'Not specified',
+  rv_diagnosis_label: 'Diagnosis:', rv_treatment_label: 'Treatment:',
+  modal_view_suffix: '(view)',
+  locked_will_open: 'Will unlock after',
+  chat_anamnesis_placeholder: 'Ask about complaints, history...',
+  next_btn: 'Next →',
+  patient_greeting: (firstName, age) => `Hello, doctor. My name is ${firstName}, I'm ${age} years old. I feel very unwell — severe weakness, nausea, I've vomited a few times, my head hurts...`,
+  error_no_response: "Sorry, I didn't catch that...",
+  error_connection: 'Connection error. Please try again.',
+  label_exam: 'exam', label_labs: 'labs',
+  nothing_assigned: 'Nothing assigned yet',
+  assign_exam_title: '🩺 Order Examination', assign_labs_title: '🧪 Order Labs',
+  assign_exam_btn: '+ Order Examination', assign_labs_btn: '+ Order Labs',
+  result_label: 'Result', no_pathology: 'No pathology', no_findings: 'No abnormalities', finding_label: 'Findings',
+  prelim_label: 'Your preliminary diagnosis',
+  prelim_placeholder: 'Based on the history and examination — what is your working hypothesis?',
+  final_diagnosis_label: 'Final diagnosis',
+  final_diagnosis_placeholder: 'Complete diagnosis statement',
+  final_treatment_label: 'Treatment plan',
+  final_treatment_placeholder: 'Detailed plan: infusions, electrolyte correction, insulin therapy, etc.',
+  submit_final_btn: 'Finish and get evaluation →', evaluating: 'Evaluating...',
+  case_title: 'Jasur Omonov — Diabetic Ketoacidosis',
+  eval_failed: 'Failed to get evaluation. Please check your connection.',
+  block_labels: { anamnesis: 'History', exam: 'Examination', preliminary_diagnosis: 'Prelim. Dx', labs: 'Labs', final: 'Final' },
+  no_positive: 'No positive points noted', no_negative: 'No mistakes noted',
+  page_instruction: 'Instruction', page_results: 'Results', page_case_prefix: 'Case —',
+  fb_sending: 'Sending...', fb_failed: 'Failed to send. Please try again.', fb_send_btn: 'Send',
+  // Static screen text
+  instr_title: 'Patient Simulator',
+  instr_purpose_h: 'Why This Platform',
+  instr_purpose: 'A clinical thinking simulator. You conduct a virtual patient visit just like in real practice: take a history, perform an examination, form a hypothesis, order investigations, and finally make a diagnosis with a treatment plan. After completion — a detailed breakdown of your strengths and weaknesses.',
+  instr_timing_h: 'Timing per Stage',
+  timing_anamnesis_name: 'History Taking', timing_anamnesis_desc: 'Free-form dialogue with the patient about complaints and history',
+  timing_exam_name: 'Physical Examination', timing_exam_desc: 'Select the needed examination groups from the list',
+  timing_prelim_name: 'Preliminary Diagnosis', timing_prelim_desc: 'Your working hypothesis before lab results',
+  timing_labs_name: 'Labs and Investigations', timing_labs_desc: 'Select the needed investigation groups',
+  timing_final_name: 'Diagnosis and Treatment Plan', timing_final_desc: 'Final diagnosis and detailed plan',
+  timing_total_label: 'Total time for the case', timing_total_value: '30 minutes',
+  min5: '5 min', min10: '10 min',
+  instr_rules_h: 'Rules',
+  rule1: 'When the time for a stage runs out, it closes automatically and the next one opens. You cannot go back.',
+  rule2: 'You can finish a stage early with the "Next" button — remaining time does not carry over to the next stage.',
+  rule3: 'All 5 stages are visible on screen at once, but you can only work in the active one (highlighted with a border).',
+  rule4: 'The examination and labs stages show a large general list, not only what applies to this case. Choose thoughtfully.',
+  instr_start_btn: 'Start Case →',
+  results_grade_lbl: 'Overall grade for the case',
+  positive_title: '✅ What was done correctly', negative_title: '⚠️ What was missed or done incorrectly',
+  back_to_cabinet: '← Back to dashboard',
+  timeup_title: 'Case time is up', timeup_desc: 'Generating the final evaluation based on what you managed to complete...',
+  fb_modal_title: 'Feedback', fb_modal_desc: 'Noticed a bug or have an idea? Write it here.',
+  fb_placeholder: 'Describe what you noticed...', fb_sent: 'Thank you! Sent.', fb_cancel: 'Cancel',
+}
+};
+const L = UI[currentLang];
+
 
 let currentBlockIdx = 0;
 let blockData = {
@@ -573,7 +899,7 @@ let isLoading = false;
 
 function getStudentFromUrl() {
   const params = new URLSearchParams(window.location.search);
-  return { student_id: params.get('student_id'), name: params.get('name') || 'Студент', phone: params.get('phone') || '' };
+  return { student_id: params.get('student_id'), name: params.get('name') || (typeof L !== 'undefined' ? L.student_default : 'Student'), phone: params.get('phone') || '' };
 }
 
 // ── SCREEN NAV ────────────────────────────────────────
@@ -619,19 +945,19 @@ function viewBlockModal(blockId) {
 
   if (blockId === 'anamnesis') {
     bodyHtml = (data.transcript || []).length
-      ? data.transcript.map(m => `<div class="rv-chat-line"><b>${m.role === 'student' ? 'Вы' : 'Пациент'}:</b> ${m.text}</div>`).join('')
-      : '<div class="rv-empty">Пусто</div>';
+      ? data.transcript.map(m => `<div class="rv-chat-line"><b>${m.role === 'student' ? L.chat_you : L.chat_patient}:</b> ${m.text}</div>`).join('')
+      : `<div class="rv-empty">${L.rv_empty}</div>`;
   } else if (blockId === 'exam' || blockId === 'labs') {
     bodyHtml = (data.ordered || []).length
       ? data.ordered.map(i => `<div class="rv-chat-line">• ${i}</div>`).join('')
-      : '<div class="rv-empty">Ничего не назначено</div>';
+      : `<div class="rv-empty">${L.rv_none_ordered}</div>`;
   } else if (blockId === 'preliminary_diagnosis') {
-    bodyHtml = data.text ? `<div class="rv-chat-line">${data.text}</div>` : '<div class="rv-empty">Не указан</div>';
+    bodyHtml = data.text ? `<div class="rv-chat-line">${data.text}</div>` : `<div class="rv-empty">${L.rv_not_specified}</div>`;
   } else if (blockId === 'final') {
-    bodyHtml = `<div class="rv-chat-line"><b>Диагноз:</b> ${data.diagnosis || '(не указан)'}</div><div class="rv-chat-line"><b>Лечение:</b> ${data.treatment_plan || '(не указан)'}</div>`;
+    bodyHtml = `<div class="rv-chat-line"><b>${L.rv_diagnosis_label}</b> ${data.diagnosis || `(${L.rv_not_specified})`}</div><div class="rv-chat-line"><b>${L.rv_treatment_label}</b> ${data.treatment_plan || `(${L.rv_not_specified})`}</div>`;
   }
 
-  document.getElementById('modal-title').textContent = `${block.icon} ${block.title} (просмотр)`;
+  document.getElementById('modal-title').textContent = `${block.icon} ${block.title} ${L.modal_view_suffix}`;
   document.getElementById('modal-body').innerHTML = `<div class="rv-detail-block" style="border:none;padding:0;">${bodyHtml}</div>`;
   document.getElementById('catalog-modal').classList.add('show');
   document.querySelector('.catalog-modal-footer').style.display = 'none';
@@ -726,7 +1052,7 @@ function freezeBlockContent(blockId) {
 function renderLockedPlaceholder(blockId) {
   const content = document.getElementById(`colcontent-${blockId}`);
   const b = BLOCKS.find(x => x.id === blockId);
-  content.innerHTML = `<div class="col-locked-msg"><span class="lock-ic">🔒</span>Откроется после «${BLOCKS[BLOCKS.findIndex(x=>x.id===blockId)-1]?.title || 'предыдущего'}»<br><span class="col-timer-static">${fmtTime(b.duration)}</span></div>`;
+  content.innerHTML = `<div class="col-locked-msg"><span class="lock-ic">🔒</span>${L.locked_will_open} «${BLOCKS[BLOCKS.findIndex(x=>x.id===blockId)-1]?.title || '—'}»<br><span class="col-timer-static">${fmtTime(b.duration)}</span></div>`;
 }
 
 // ── BLOCK CONTENT RENDERERS ───────────────────────────
@@ -745,13 +1071,13 @@ function renderChatBlock(blockId, content) {
     <div class="col-body" id="chatbody-${blockId}"></div>
     <div class="col-footer">
       <div class="chat-input-row">
-        <textarea class="chat-input" id="chatinput-${blockId}" rows="1" placeholder="Спросите о жалобах, истории..."></textarea>
+        <textarea class="chat-input" id="chatinput-${blockId}" rows="1" placeholder="${L.chat_anamnesis_placeholder}"></textarea>
         <button class="chat-send" id="chatsend-${blockId}" onclick="sendChatMsg('${blockId}')">➤</button>
       </div>
-      <button class="primary-btn next-btn" style="margin-top:8px;" onclick="advanceBlock(false)">Далее →</button>
+      <button class="primary-btn next-btn" style="margin-top:8px;" onclick="advanceBlock(false)">${L.next_btn}</button>
     </div>
   `;
-  const initialMsg = `Здравствуйте, доктор. Меня зовут ${CASE.patient.name.split(' ')[0]}, мне ${CASE.patient.age} лет. Мне очень плохо — сильная слабость, тошнит, несколько раз вырвало, голова болит...`;
+  const initialMsg = L.patient_greeting(CASE.patient.name.split(' ')[0], CASE.patient.age);
   if (conversationHistory.length === 0) {
     addChatMessage(blockId, 'patient', initialMsg);
     conversationHistory.push({ role: 'assistant', content: initialMsg });
@@ -766,9 +1092,9 @@ function addChatMessage(blockId, role, text) {
   const d = document.createElement('div');
   d.className = `msg ${role === 'student' ? 'student' : role === 'patient' ? 'patient' : 'system'}`;
   if (role === 'patient') {
-    d.innerHTML = `<div class="avatar p">ЖО</div><div class="bubble">${text}</div>`;
+    d.innerHTML = `<div class="avatar p">${L.avatar_patient}</div><div class="bubble">${text}</div>`;
   } else if (role === 'student') {
-    d.innerHTML = `<div class="avatar s">Вы</div><div class="bubble">${text}</div>`;
+    d.innerHTML = `<div class="avatar s">${L.chat_you}</div><div class="bubble">${text}</div>`;
   } else {
     d.innerHTML = `<div class="bubble">${text}</div>`;
   }
@@ -781,7 +1107,7 @@ function showTypingIn(blockId) {
   const body = document.getElementById(`chatbody-${blockId}`);
   const d = document.createElement('div');
   d.className = 'msg patient'; d.id = `typing-${blockId}`;
-  d.innerHTML = `<div class="avatar p">ЖО</div><div class="bubble"><div class="typing-dots"><span></span><span></span><span></span></div></div>`;
+  d.innerHTML = `<div class="avatar p">${L.avatar_patient}</div><div class="bubble"><div class="typing-dots"><span></span><span></span><span></span></div></div>`;
   body.appendChild(d);
   body.scrollTop = body.scrollHeight;
 }
@@ -808,13 +1134,13 @@ async function sendChatMsg(blockId) {
       })
     });
     const data = await res.json();
-    const reply = data.choices?.[0]?.message?.content || 'Простите, не расслышал...';
+    const reply = data.choices?.[0]?.message?.content || L.error_no_response;
     hideTypingIn(blockId);
     addChatMessage(blockId, 'patient', reply);
     conversationHistory.push({ role: 'assistant', content: reply });
   } catch (e) {
     hideTypingIn(blockId);
-    addChatMessage(blockId, 'system', 'Ошибка связи. Попробуйте ещё раз.');
+    addChatMessage(blockId, 'system', L.error_connection);
   }
   isLoading = false;
 }
@@ -823,20 +1149,20 @@ async function sendChatMsg(blockId) {
 function getExamFinding(key) {
   if (key === 'витальные') return { rows: CASE.vitals };
   const dataMap = { общий: 'general', кардио: 'cardio', дыхание: 'resp', живот: 'abdomen', неврология: 'neuro', конечности: 'extremities' };
-  if (dataMap[key]) return { rows: [{ k: 'Данные', v: CASE.exam[dataMap[key]] }] };
+  if (dataMap[key]) return { rows: [{ k: L.finding_label, v: CASE.exam[dataMap[key]] }] };
   return null;
 }
 
 // ── GROUP BLOCK (used by both Осмотр и Анализы) ───────
 function renderGroupBlock(blockId, content, groups) {
-  const label = blockId === 'exam' ? 'осмотр' : 'анализы';
+  const btnLabel = blockId === 'exam' ? L.assign_exam_btn : L.assign_labs_btn;
   content.innerHTML = `
     <div class="col-body" id="groupresults-${blockId}">
-      <div style="font-size:12px;color:var(--text3);text-align:center;padding:16px 8px;" id="groupempty-${blockId}">Пока ничего не назначено</div>
+      <div style="font-size:12px;color:var(--text3);text-align:center;padding:16px 8px;" id="groupempty-${blockId}">${L.nothing_assigned}</div>
     </div>
     <div class="col-footer">
-      <button class="primary-btn green-btn" style="width:100%;margin-bottom:8px;" onclick="openCatalogModal('${blockId}')">+ Назначить ${label}</button>
-      <button class="primary-btn next-btn" onclick="advanceBlock(false)">Далее →</button>
+      <button class="primary-btn green-btn" style="width:100%;margin-bottom:8px;" onclick="openCatalogModal('${blockId}')">${btnLabel}</button>
+      <button class="primary-btn next-btn" onclick="advanceBlock(false)">${L.next_btn}</button>
     </div>
   `;
 }
@@ -847,7 +1173,7 @@ let modalUsedKeys = { exam: new Set(), labs: new Set() };
 function openCatalogModal(blockId) {
   modalBlockId = blockId;
   const groups = blockId === 'exam' ? EXAM_GROUPS : LAB_GROUPS;
-  const title = blockId === 'exam' ? '🩺 Назначить осмотр' : '🧪 Назначить анализы';
+  const title = blockId === 'exam' ? L.assign_exam_title : L.assign_labs_title;
   document.getElementById('modal-title').textContent = title;
   document.getElementById('modal-body').innerHTML = groups.map((g, gi) => `
     <div class="lab-group-static">
@@ -924,7 +1250,7 @@ function confirmCatalogModal() {
         const rowsHtml = labInfo.rows.map(r => `<div class="result-row"><span class="result-key">${r.k}</span><div style="text-align:right"><div class="result-val ${r.s || ''}">${r.v}</div><div class="result-ref">${r.r}</div></div></div>`).join('');
         d.innerHTML = `<div class="result-card-title">${labInfo.name}</div>${rowsHtml}`;
       } else {
-        d.innerHTML = `<div class="result-card-title">${label}</div><div class="result-row"><span class="result-key">Результат</span><span class="result-val ok">Без патологии</span></div>`;
+        d.innerHTML = `<div class="result-card-title">${label}</div><div class="result-row"><span class="result-key">${L.result_label}</span><span class="result-val ok">${L.no_pathology}</span></div>`;
       }
     } else {
       blockData.exam.ordered.push(label);
@@ -933,7 +1259,7 @@ function confirmCatalogModal() {
         const rowsHtml = finding.rows.map(r => `<div class="result-row"><span class="result-key">${r.k}</span><div style="text-align:right"><div class="result-val ${r.s || ''}">${r.v}</div>${r.r ? `<div class="result-ref">${r.r}</div>` : ''}</div></div>`).join('');
         d.innerHTML = `<div class="result-card-title">${label}</div>${rowsHtml}`;
       } else {
-        d.innerHTML = `<div class="result-card-title">${label}</div><div class="result-row"><span class="result-key">Результат</span><span class="result-val ok">Без особенностей</span></div>`;
+        d.innerHTML = `<div class="result-card-title">${label}</div><div class="result-row"><span class="result-key">${L.result_label}</span><span class="result-val ok">${L.no_findings}</span></div>`;
       }
     }
     resultsWrap.appendChild(d);
@@ -946,12 +1272,12 @@ function renderPrelimBlock(content) {
   content.innerHTML = `
     <div class="col-body">
       <div class="col-textarea-wrap">
-        <label>Ваш предварительный диагноз</label>
-        <textarea class="col-textarea" id="prelim-text" placeholder="На основе анамнеза и осмотра — какая у вас рабочая гипотеза?"></textarea>
+        <label>${L.prelim_label}</label>
+        <textarea class="col-textarea" id="prelim-text" placeholder="${L.prelim_placeholder}"></textarea>
       </div>
     </div>
     <div class="col-footer">
-      <button class="primary-btn next-btn" onclick="submitPrelim()">Далее →</button>
+      <button class="primary-btn next-btn" onclick="submitPrelim()">${L.next_btn}</button>
     </div>
   `;
 }
@@ -966,16 +1292,16 @@ function renderFinalBlock(content) {
   content.innerHTML = `
     <div class="col-body">
       <div class="col-textarea-wrap">
-        <label>Финальный диагноз</label>
-        <textarea class="col-textarea" id="final-diagnosis" style="min-height:70px;" placeholder="Полная формулировка диагноза"></textarea>
+        <label>${L.final_diagnosis_label}</label>
+        <textarea class="col-textarea" id="final-diagnosis" style="min-height:70px;" placeholder="${L.final_diagnosis_placeholder}"></textarea>
       </div>
       <div class="col-textarea-wrap">
-        <label>План лечения</label>
-        <textarea class="col-textarea" id="final-treatment" style="min-height:120px;" placeholder="Развёрнутый план: инфузии, коррекция электролитов, инсулинотерапия и т.д."></textarea>
+        <label>${L.final_treatment_label}</label>
+        <textarea class="col-textarea" id="final-treatment" style="min-height:120px;" placeholder="${L.final_treatment_placeholder}"></textarea>
       </div>
     </div>
     <div class="col-footer">
-      <button class="primary-btn green-btn next-btn" id="final-submit-btn" onclick="submitFinal()">Завершить и получить оценку →</button>
+      <button class="primary-btn green-btn next-btn" id="final-submit-btn" onclick="submitFinal()">${L.submit_final_btn}</button>
     </div>
   `;
 }
@@ -983,7 +1309,7 @@ function submitFinal() {
   blockData.final.diagnosis = document.getElementById('final-diagnosis').value.trim();
   blockData.final.treatment_plan = document.getElementById('final-treatment').value.trim();
   const btn = document.getElementById('final-submit-btn');
-  btn.disabled = true; btn.textContent = 'Оцениваем...';
+  btn.disabled = true; btn.textContent = L.evaluating;
   advanceBlock(false);
 }
 
@@ -1000,10 +1326,11 @@ async function finishAllBlocks() {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         student_id: student.student_id,
-        case_title: 'Жасур Омонов — Диабетический кетоацидоз',
+        case_title: L.case_title,
         case_context: CASE_CONTEXT,
         blocks: blockData,
-        duration_seconds: totalDuration
+        duration_seconds: totalDuration,
+        lang: currentLang
       })
     });
     const data = await res.json();
@@ -1011,14 +1338,14 @@ async function finishAllBlocks() {
     showResults(data.evaluation);
   } catch (e) {
     document.getElementById('timeup-overlay').classList.remove('show');
-    showResults({ overall_grade: null, positive_points: [], negative_points: ['Не удалось получить оценку. Проверьте соединение.'], block_grades: {} });
+    showResults({ overall_grade: null, positive_points: [], negative_points: [L.eval_failed], block_grades: {} });
   }
 }
 
 function showResults(ev) {
   document.getElementById('res-grade').textContent = (ev.overall_grade !== null && ev.overall_grade !== undefined) ? ev.overall_grade + '%' : '—';
 
-  const blockLabels = { anamnesis: 'Анамнез', exam: 'Осмотр', preliminary_diagnosis: 'Предв. диагноз', labs: 'Анализы', final: 'Итог' };
+  const blockLabels = L.block_labels;
   const bg = ev.block_grades || {};
   document.getElementById('res-block-grades').innerHTML = Object.keys(blockLabels).map(k => `
     <div class="block-grade-chip"><div class="bg-num">${bg[k] !== undefined ? bg[k] + '%' : '—'}</div><div class="bg-lbl">${blockLabels[k]}</div></div>
@@ -1026,11 +1353,11 @@ function showResults(ev) {
 
   document.getElementById('res-positive').innerHTML = (ev.positive_points || []).length
     ? ev.positive_points.map(p => `<div class="point-item good">✅ ${p}</div>`).join('')
-    : `<div class="point-item good">Нет отмеченных положительных пунктов</div>`;
+    : `<div class="point-item good">${L.no_positive}</div>`;
 
   document.getElementById('res-negative').innerHTML = (ev.negative_points || []).length
     ? ev.negative_points.map(p => `<div class="point-item bad">⚠️ ${p}</div>`).join('')
-    : `<div class="point-item bad">Нет отмеченных ошибок</div>`;
+    : `<div class="point-item bad">${L.no_negative}</div>`;
 
   showScreen('screen-results');
 }
@@ -1052,10 +1379,10 @@ function checkFeedbackAccess(phone) {
 }
 
 function currentPageLabel() {
-  if (document.getElementById('screen-instruction').classList.contains('active')) return 'Инструкция';
-  if (document.getElementById('screen-results').classList.contains('active')) return 'Результаты';
+  if (document.getElementById('screen-instruction').classList.contains('active')) return L.page_instruction;
+  if (document.getElementById('screen-results').classList.contains('active')) return L.page_results;
   const block = BLOCKS[currentBlockIdx];
-  return block ? `Кейс — ${block.title}` : 'exam.html';
+  return block ? `${L.page_case_prefix} ${block.title}` : 'exam.html';
 }
 
 function openFeedbackModal() {
@@ -1073,7 +1400,7 @@ async function submitFeedback() {
   if (!message) return;
   const student = getStudentFromUrl();
   const btn = document.getElementById('fb-submit-btn');
-  btn.disabled = true; btn.textContent = 'Отправка...';
+  btn.disabled = true; btn.textContent = L.fb_sending;
   try {
     await fetch(`${BACKEND_URL}/api/feedback`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -1084,15 +1411,74 @@ async function submitFeedback() {
     document.getElementById('fb-sent-msg').style.display = 'block';
     setTimeout(closeFeedbackModal, 1200);
   } catch (e) {
-    alert('Не удалось отправить. Попробуйте ещё раз.');
+    alert(L.fb_failed);
   }
-  btn.disabled = false; btn.textContent = 'Отправить';
+  btn.disabled = false; btn.textContent = L.fb_send_btn;
+}
+
+function switchExamLang(lang) {
+  localStorage.setItem('preferred_lang', lang);
+  location.reload();
+}
+
+function translateInstructionScreen() {
+  document.getElementById('ilang-ru').classList.toggle('active', currentLang === 'ru');
+  document.getElementById('ilang-en').classList.toggle('active', currentLang === 'en');
+
+  document.getElementById('instr-title-text').textContent = L.instr_title;
+  document.getElementById('instr-purpose-h').textContent = L.instr_purpose_h;
+  document.getElementById('instr-purpose-text').textContent = L.instr_purpose;
+  document.getElementById('instr-timing-h').textContent = L.instr_timing_h;
+  document.getElementById('instr-total-label').textContent = L.timing_total_label;
+  document.getElementById('instr-total-value').textContent = L.timing_total_value;
+  document.getElementById('instr-rules-h').textContent = L.instr_rules_h;
+  document.getElementById('instr-start-btn').textContent = L.instr_start_btn;
+
+  const timingRows = [
+    { icon: '💬', name: L.timing_anamnesis_name, desc: L.timing_anamnesis_desc, min: L.min5 },
+    { icon: '🩺', name: L.timing_exam_name, desc: L.timing_exam_desc, min: L.min5 },
+    { icon: '📋', name: L.timing_prelim_name, desc: L.timing_prelim_desc, min: L.min5 },
+    { icon: '🧪', name: L.timing_labs_name, desc: L.timing_labs_desc, min: L.min5 },
+    { icon: '✅', name: L.timing_final_name, desc: L.timing_final_desc, min: L.min10 },
+  ];
+  document.getElementById('instr-timing-rows').innerHTML = timingRows.map(r => `
+    <div class="timing-row">
+      <div class="timing-icon">${r.icon}</div>
+      <div><div class="timing-name">${r.name}</div><div class="timing-desc">${r.desc}</div></div>
+      <div class="timing-min">${r.min}</div>
+    </div>
+  `).join('');
+
+  const rules = [L.rule1, L.rule2, L.rule3, L.rule4];
+  document.getElementById('instr-rules-list').innerHTML = rules.map(r => `<div class="instr-rule"><b>—</b> ${r}</div>`).join('');
+
+  // Results screen
+  document.getElementById('res-grade-lbl').textContent = L.results_grade_lbl;
+  document.getElementById('res-positive-title').textContent = L.positive_title;
+  document.getElementById('res-negative-title').textContent = L.negative_title;
+  document.getElementById('res-back-btn').textContent = L.back_to_cabinet;
+
+  // Timeup overlay
+  document.getElementById('timeup-title-text').textContent = L.timeup_title;
+  document.getElementById('timeup-desc-text').textContent = L.timeup_desc;
+
+  // Feedback modal
+  document.getElementById('fb-modal-title-text').textContent = L.fb_modal_title;
+  document.getElementById('fb-modal-desc-text').textContent = L.fb_modal_desc;
+  document.getElementById('fb-text').placeholder = L.fb_placeholder;
+  document.getElementById('fb-sent-msg').textContent = L.fb_sent;
+  document.getElementById('fb-cancel-btn').textContent = L.fb_cancel;
+  document.getElementById('fb-submit-btn').textContent = L.fb_send_btn;
+
+  document.getElementById('exam-header-logo').textContent = L.instr_title;
+  document.title = L.instr_title;
 }
 
 (function init() {
   const student = getStudentFromUrl();
   if (!student.student_id) { window.location.href = 'index.html'; return; }
-  document.getElementById('instr-student-name').textContent = `Добро пожаловать, ${student.name}`;
+  translateInstructionScreen();
+  document.getElementById('instr-student-name').textContent = `${L.welcome_prefix} ${student.name}`;
   document.getElementById('exam-student-name').textContent = student.name;
   checkFeedbackAccess(student.phone);
 })();
@@ -1115,13 +1501,13 @@ async function submitFeedback() {
 <button class="fb-float-btn" id="fb-float-btn" onclick="openFeedbackModal()">💬</button>
 <div class="fb-modal-overlay" id="fb-modal-overlay">
   <div class="fb-modal">
-    <h3>Обратная связь</h3>
-    <p>Заметили баг или есть идея? Напишите здесь.</p>
-    <textarea id="fb-text" placeholder="Опишите что заметили..."></textarea>
-    <div class="fb-sent-msg" id="fb-sent-msg">Спасибо! Отправлено.</div>
+    <h3 id="fb-modal-title-text"></h3>
+    <p id="fb-modal-desc-text"></p>
+    <textarea id="fb-text"></textarea>
+    <div class="fb-sent-msg" id="fb-sent-msg"></div>
     <div class="fb-modal-btns">
-      <button class="ghost-btn fb-cancel-btn" onclick="closeFeedbackModal()">Отмена</button>
-      <button class="primary-btn green-btn" id="fb-submit-btn" onclick="submitFeedback()">Отправить</button>
+      <button class="ghost-btn fb-cancel-btn" id="fb-cancel-btn" onclick="closeFeedbackModal()"></button>
+      <button class="primary-btn green-btn" id="fb-submit-btn" onclick="submitFeedback()"></button>
     </div>
   </div>
 </div>
