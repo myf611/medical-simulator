@@ -377,6 +377,7 @@
   <div class="lang-switch">
     <button class="lang-btn active" id="lang-ru" onclick="setLang('ru')">RU</button>
     <button class="lang-btn" id="lang-uz" onclick="setLang('uz')">UZ</button>
+    <button class="lang-btn" id="lang-en" onclick="setLang('en')">EN</button>
   </div>
 </div>
 <main class="page-shell">
@@ -393,6 +394,7 @@
         <div class="lang-switch" id="lang-switch-tabs">
           <button class="lang-btn active" id="lang-ru-tabs" onclick="setLang('ru')">RU</button>
           <button class="lang-btn" id="lang-uz-tabs" onclick="setLang('uz')">UZ</button>
+          <button class="lang-btn" id="lang-en-tabs" onclick="setLang('en')">EN</button>
         </div>
       </div>
 
@@ -805,6 +807,7 @@ const T = {
     t2t:'Профессионально', t2d:'Создано для медицинских образовательных организаций',
     policy:'Продолжая, вы соглашаетесь с Условиями использования',
     err_phone:'Неверный формат номера', err_conn:'Ошибка соединения.', err_not_found:'Номер не найден. Пройдите регистрацию.',
+    lbl_last:'Фамилия', lbl_first:'Имя', lbl_phone:'Телефон', lbl_region:'Область', lbl_city:'Город', lbl_work:'Место работы',
     regions:['Ташкент (город)','Андижанская область','Бухарская область','Джизакская область','Кашкадарьинская область','Навоийская область','Наманганская область','Самаркандская область','Сурхандарьинская область','Сырдарьинская область','Ташкентская область','Ферганская область','Хорезмская область','Республика Каракалпакстан']
   },
   uz: {
@@ -844,7 +847,48 @@ const T = {
     t2t:"Professional", t2d:"Tibbiy ta'lim muassasalari uchun yaratilgan",
     policy:"Davom etib, Foydalanish shartlariga rozilik bildirasiz",
     err_phone:"Noto'g'ri format", err_conn:"Ulanishda xatolik.", err_not_found:"Raqam topilmadi. Ro'yxatdan o'ting.",
+    lbl_last:"Familiya", lbl_first:"Ism", lbl_phone:"Telefon", lbl_region:"Viloyat", lbl_city:"Shahar", lbl_work:"Ish joyi",
     regions:["Toshkent (shahar)","Andijon viloyati","Buxoro viloyati","Jizzax viloyati","Qashqadaryo viloyati","Navoiy viloyati","Namangan viloyati","Samarqand viloyati","Surxondaryo viloyati","Sirdaryo viloyati","Toshkent viloyati","Farg'ona viloyati","Xorazm viloyati","Qoraqalpog'iston Respublikasi"]
+  },
+  en: {
+    brand:'Patient Simulator', brand_sub:'Clinical Training Platform',
+    hero_title:'Train Your Clinical Thinking',
+    hero_lead:'A digital training platform for doctors and medical students. Practice, get evaluated, and track your progress.',
+    platform_title:'One Platform for Clinical Training',
+    badge1_t:'Safe Environment', badge1_d:'It\'s okay to make mistakes and learn',
+    badge2_t:'Evidence-Based', badge2_d:'Clinical guidelines',
+    m1t:'Learning', m1d:'Interactive cases\nClinical scenarios',
+    m2t:'Practice', m2d:'Patient simulators\nSolving clinical situations',
+    m3t:'Evaluation', m3d:'Objective results\nAutomatic review',
+    m4t:'Analytics', m4d:'Individual progress\nAnalytics for instructors',
+    m5t:'Progress', m5d:'Skill growth\nResults tracking',
+    dash_title:'Dashboard',
+    m_cases:'Cases completed', m_score:'Average grade', m_time:'Practice time', m_rank:'Specialties',
+    cab_hello:'Welcome,', cab_logout:'Log out', cab_start:'Start new case →',
+    cab_history_title:'Attempt history', cab_loading:'Loading...',
+    cab_empty:'No completed cases yet — start your first one!',
+    cab_error:'Failed to load history',
+    cab_profile_title:'My profile', cab_profile_edit:'Edit',
+    cab_profile_save:'Save', cab_profile_cancel:'Cancel', cab_back:'Back to dashboard',
+    m_soon:'Soon', chart_title:'Learning dynamics', activity_title:'Recent attempts',
+    act1:'Attempt history', act2:'After your first completed case',
+    v1t:'Skills', v1d:'Develop clinical thinking and decision-making skills',
+    v2t:'Feedback', v2d:'Get a detailed breakdown after every case',
+    v3t:'Progress', v3d:'Track your growth and results',
+    banner:'All key stages of learning — in one system: from practice to result evaluation',
+    ptab_info:'About', ptab_auth:'Log in',
+    auth_title:'Sign in', auth_sub:'Sign in to continue learning',
+    resume_title:'⚠️ Unfinished session found', resume_yes:'Continue', resume_no:'Not me',
+    tab_login:'Log in', tab_reg:'Sign up',
+    login_btn:'Log in →', or:'or', sso:'Sign in with SSO',
+    reg_btn:'Sign up',
+    online:'Online', start_btn:'Start case →',
+    t1t:'Secure', t1d:'Data protected by modern security standards',
+    t2t:'Professional', t2d:'Built for medical training organizations',
+    policy:'By continuing, you agree to the Terms of Use',
+    err_phone:'Invalid phone format', err_conn:'Connection error.', err_not_found:'Number not found. Please register.',
+    lbl_last:'Last name', lbl_first:'First name', lbl_phone:'Phone', lbl_region:'Region', lbl_city:'City', lbl_work:'Workplace',
+    regions:['Tashkent (city)','Andijan region','Bukhara region','Jizzakh region','Kashkadarya region','Navoiy region','Namangan region','Samarkand region','Surkhandarya region','Syrdarya region','Tashkent region','Fergana region','Khorezm region','Republic of Karakalpakstan']
   }
 };
 
@@ -855,8 +899,10 @@ function setLang(lang) {
   localStorage.setItem('preferred_lang', lang);
   document.getElementById('lang-ru')?.classList.toggle('active', lang==='ru');
   document.getElementById('lang-uz')?.classList.toggle('active', lang==='uz');
+  document.getElementById('lang-en')?.classList.toggle('active', lang==='en');
   document.getElementById('lang-ru-tabs')?.classList.toggle('active', lang==='ru');
   document.getElementById('lang-uz-tabs')?.classList.toggle('active', lang==='uz');
+  document.getElementById('lang-en-tabs')?.classList.toggle('active', lang==='en');
   const l = T[lang];
   document.querySelectorAll('[data-key]').forEach(el => {
     const k = el.getAttribute('data-key');
@@ -864,9 +910,12 @@ function setLang(lang) {
     if (k === 'hero_title') {
       el.innerHTML = l[k].replace(' ', '<br>');
     } else if (k === 'policy') {
-      el.innerHTML = lang === 'uz'
-        ? 'Davom etib, <a href="#">Foydalanish shartlariga</a> rozilik bildirasiz'
-        : 'Продолжая, вы соглашаетесь с <a href="#">Условиями использования</a>';
+      const policyMap = {
+        ru: 'Продолжая, вы соглашаетесь с <a href="#">Условиями использования</a>',
+        uz: 'Davom etib, <a href="#">Foydalanish shartlariga</a> rozilik bildirasiz',
+        en: 'By continuing, you agree to the <a href="#">Terms of Use</a>'
+      };
+      el.innerHTML = policyMap[lang] || policyMap.ru;
     } else {
       el.textContent = l[k];
     }
@@ -874,7 +923,8 @@ function setLang(lang) {
   const sel = document.getElementById('region');
   if (sel && l.regions) {
     const cur = sel.value;
-    sel.innerHTML = `<option value="">${lang==='uz'?'Viloyat':'Область'}</option>` +
+    const regionPlaceholder = {ru:'Область', uz:'Viloyat', en:'Region'}[lang] || 'Область';
+    sel.innerHTML = `<option value="">${regionPlaceholder}</option>` +
       l.regions.map(r=>`<option value="${r}">${r}</option>`).join('');
     sel.value = cur;
   }
@@ -1359,8 +1409,10 @@ async function submitFeedback() {
     const cityEl = document.getElementById(cityId);
     if (!regionEl || !cityEl) return;
     regionEl.addEventListener('change', () => {
-      if (regionEl.value === 'Ташкент (город)' || regionEl.value === "Toshkent (shahar)") {
-        cityEl.value = currentLang === 'uz' ? 'Toshkent' : 'Ташкент';
+      const tashkentVariants = ['Ташкент (город)', 'Toshkent (shahar)', 'Tashkent (city)'];
+      if (tashkentVariants.includes(regionEl.value)) {
+        const cityMap = {ru:'Ташкент', uz:'Toshkent', en:'Tashkent'};
+        cityEl.value = cityMap[currentLang] || 'Ташкент';
         cityEl.dispatchEvent(new Event('input', { bubbles: true }));
       }
     });
