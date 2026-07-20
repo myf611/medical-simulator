@@ -109,33 +109,43 @@
   .fb-resolve-btn{background:none; border:1px solid var(--line); border-radius:8px; padding:5px 12px; font-size:11.5px; font-weight:700; color:var(--green); cursor:pointer;}
   .fb-resolve-btn.done{color:var(--muted); border-color:var(--line);}
 
+
+  .admin-lang-switch{position:fixed; top:14px; right:14px; z-index:500; display:flex; border:1px solid var(--line); border-radius:999px; overflow:hidden; background:#fff; box-shadow:0 6px 16px rgba(26,82,118,.12);}
+  .admin-lang-btn{background:transparent; border:none; padding:7px 12px; font-weight:800; color:var(--muted); font-size:11px; cursor:pointer;}
+  .admin-lang-btn.active{background:var(--mint); color:var(--green);}
+
 </style>
 </head>
 <body>
+
+<div class="admin-lang-switch">
+  <button class="admin-lang-btn active" id="alang-ru" onclick="setAdminLang('ru')">RU</button>
+  <button class="admin-lang-btn" id="alang-en" onclick="setAdminLang('en')">EN</button>
+</div>
 
 <!-- LOGIN / REGISTER -->
 <div id="screen-login">
   <div class="login-card">
     <div class="login-logo">👨‍🏫</div>
-    <div class="login-title">Панель преподавателя</div>
-    <div class="login-sub">Симулятор пациента</div>
+    <div class="login-title" id="at-login-title"></div>
+    <div class="login-sub" id="at-login-sub"></div>
 
     <div class="tabs">
-      <button class="tab-btn active" id="tab-login" onclick="switchAdminTab('login')">Вход</button>
-      <button class="tab-btn" id="tab-register" onclick="switchAdminTab('register')">Регистрация</button>
+      <button class="tab-btn active" id="tab-login" onclick="switchAdminTab('login')"></button>
+      <button class="tab-btn" id="tab-register" onclick="switchAdminTab('register')"></button>
     </div>
 
     <form id="form-login">
-      <div class="field"><label>Логин</label><input type="text" id="li-username" autocomplete="username"></div>
-      <div class="field"><label>Пароль</label><input type="password" id="li-password" autocomplete="current-password"></div>
-      <button type="button" class="primary-btn" id="li-btn" onclick="adminLogin()">Войти →</button>
+      <div class="field"><label id="at-lbl-username1"></label><input type="text" id="li-username" autocomplete="username"></div>
+      <div class="field"><label id="at-lbl-password1"></label><input type="password" id="li-password" autocomplete="current-password"></div>
+      <button type="button" class="primary-btn" id="li-btn" onclick="adminLogin()"></button>
     </form>
 
     <form id="form-register" style="display:none;">
-      <div class="field"><label>Ваше имя</label><input type="text" id="re-fullname"></div>
-      <div class="field"><label>Логин</label><input type="text" id="re-username"></div>
-      <div class="field"><label>Пароль (минимум 6 символов)</label><input type="password" id="re-password"></div>
-      <button type="button" class="primary-btn" id="re-btn" onclick="adminRegister()">Зарегистрироваться →</button>
+      <div class="field"><label id="at-lbl-fullname"></label><input type="text" id="re-fullname"></div>
+      <div class="field"><label id="at-lbl-username2"></label><input type="text" id="re-username"></div>
+      <div class="field"><label id="at-lbl-password2"></label><input type="password" id="re-password"></div>
+      <button type="button" class="primary-btn" id="re-btn" onclick="adminRegister()"></button>
     </form>
 
     <div class="err-msg" id="auth-err"></div>
@@ -145,22 +155,22 @@
 <!-- DASHBOARD: student list -->
 <div id="screen-dash">
   <div class="dash-header">
-    <div><div class="brand">👨‍🏫 Панель преподавателя</div><div class="who" id="dash-who">—</div></div>
-    <button class="logout-btn" onclick="adminLogout()">Выйти</button>
+    <div><div class="brand" id="at-dash-brand"></div><div class="who" id="dash-who">—</div></div>
+    <button class="logout-btn" onclick="adminLogout()" id="at-logout1"></button>
   </div>
   <div class="dash-nav">
-    <button class="dash-nav-btn active" id="navtab-students" onclick="switchDashTab('students')">Студенты</button>
-    <button class="dash-nav-btn" id="navtab-feedback" onclick="switchDashTab('feedback')">💬 Обратная связь <span class="fb-badge" id="fb-badge" style="display:none;"></span></button>
+    <button class="dash-nav-btn active" id="navtab-students" onclick="switchDashTab('students')"></button>
+    <button class="dash-nav-btn" id="navtab-feedback" onclick="switchDashTab('feedback')"><span id="at-nav-fb-text"></span> <span class="fb-badge" id="fb-badge" style="display:none;"></span></button>
   </div>
   <div class="dash-body">
     <div id="dashtab-students">
-      <div class="dash-title">Студенты</div>
+      <div class="dash-title" id="at-students-title"></div>
       <div class="dash-stats-row" id="dash-stats"></div>
-      <div id="students-list"><div class="loading">Загрузка...</div></div>
+      <div id="students-list"><div class="loading js-loading-text"></div></div>
     </div>
     <div id="dashtab-feedback" style="display:none;">
-      <div class="dash-title">Обратная связь</div>
-      <div id="feedback-list"><div class="loading">Загрузка...</div></div>
+      <div class="dash-title" id="at-feedback-title"></div>
+      <div id="feedback-list"><div class="loading js-loading-text"></div></div>
     </div>
   </div>
 </div>
@@ -169,41 +179,41 @@
 <div id="screen-student">
   <div class="dash-header">
     <div><div class="brand" id="stud-name">—</div><div class="who" id="stud-meta">—</div></div>
-    <button class="logout-btn" onclick="adminLogout()">Выйти</button>
+    <button class="logout-btn" onclick="adminLogout()" id="at-logout2"></button>
   </div>
   <div class="dash-body">
-    <button class="back-btn" onclick="backToDash()">← Ко всем студентам</button>
-    <div id="student-attempts-list"><div class="loading">Загрузка...</div></div>
+    <button class="back-btn" onclick="backToDash()" id="at-back-students"></button>
+    <div id="student-attempts-list"><div class="loading js-loading-text"></div></div>
   </div>
 </div>
 
 <!-- ATTEMPT DETAIL (review) -->
 <div id="screen-attempt">
   <div class="dash-header">
-    <div><div class="brand">Разбор попытки</div></div>
-    <button class="logout-btn" onclick="adminLogout()">Выйти</button>
+    <div><div class="brand" id="at-review-title"></div></div>
+    <button class="logout-btn" onclick="adminLogout()" id="at-logout3"></button>
   </div>
   <div class="review-card">
-    <button class="back-btn" onclick="backToStudent()">← К попыткам студента</button>
-    <div id="attempt-loading" class="loading">Загрузка...</div>
+    <button class="back-btn" onclick="backToStudent()" id="at-back-attempts"></button>
+    <div id="attempt-loading" class="loading js-loading-text"></div>
     <div id="attempt-content" style="display:none;">
       <h2 style="color:var(--blue-900); margin-bottom:2px;" id="at-title">—</h2>
       <div style="color:var(--muted); font-size:13px; margin-bottom:20px;" id="at-date">—</div>
 
-      <div class="results-grade"><div class="num" id="at-grade">—</div><div class="lbl">Общая оценка</div></div>
+      <div class="results-grade"><div class="num" id="at-grade">—</div><div class="lbl" id="at-grade-lbl"></div></div>
       <div class="block-grades-row" id="at-block-grades"></div>
 
       <div class="points-section">
-        <div class="points-title good">✅ Что сделано правильно</div>
+        <div class="points-title good" id="at-positive-title"></div>
         <div id="at-positive"></div>
       </div>
       <div class="points-section">
-        <div class="points-title bad">⚠️ Что упущено или сделано неверно</div>
+        <div class="points-title bad" id="at-negative-title"></div>
         <div id="at-negative"></div>
       </div>
 
       <div style="margin-top:24px; padding-top:20px; border-top:1px solid var(--line);">
-        <h3 style="font-size:14px; margin-bottom:14px; color:var(--blue-900);">Детали прохождения</h3>
+        <h3 style="font-size:14px; margin-bottom:14px; color:var(--blue-900);" id="at-details-title"></h3>
         <div id="at-details"></div>
       </div>
     </div>
@@ -217,6 +227,116 @@ let currentAdmin = null;
 let currentStudentId = null;
 let currentStudentName = '';
 
+const UI_T_DATA = {
+ru: {
+  login_title: 'Панель преподавателя', login_sub: 'Симулятор пациента',
+  tab_login: 'Вход', tab_register: 'Регистрация',
+  lbl_username: 'Логин', lbl_password: 'Пароль', login_btn: 'Войти →',
+  lbl_fullname: 'Ваше имя', lbl_password_min: 'Пароль (минимум 6 символов)', register_btn: 'Зарегистрироваться →',
+  dash_brand: '👨‍🏫 Панель преподавателя', logout_btn: 'Выйти',
+  nav_students: 'Студенты', nav_feedback: '💬 Обратная связь',
+  students_title: 'Студенты', feedback_title: 'Обратная связь',
+  back_to_students: '← Ко всем студентам', back_to_attempts: '← К попыткам студента',
+  review_title: 'Разбор попытки', grade_lbl: 'Общая оценка',
+  positive_title: '✅ Что сделано правильно', negative_title: '⚠️ Что упущено или сделано неверно',
+  details_title: 'Детали прохождения',
+  loading: 'Загрузка...',
+  stat_students: 'Студентов', stat_cases: 'Кейсов пройдено всего', stat_avg: 'Средний балл по группе',
+  no_students: 'В организации пока нет студентов', load_students_failed: 'Не удалось загрузить студентов',
+  no_name: 'Без имени', history_label: 'История прохождений',
+  no_attempts: 'У этого студента пока нет попыток', load_attempts_failed: 'Не удалось загрузить попытки',
+  case_default: 'Кейс', load_attempt_failed: 'Не удалось загрузить попытку',
+  no_positive: 'Нет отмеченных пунктов', no_negative: 'Нет отмеченных ошибок',
+  no_feedback: 'Обратной связи пока нет', load_feedback_failed: 'Не удалось загрузить обратную связь',
+  mark_resolved: 'Отметить обработанным', resolved: '✓ Обработано', no_phone: 'Без номера',
+  block_labels: { anamnesis: 'Анамнез', exam: 'Осмотр', preliminary_diagnosis: 'Предв. диагноз', labs: 'Анализы', final: 'Итог' },
+  chat_student: 'Студент', chat_patient: 'Пациент',
+  empty_stage: 'Пусто — этап не пройден', nothing_ordered: 'Ничего не назначено', not_specified: 'Не указан',
+  sec: 'сек', diagnosis_lbl: 'Диагноз:', treatment_lbl: 'Лечение:',
+  detail_anamnesis: '💬 Анамнез', detail_exam: '🩺 Осмотр', detail_prelim: '📋 Предварительный диагноз',
+  detail_labs: '🧪 Анализы', detail_final: '✅ Диагноз и лечение',
+  date_locale: 'ru-RU',
+  err_fill_fields: 'Заполните логин и пароль', err_logging_in: 'Входим...', err_login_failed: 'Ошибка входа',
+  err_login_generic: 'Не удалось войти',
+  err_reg_fields: 'Логин обязателен, пароль минимум 6 символов', err_creating: 'Создаём...', err_reg_failed: 'Ошибка регистрации',
+  err_reg_generic: 'Не удалось зарегистрироваться',
+},
+en: {
+  login_title: 'Instructor Panel', login_sub: 'Patient Simulator',
+  tab_login: 'Log in', tab_register: 'Sign up',
+  lbl_username: 'Username', lbl_password: 'Password', login_btn: 'Log in →',
+  lbl_fullname: 'Your name', lbl_password_min: 'Password (min 6 characters)', register_btn: 'Sign up →',
+  dash_brand: '👨‍🏫 Instructor Panel', logout_btn: 'Log out',
+  nav_students: 'Students', nav_feedback: '💬 Feedback',
+  students_title: 'Students', feedback_title: 'Feedback',
+  back_to_students: '← Back to all students', back_to_attempts: '← Back to student attempts',
+  review_title: 'Attempt Review', grade_lbl: 'Overall grade',
+  positive_title: '✅ What was done correctly', negative_title: '⚠️ What was missed or done incorrectly',
+  details_title: 'Attempt details',
+  loading: 'Loading...',
+  stat_students: 'Students', stat_cases: 'Total cases completed', stat_avg: 'Group average grade',
+  no_students: 'No students in this organization yet', load_students_failed: 'Failed to load students',
+  no_name: 'No name', history_label: 'Attempt history',
+  no_attempts: 'This student has no attempts yet', load_attempts_failed: 'Failed to load attempts',
+  case_default: 'Case', load_attempt_failed: 'Failed to load attempt',
+  no_positive: 'No points noted', no_negative: 'No mistakes noted',
+  no_feedback: 'No feedback yet', load_feedback_failed: 'Failed to load feedback',
+  mark_resolved: 'Mark as resolved', resolved: '✓ Resolved', no_phone: 'No number',
+  block_labels: { anamnesis: 'History', exam: 'Examination', preliminary_diagnosis: 'Prelim. Dx', labs: 'Labs', final: 'Final' },
+  chat_student: 'Student', chat_patient: 'Patient',
+  empty_stage: 'Empty — stage not completed', nothing_ordered: 'Nothing ordered', not_specified: 'Not specified',
+  sec: 'sec', diagnosis_lbl: 'Diagnosis:', treatment_lbl: 'Treatment:',
+  detail_anamnesis: '💬 History', detail_exam: '🩺 Examination', detail_prelim: '📋 Preliminary Diagnosis',
+  detail_labs: '🧪 Labs', detail_final: '✅ Diagnosis and Treatment',
+  date_locale: 'en-US',
+  err_fill_fields: 'Please fill in username and password', err_logging_in: 'Logging in...', err_login_failed: 'Login failed',
+  err_login_generic: 'Failed to log in',
+  err_reg_fields: 'Username is required, password must be at least 6 characters', err_creating: 'Creating...', err_reg_failed: 'Registration failed',
+  err_reg_generic: 'Failed to register',
+}
+};
+let currentAdminLang = localStorage.getItem('preferred_lang') === 'en' ? 'en' : 'ru';
+let UI_T = UI_T_DATA[currentAdminLang];
+
+function setAdminLang(lang){
+  currentAdminLang = lang;
+  UI_T = UI_T_DATA[lang];
+  localStorage.setItem('preferred_lang', lang);
+  document.getElementById('alang-ru').classList.toggle('active', lang==='ru');
+  document.getElementById('alang-en').classList.toggle('active', lang==='en');
+  translateAdminPage();
+}
+
+function translateAdminPage(){
+  document.getElementById('at-login-title').textContent = UI_T.login_title;
+  document.getElementById('at-login-sub').textContent = UI_T.login_sub;
+  document.getElementById('tab-login').textContent = UI_T.tab_login;
+  document.getElementById('tab-register').textContent = UI_T.tab_register;
+  document.getElementById('at-lbl-username1').textContent = UI_T.lbl_username;
+  document.getElementById('at-lbl-password1').textContent = UI_T.lbl_password;
+  document.getElementById('li-btn').textContent = UI_T.login_btn;
+  document.getElementById('at-lbl-fullname').textContent = UI_T.lbl_fullname;
+  document.getElementById('at-lbl-username2').textContent = UI_T.lbl_username;
+  document.getElementById('at-lbl-password2').textContent = UI_T.lbl_password_min;
+  document.getElementById('re-btn').textContent = UI_T.register_btn;
+  document.getElementById('at-dash-brand').textContent = UI_T.dash_brand;
+  document.getElementById('at-logout1').textContent = UI_T.logout_btn;
+  document.getElementById('at-logout2').textContent = UI_T.logout_btn;
+  document.getElementById('at-logout3').textContent = UI_T.logout_btn;
+  document.getElementById('at-nav-fb-text').textContent = UI_T.nav_feedback;
+  document.getElementById('navtab-students').textContent = UI_T.nav_students;
+  document.getElementById('at-students-title').textContent = UI_T.students_title;
+  document.getElementById('at-feedback-title').textContent = UI_T.feedback_title;
+  document.getElementById('at-back-students').textContent = UI_T.back_to_students;
+  document.getElementById('at-review-title').textContent = UI_T.review_title;
+  document.getElementById('at-back-attempts').textContent = UI_T.back_to_attempts;
+  document.getElementById('at-grade-lbl').textContent = UI_T.grade_lbl;
+  document.getElementById('at-positive-title').textContent = UI_T.positive_title;
+  document.getElementById('at-negative-title').textContent = UI_T.negative_title;
+  document.getElementById('at-details-title').textContent = UI_T.details_title;
+  document.querySelectorAll('.js-loading-text').forEach(el => el.textContent = UI_T.loading);
+  document.title = UI_T.login_title + ' — ' + UI_T.login_sub;
+}
 function switchAdminTab(tab){
   document.getElementById('tab-login').classList.toggle('active', tab==='login');
   document.getElementById('tab-register').classList.toggle('active', tab==='register');
@@ -239,21 +359,21 @@ async function adminLogin(){
   const btn = document.getElementById('li-btn');
   const err = document.getElementById('auth-err');
   err.textContent = '';
-  if(!username || !password){ err.textContent = 'Заполните логин и пароль'; return; }
-  btn.disabled = true; btn.textContent = 'Входим...';
+  if(!username || !password){ err.textContent = UI_T.err_fill_fields; return; }
+  btn.disabled = true; btn.textContent = UI_T.err_logging_in;
   try{
     const res = await fetch(`${BACKEND_URL}/api/admin-login`, {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({username, password})
     });
-    if(!res.ok){ const d = await res.json(); throw new Error(d.detail || 'Ошибка входа'); }
+    if(!res.ok){ const d = await res.json(); throw new Error(d.detail || UI_T.err_login_failed); }
     const admin = await res.json();
     saveAdminSession(admin);
     enterDashboard(admin);
   }catch(e){
-    err.textContent = e.message || 'Не удалось войти';
+    err.textContent = e.message || UI_T.err_login_generic;
   }
-  btn.disabled = false; btn.textContent = 'Войти →';
+  btn.disabled = false; btn.textContent = UI_T.login_btn;
 }
 
 async function adminRegister(){
@@ -263,21 +383,21 @@ async function adminRegister(){
   const btn = document.getElementById('re-btn');
   const err = document.getElementById('auth-err');
   err.textContent = '';
-  if(!username || password.length < 6){ err.textContent = 'Логин обязателен, пароль минимум 6 символов'; return; }
-  btn.disabled = true; btn.textContent = 'Создаём...';
+  if(!username || password.length < 6){ err.textContent = UI_T.err_reg_fields; return; }
+  btn.disabled = true; btn.textContent = UI_T.err_creating;
   try{
     const res = await fetch(`${BACKEND_URL}/api/admin-register`, {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({username, password, full_name, org_slug:'tashkent-endo'})
     });
-    if(!res.ok){ const d = await res.json(); throw new Error(d.detail || 'Ошибка регистрации'); }
+    if(!res.ok){ const d = await res.json(); throw new Error(d.detail || UI_T.err_reg_failed); }
     const admin = await res.json();
     saveAdminSession(admin);
     enterDashboard(admin);
   }catch(e){
-    err.textContent = e.message || 'Не удалось зарегистрироваться';
+    err.textContent = e.message || UI_T.err_reg_generic;
   }
-  btn.disabled = false; btn.textContent = 'Зарегистрироваться →';
+  btn.disabled = false; btn.textContent = UI_T.register_btn;
 }
 
 function adminLogout(){
@@ -307,7 +427,7 @@ function switchDashTab(tab){
 
 async function loadFeedback(){
   const listEl = document.getElementById('feedback-list');
-  listEl.innerHTML = '<div class="loading">Загрузка...</div>';
+  listEl.innerHTML = `<div class="loading">${UI_T.loading}</div>`;
   try{
     const res = await fetch(`${BACKEND_URL}/api/feedback`);
     const items = await res.json();
@@ -317,22 +437,22 @@ async function loadFeedback(){
     if(newCount > 0){ badge.style.display='inline-block'; badge.textContent = newCount; } else { badge.style.display='none'; }
 
     if(!items.length){
-      listEl.innerHTML = '<div class="empty-msg">Обратной связи пока нет</div>';
+      listEl.innerHTML = `<div class="empty-msg">${UI_T.no_feedback}</div>`;
       return;
     }
     listEl.innerHTML = items.map(i => `
       <div class="fb-item ${i.status !== 'resolved' ? 'new' : ''}">
         <div class="fb-item-head">
-          <span class="fb-item-phone">${i.phone || 'Без номера'}</span>
-          <span class="fb-item-date">${new Date(i.created_at).toLocaleString('ru-RU')}</span>
+          <span class="fb-item-phone">${i.phone || UI_T.no_phone}</span>
+          <span class="fb-item-date">${new Date(i.created_at).toLocaleString(UI_T.date_locale)}</span>
         </div>
         ${i.page ? `<span class="fb-item-page">${i.page}</span>` : ''}
         <div class="fb-item-msg">${i.message}</div>
-        <button class="fb-resolve-btn ${i.status==='resolved' ? 'done' : ''}" onclick="toggleFeedbackStatus('${i.id}','${i.status==='resolved'?'new':'resolved'}')">${i.status==='resolved' ? '✓ Обработано' : 'Отметить обработанным'}</button>
+        <button class="fb-resolve-btn ${i.status==='resolved' ? 'done' : ''}" onclick="toggleFeedbackStatus('${i.id}','${i.status==='resolved'?'new':'resolved'}')">${i.status==='resolved' ? UI_T.resolved : UI_T.mark_resolved}</button>
       </div>
     `).join('');
   }catch(e){
-    listEl.innerHTML = '<div class="empty-msg">Не удалось загрузить обратную связь</div>';
+    listEl.innerHTML = `<div class="empty-msg">${UI_T.load_feedback_failed}</div>`;
   }
 }
 
@@ -358,7 +478,7 @@ async function enterDashboard(admin){
   }).catch(()=>{});
 
   const listEl = document.getElementById('students-list');
-  listEl.innerHTML = '<div class="loading">Загрузка...</div>';
+  listEl.innerHTML = `<div class="loading">${UI_T.loading}</div>`;
   try{
     const res = await fetch(`${BACKEND_URL}/api/admin/students?organization_id=${admin.organization_id}`);
     const students = await res.json();
@@ -368,27 +488,27 @@ async function enterDashboard(admin){
     const avgAll = gradedStudents.length ? Math.round(gradedStudents.reduce((s,x)=>s+x.average_grade,0)/gradedStudents.length) : null;
 
     document.getElementById('dash-stats').innerHTML = `
-      <div class="dash-stat"><b>${students.length}</b><span>Студентов</span></div>
-      <div class="dash-stat"><b>${totalCases}</b><span>Кейсов пройдено всего</span></div>
-      <div class="dash-stat"><b>${avgAll !== null ? avgAll+'%' : '—'}</b><span>Средний балл по группе</span></div>
+      <div class="dash-stat"><b>${students.length}</b><span>${UI_T.stat_students}</span></div>
+      <div class="dash-stat"><b>${totalCases}</b><span>${UI_T.stat_cases}</span></div>
+      <div class="dash-stat"><b>${avgAll !== null ? avgAll+'%' : '—'}</b><span>${UI_T.stat_avg}</span></div>
     `;
 
     if(!students.length){
-      listEl.innerHTML = '<div class="empty-msg">В организации пока нет студентов</div>';
+      listEl.innerHTML = `<div class="empty-msg">${UI_T.no_students}</div>`;
       return;
     }
     listEl.innerHTML = students.map(s => `
-      <div class="student-row" onclick="openStudent('${s.id}','${(s.name||'Студент').replace(/'/g,"\\\\'")}')">
+      <div class="student-row" onclick="openStudent('${s.id}','${(s.name||UI_T.no_name).replace(/'/g,"\\\\'")}')">
         <div class="student-avatar">${(s.name||'?').trim().charAt(0).toUpperCase() || '?'}</div>
         <div class="student-info">
-          <div class="student-name">${s.name || 'Без имени'}</div>
+          <div class="student-name">${s.name || UI_T.no_name}</div>
           <div class="student-meta">${s.workplace || s.phone || ''}</div>
         </div>
         <div class="student-grade ${gradeClass(s.average_grade)}">${s.average_grade !== null ? s.average_grade+'%' : '—'} · ${s.cases_completed}</div>
       </div>
     `).join('');
   }catch(e){
-    listEl.innerHTML = '<div class="empty-msg">Не удалось загрузить студентов</div>';
+    listEl.innerHTML = `<div class="empty-msg">${UI_T.load_students_failed}</div>`;
   }
 }
 
@@ -398,28 +518,28 @@ async function openStudent(studentId, name){
   document.getElementById('screen-dash').style.display = 'none';
   document.getElementById('screen-student').style.display = 'block';
   document.getElementById('stud-name').textContent = name;
-  document.getElementById('stud-meta').textContent = 'История прохождений';
+  document.getElementById('stud-meta').textContent = UI_T.history_label;
 
   const listEl = document.getElementById('student-attempts-list');
-  listEl.innerHTML = '<div class="loading">Загрузка...</div>';
+  listEl.innerHTML = `<div class="loading">${UI_T.loading}</div>`;
   try{
     const res = await fetch(`${BACKEND_URL}/api/admin/student-attempts?student_id=${studentId}`);
     const attempts = await res.json();
     if(!attempts.length){
-      listEl.innerHTML = '<div class="empty-msg">У этого студента пока нет попыток</div>';
+      listEl.innerHTML = `<div class="empty-msg">${UI_T.no_attempts}</div>`;
       return;
     }
     listEl.innerHTML = attempts.map(a => `
       <div class="attempt-row" onclick="openAttempt('${a.id}')">
         <div>
-          <div class="attempt-title">${a.case_title || 'Кейс'}</div>
-          <div class="attempt-date">${new Date(a.finished_at).toLocaleDateString('ru-RU')}</div>
+          <div class="attempt-title">${a.case_title || UI_T.case_default}</div>
+          <div class="attempt-date">${new Date(a.finished_at).toLocaleDateString(UI_T.date_locale)}</div>
         </div>
         <div class="student-grade ${gradeClass(a.grade)}">${a.grade !== null && a.grade !== undefined ? a.grade+'%' : '—'}</div>
       </div>
     `).join('');
   }catch(e){
-    listEl.innerHTML = '<div class="empty-msg">Не удалось загрузить попытки</div>';
+    listEl.innerHTML = `<div class="empty-msg">${UI_T.load_attempts_failed}</div>`;
   }
 }
 
@@ -443,7 +563,7 @@ async function openAttempt(attemptId){
     const a = await res.json();
     renderAttempt(a);
   }catch(e){
-    document.getElementById('attempt-loading').textContent = 'Не удалось загрузить попытку';
+    document.getElementById('attempt-loading').textContent = UI_T.load_attempt_failed;
   }
 }
 
@@ -451,13 +571,13 @@ function renderAttempt(a){
   document.getElementById('attempt-loading').style.display = 'none';
   document.getElementById('attempt-content').style.display = 'block';
 
-  document.getElementById('at-title').textContent = a.case_title || 'Кейс';
-  document.getElementById('at-date').textContent = new Date(a.finished_at).toLocaleDateString('ru-RU');
+  document.getElementById('at-title').textContent = a.case_title || UI_T.case_default;
+  document.getElementById('at-date').textContent = new Date(a.finished_at).toLocaleDateString(UI_T.date_locale);
 
   const ev = a.evaluation || {};
   document.getElementById('at-grade').textContent = (ev.overall_grade !== null && ev.overall_grade !== undefined) ? ev.overall_grade+'%' : (a.grade !== null && a.grade !== undefined ? a.grade+'%' : '—');
 
-  const blockLabels = {anamnesis:'Анамнез', exam:'Осмотр', preliminary_diagnosis:'Предв. диагноз', labs:'Анализы', final:'Итог'};
+  const blockLabels = UI_T.block_labels;
   const bg = ev.block_grades || {};
   document.getElementById('at-block-grades').innerHTML = Object.keys(blockLabels).map(k => `
     <div class="block-grade-chip"><div class="bg-num">${bg[k] !== undefined ? bg[k]+'%' : '—'}</div><div class="bg-lbl">${blockLabels[k]}</div></div>
@@ -465,10 +585,10 @@ function renderAttempt(a){
 
   document.getElementById('at-positive').innerHTML = (ev.positive_points||[]).length
     ? ev.positive_points.map(p=>`<div class="point-item good">✅ ${p}</div>`).join('')
-    : `<div class="point-item good">Нет отмеченных пунктов</div>`;
+    : `<div class="point-item good">${UI_T.no_positive}</div>`;
   document.getElementById('at-negative').innerHTML = (ev.negative_points||[]).length
     ? ev.negative_points.map(p=>`<div class="point-item bad">⚠️ ${p}</div>`).join('')
-    : `<div class="point-item bad">Нет отмеченных ошибок</div>`;
+    : `<div class="point-item bad">${UI_T.no_negative}</div>`;
 
   const blocks = a.blocks || {};
   const anamnesis = blocks.anamnesis || {};
@@ -477,23 +597,26 @@ function renderAttempt(a){
   const labs = blocks.labs || {};
   const final = blocks.final || {};
 
-  const chatHtml = (t) => (!t || !t.length) ? '<div class="rv-empty">Пусто — этап не пройден</div>' : t.map(m=>`<div class="rv-chat-line"><b>${m.role==='student'?'Студент':'Пациент'}:</b> ${m.text}</div>`).join('');
-  const listHtml = (items) => (!items || !items.length) ? '<div class="rv-empty">Ничего не назначено</div>' : items.map(i=>`<div class="rv-chat-line">• ${i}</div>`).join('');
+  const chatHtml = (t) => (!t || !t.length) ? `<div class="rv-empty">${UI_T.empty_stage}</div>` : t.map(m=>`<div class="rv-chat-line"><b>${m.role==='student'?UI_T.chat_student:UI_T.chat_patient}:</b> ${m.text}</div>`).join('');
+  const listHtml = (items) => (!items || !items.length) ? `<div class="rv-empty">${UI_T.nothing_ordered}</div>` : items.map(i=>`<div class="rv-chat-line">• ${i}</div>`).join('');
 
   document.getElementById('at-details').innerHTML = `
-    <div class="rv-detail-block"><h4>💬 Анамнез (${anamnesis.duration_seconds||0} сек)</h4>${chatHtml(anamnesis.transcript)}</div>
-    <div class="rv-detail-block"><h4>🩺 Осмотр (${exam.duration_seconds||0} сек)</h4>${listHtml(exam.ordered)}</div>
-    <div class="rv-detail-block"><h4>📋 Предварительный диагноз (${prelim.duration_seconds||0} сек)</h4>${prelim.text ? `<div class="rv-chat-line">${prelim.text}</div>` : '<div class="rv-empty">Не указан</div>'}</div>
-    <div class="rv-detail-block"><h4>🧪 Анализы (${labs.duration_seconds||0} сек)</h4>${listHtml(labs.ordered)}</div>
-    <div class="rv-detail-block"><h4>✅ Диагноз и лечение (${final.duration_seconds||0} сек)</h4>
-      <div class="rv-chat-line"><b>Диагноз:</b> ${final.diagnosis || '(не указан)'}</div>
-      <div class="rv-chat-line"><b>Лечение:</b> ${final.treatment_plan || '(не указан)'}</div>
+    <div class="rv-detail-block"><h4>${UI_T.detail_anamnesis} (${anamnesis.duration_seconds||0} ${UI_T.sec})</h4>${chatHtml(anamnesis.transcript)}</div>
+    <div class="rv-detail-block"><h4>${UI_T.detail_exam} (${exam.duration_seconds||0} ${UI_T.sec})</h4>${listHtml(exam.ordered)}</div>
+    <div class="rv-detail-block"><h4>${UI_T.detail_prelim} (${prelim.duration_seconds||0} ${UI_T.sec})</h4>${prelim.text ? `<div class="rv-chat-line">${prelim.text}</div>` : `<div class="rv-empty">${UI_T.not_specified}</div>`}</div>
+    <div class="rv-detail-block"><h4>${UI_T.detail_labs} (${labs.duration_seconds||0} ${UI_T.sec})</h4>${listHtml(labs.ordered)}</div>
+    <div class="rv-detail-block"><h4>${UI_T.detail_final} (${final.duration_seconds||0} ${UI_T.sec})</h4>
+      <div class="rv-chat-line"><b>${UI_T.diagnosis_lbl}</b> ${final.diagnosis || `(${UI_T.not_specified})`}</div>
+      <div class="rv-chat-line"><b>${UI_T.treatment_lbl}</b> ${final.treatment_plan || `(${UI_T.not_specified})`}</div>
     </div>
   `;
 }
 
 // ── INIT ──────────────────────────────────────────────
 (function init(){
+  document.getElementById('alang-ru').classList.toggle('active', currentAdminLang === 'ru');
+  document.getElementById('alang-en').classList.toggle('active', currentAdminLang === 'en');
+  translateAdminPage();
   const saved = getAdminSession();
   if(saved && saved.admin_id){
     enterDashboard(saved);
