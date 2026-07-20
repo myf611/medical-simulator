@@ -136,7 +136,7 @@
     </div>
 
     <form id="form-login">
-      <div class="field"><label id="at-lbl-username1"></label><input type="text" id="li-username" autocomplete="username"></div>
+      <div class="field"><label id="at-lbl-phone1"></label><input type="tel" id="li-phone" placeholder="+998 90 123 45 67" autocomplete="tel"></div>
       <div class="field"><label id="at-lbl-password1"></label><input type="password" id="li-password" autocomplete="current-password"></div>
       <button type="button" class="primary-btn" id="li-btn" onclick="adminLogin()"></button>
     </form>
@@ -144,7 +144,6 @@
     <form id="form-register" style="display:none;">
       <div class="field"><label id="at-lbl-fullname"></label><input type="text" id="re-fullname"></div>
       <div class="field"><label id="at-lbl-phone"></label><input type="tel" id="re-phone" placeholder="+998 90 123 45 67"></div>
-      <div class="field"><label id="at-lbl-username2"></label><input type="text" id="re-username"></div>
       <div class="field"><label id="at-lbl-password2"></label><input type="password" id="re-password"></div>
       <button type="button" class="primary-btn" id="re-btn" onclick="adminRegister()"></button>
     </form>
@@ -257,9 +256,9 @@ ru: {
   detail_anamnesis: '💬 Анамнез', detail_exam: '🩺 Осмотр', detail_prelim: '📋 Предварительный диагноз',
   detail_labs: '🧪 Анализы', detail_final: '✅ Диагноз и лечение',
   date_locale: 'ru-RU',
-  err_fill_fields: 'Заполните логин и пароль', err_logging_in: 'Входим...', err_login_failed: 'Ошибка входа',
+  err_fill_fields: 'Заполните телефон и пароль', err_logging_in: 'Входим...', err_login_failed: 'Ошибка входа',
   err_login_generic: 'Не удалось войти',
-  err_reg_fields: 'Заполните телефон, логин и пароль (минимум 6 символов)', err_creating: 'Создаём...', err_reg_failed: 'Ошибка регистрации',
+  err_reg_fields: 'Заполните телефон и пароль (минимум 6 символов)', err_creating: 'Создаём...', err_reg_failed: 'Ошибка регистрации',
   err_reg_generic: 'Не удалось зарегистрироваться',
 },
 en: {
@@ -290,9 +289,9 @@ en: {
   detail_anamnesis: '💬 History', detail_exam: '🩺 Examination', detail_prelim: '📋 Preliminary Diagnosis',
   detail_labs: '🧪 Labs', detail_final: '✅ Diagnosis and Treatment',
   date_locale: 'en-US',
-  err_fill_fields: 'Please fill in username and password', err_logging_in: 'Logging in...', err_login_failed: 'Login failed',
+  err_fill_fields: 'Please fill in phone and password', err_logging_in: 'Logging in...', err_login_failed: 'Login failed',
   err_login_generic: 'Failed to log in',
-  err_reg_fields: 'Please fill in phone, username, and password (min 6 characters)', err_creating: 'Creating...', err_reg_failed: 'Registration failed',
+  err_reg_fields: 'Please fill in phone and password (min 6 characters)', err_creating: 'Creating...', err_reg_failed: 'Registration failed',
   err_reg_generic: 'Failed to register',
 }
 };
@@ -313,12 +312,11 @@ function translateAdminPage(){
   document.getElementById('at-login-sub').textContent = UI_T.login_sub;
   document.getElementById('tab-login').textContent = UI_T.tab_login;
   document.getElementById('tab-register').textContent = UI_T.tab_register;
-  document.getElementById('at-lbl-username1').textContent = UI_T.lbl_username;
+  document.getElementById('at-lbl-phone1').textContent = UI_T.lbl_phone;
   document.getElementById('at-lbl-password1').textContent = UI_T.lbl_password;
   document.getElementById('li-btn').textContent = UI_T.login_btn;
   document.getElementById('at-lbl-fullname').textContent = UI_T.lbl_fullname;
   document.getElementById('at-lbl-phone').textContent = UI_T.lbl_phone;
-  document.getElementById('at-lbl-username2').textContent = UI_T.lbl_username;
   document.getElementById('at-lbl-password2').textContent = UI_T.lbl_password_min;
   document.getElementById('re-btn').textContent = UI_T.register_btn;
   document.getElementById('at-dash-brand').textContent = UI_T.dash_brand;
@@ -356,17 +354,17 @@ function getAdminSession(){
 function clearAdminSession(){ localStorage.removeItem(SESSION_KEY); }
 
 async function adminLogin(){
-  const username = document.getElementById('li-username').value.trim();
+  const phone = document.getElementById('li-phone').value.trim();
   const password = document.getElementById('li-password').value;
   const btn = document.getElementById('li-btn');
   const err = document.getElementById('auth-err');
   err.textContent = '';
-  if(!username || !password){ err.textContent = UI_T.err_fill_fields; return; }
+  if(!phone || !password){ err.textContent = UI_T.err_fill_fields; return; }
   btn.disabled = true; btn.textContent = UI_T.err_logging_in;
   try{
     const res = await fetch(`${BACKEND_URL}/api/admin-login`, {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({username, password})
+      body: JSON.stringify({phone, password})
     });
     if(!res.ok){ const d = await res.json(); throw new Error(d.detail || UI_T.err_login_failed); }
     const admin = await res.json();
@@ -381,17 +379,16 @@ async function adminLogin(){
 async function adminRegister(){
   const full_name = document.getElementById('re-fullname').value.trim();
   const phone = document.getElementById('re-phone').value.trim();
-  const username = document.getElementById('re-username').value.trim();
   const password = document.getElementById('re-password').value;
   const btn = document.getElementById('re-btn');
   const err = document.getElementById('auth-err');
   err.textContent = '';
-  if(!username || password.length < 6 || !phone){ err.textContent = UI_T.err_reg_fields; return; }
+  if(password.length < 6 || !phone){ err.textContent = UI_T.err_reg_fields; return; }
   btn.disabled = true; btn.textContent = UI_T.err_creating;
   try{
     const res = await fetch(`${BACKEND_URL}/api/admin-register`, {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({username, password, full_name, phone, org_slug:'tashkent-endo'})
+      body: JSON.stringify({password, full_name, phone, org_slug:'tashkent-endo'})
     });
     if(!res.ok){ const d = await res.json(); throw new Error(d.detail || UI_T.err_reg_failed); }
     const admin = await res.json();
@@ -473,7 +470,7 @@ async function enterDashboard(admin){
   currentAdmin = admin;
   document.getElementById('screen-login').style.display = 'none';
   document.getElementById('screen-dash').style.display = 'block';
-  document.getElementById('dash-who').textContent = admin.full_name || admin.username;
+  document.getElementById('dash-who').textContent = admin.full_name || admin.phone;
   fetch(`${BACKEND_URL}/api/feedback`).then(r=>r.json()).then(items=>{
     const n = items.filter(i=>i.status!=='resolved').length;
     const badge = document.getElementById('fb-badge');
