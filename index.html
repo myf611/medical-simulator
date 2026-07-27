@@ -471,6 +471,11 @@
               <input class="field-inp phone-inp" id="login-phone" type="tel" placeholder="90 123 45 67" maxlength="12" inputmode="numeric">
             </div>
             <div class="err-msg" id="err-login-phone">Неверный формат номера</div>
+            <div class="field-wrap">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M10 6V5a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2v1M4 7h16v13H4z" stroke="currentColor" stroke-width="1.8"/><path d="M9 13h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+              <input class="field-inp" id="login-password" type="password" placeholder="Пароль" autocomplete="current-password" data-key-placeholder="ph_password">
+            </div>
+            <div class="err-msg" id="err-login-password" data-key="err_password_empty">Введите пароль</div>
             <button class="primary-btn green" id="login-btn" onclick="login()" data-key="login_btn">Войти →</button>
 
           </div>
@@ -499,6 +504,11 @@
               <input class="field-inp phone-inp" id="reg-phone" type="tel" placeholder="90 123 45 67" maxlength="12" inputmode="numeric">
             </div>
             <div class="err-msg" id="err-reg-phone">Неверный формат номера</div>
+            <div class="field-wrap">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M10 6V5a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2v1M4 7h16v13H4z" stroke="currentColor" stroke-width="1.8"/><path d="M9 13h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+              <input class="field-inp" id="reg-password" type="password" placeholder="Пароль (минимум 6 символов)" autocomplete="new-password" data-key-placeholder="ph_password_min">
+            </div>
+            <div class="err-msg" id="err-reg-password" data-key="err_password_min">Пароль минимум 6 символов</div>
             <div class="form-row">
               <div>
                 <div class="field-wrap">
@@ -812,7 +822,7 @@ const T = {
     policy:'Продолжая, вы соглашаетесь с Условиями использования',
     admin_link:'Я преподаватель →',
     err_phone:'Неверный формат номера', err_conn:'Ошибка соединения.', err_not_found:'Номер не найден. Пройдите регистрацию.',
-    lbl_last:'Фамилия', lbl_first:'Имя', lbl_phone:'Телефон', lbl_region:'Область', lbl_city:'Город', lbl_work:'Место работы',
+    lbl_last:'Фамилия', lbl_first:'Имя', lbl_phone:'Телефон', lbl_region:'Область', lbl_city:'Город', lbl_work:'Место работы', ph_password:'Пароль', ph_password_min:'Пароль (минимум 6 символов)', err_password_empty:'Введите пароль', err_password_min:'Пароль минимум 6 символов',
     regions:['Ташкент (город)','Андижанская область','Бухарская область','Джизакская область','Кашкадарьинская область','Навоийская область','Наманганская область','Самаркандская область','Сурхандарьинская область','Сырдарьинская область','Ташкентская область','Ферганская область','Хорезмская область','Республика Каракалпакстан']
   },
   uz: {
@@ -853,7 +863,7 @@ const T = {
     policy:"Davom etib, Foydalanish shartlariga rozilik bildirasiz",
     admin_link:"Men o'qituvchiman →",
     err_phone:"Noto'g'ri format", err_conn:"Ulanishda xatolik.", err_not_found:"Raqam topilmadi. Ro'yxatdan o'ting.",
-    lbl_last:"Familiya", lbl_first:"Ism", lbl_phone:"Telefon", lbl_region:"Viloyat", lbl_city:"Shahar", lbl_work:"Ish joyi",
+    lbl_last:"Familiya", lbl_first:"Ism", lbl_phone:"Telefon", lbl_region:"Viloyat", lbl_city:"Shahar", lbl_work:"Ish joyi", ph_password:"Parol", ph_password_min:"Parol (kamida 6 belgi)", err_password_empty:"Parolni kiriting", err_password_min:"Parol kamida 6 belgi",
     regions:["Toshkent (shahar)","Andijon viloyati","Buxoro viloyati","Jizzax viloyati","Qashqadaryo viloyati","Navoiy viloyati","Namangan viloyati","Samarqand viloyati","Surxondaryo viloyati","Sirdaryo viloyati","Toshkent viloyati","Farg'ona viloyati","Xorazm viloyati","Qoraqalpog'iston Respublikasi"]
   },
   en: {
@@ -894,7 +904,7 @@ const T = {
     policy:'By continuing, you agree to the Terms of Use',
     admin_link:'I’m an instructor →',
     err_phone:'Invalid phone format', err_conn:'Connection error.', err_not_found:'Number not found. Please register.',
-    lbl_last:'Last name', lbl_first:'First name', lbl_phone:'Phone', lbl_region:'Region', lbl_city:'City', lbl_work:'Workplace',
+    lbl_last:'Last name', lbl_first:'First name', lbl_phone:'Phone', lbl_region:'Region', lbl_city:'City', lbl_work:'Workplace', ph_password:'Password', ph_password_min:'Password (min 6 characters)', err_password_empty:'Enter your password', err_password_min:'Password must be at least 6 characters',
     regions:['Tashkent (city)','Andijan region','Bukhara region','Jizzakh region','Kashkadarya region','Navoiy region','Namangan region','Samarkand region','Surkhandarya region','Syrdarya region','Tashkent region','Fergana region','Khorezm region','Republic of Karakalpakstan']
   }
 };
@@ -926,6 +936,10 @@ function setLang(lang) {
     } else {
       el.textContent = l[k];
     }
+  });
+  document.querySelectorAll('[data-key-placeholder]').forEach(el => {
+    const k = el.getAttribute('data-key-placeholder');
+    if (l[k] !== undefined) el.placeholder = l[k];
   });
   const sel = document.getElementById('region');
   if (sel && l.regions) {
@@ -1008,12 +1022,15 @@ async function apiCall(url, body) {
 
 async function login() {
   const phone=getPhone('login-phone');
-  if(!validPhone(phone)) { setErr('login-phone','err-login-phone',true); return; }
-  setErr('login-phone','err-login-phone',false);
+  const password=document.getElementById('login-password')?.value||'';
+  let err=false;
+  setErr('login-phone','err-login-phone',!validPhone(phone)); if(!validPhone(phone)) err=true;
+  setErr('login-password','err-login-password',!password); if(!password) err=true;
+  if(err) return;
   const btn=document.getElementById('login-btn');
   btn.disabled=true; btn.innerHTML='<span class="spin"></span>';
   try {
-    const {ok,data}=await apiCall('/api/login',{phone,org_slug:ORG_SLUG});
+    const {ok,data}=await apiCall('/api/login',{phone,password,org_slug:ORG_SLUG});
     if(!ok) alert(data.detail||T[currentLang].err_not_found);
     else { saveSession({student_id:data.student_id,name:data.name,phone:data.phone}); showCabinet({student_id:data.student_id,name:data.name,phone:data.phone}); }
   } catch { alert(T[currentLang].err_conn); }
@@ -1024,6 +1041,7 @@ async function register() {
   const last=document.getElementById('last-name')?.value.trim();
   const first=document.getElementById('first-name')?.value.trim();
   const phone=getPhone('reg-phone');
+  const password=document.getElementById('reg-password')?.value||'';
   const region=document.getElementById('region')?.value.trim();
   const city=document.getElementById('city')?.value.trim();
   const workplace=document.getElementById('workplace')?.value.trim();
@@ -1031,6 +1049,7 @@ async function register() {
   setErr('last-name','err-last',!last); if(!last) err=true;
   setErr('first-name','err-first',!first); if(!first) err=true;
   setErr('reg-phone','err-reg-phone',!validPhone(phone)); if(!validPhone(phone)) err=true;
+  setErr('reg-password','err-reg-password',password.length<6); if(password.length<6) err=true;
   setErr('region','err-region',!region); if(!region) err=true;
   setErr('city','err-city',!city); if(!city) err=true;
   setErr('workplace','err-work',!workplace); if(!workplace) err=true;
@@ -1038,7 +1057,7 @@ async function register() {
   const btn=document.getElementById('reg-btn');
   btn.disabled=true; btn.innerHTML='<span class="spin"></span>';
   try {
-    const {ok,data}=await apiCall('/api/register',{last_name:last,first_name:first,phone,region,city,workplace,org_slug:ORG_SLUG});
+    const {ok,data}=await apiCall('/api/register',{last_name:last,first_name:first,phone,password,region,city,workplace,org_slug:ORG_SLUG});
     if(!ok) alert(data.detail||'Ошибка регистрации');
     else { saveSession({student_id:data.student_id,name:data.name,phone:data.phone}); showCabinet({student_id:data.student_id,name:data.name,phone:data.phone}); }
   } catch { alert(T[currentLang].err_conn); }
