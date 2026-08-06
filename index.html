@@ -93,10 +93,11 @@
     .module-card.right .connector{left:-45px;}
 
     /* DASHBOARD */
-    .dashboard{background:#fff; border:1px solid var(--line); border-radius:24px; box-shadow:0 20px 42px rgba(26,82,118,.10); display:grid; grid-template-columns:60px 1fr; overflow:hidden; flex:1; min-width:0;}
-    .dash-sidebar{background:linear-gradient(180deg, var(--blue), #0b4268); padding:16px 12px; display:flex; flex-direction:column; gap:12px; align-items:center;}
+    .dashboard{background:#fff; border:1px solid var(--line); border-radius:24px; box-shadow:0 20px 42px rgba(26,82,118,.10); display:grid; grid-template-columns:112px 1fr; overflow:hidden; flex:1; min-width:0;}
+    .dash-sidebar{background:linear-gradient(180deg, var(--blue), #0b4268); padding:16px 10px; display:flex; flex-direction:column; gap:6px; align-items:stretch;}
     .dash-mark{width:38px; height:38px; border-radius:12px; background:linear-gradient(135deg,#15d0c8,#0e87a8); display:grid; place-items:center; color:#fff; margin-bottom:4px; box-shadow:0 9px 18px rgba(0,0,0,.16);}
-    .dash-nav{width:32px; height:32px; border-radius:10px; display:grid; place-items:center; color:rgba(255,255,255,.7);}
+    .dash-nav{width:100%; height:32px; border-radius:10px; display:flex; align-items:center; gap:8px; padding:0 8px; color:rgba(255,255,255,.7); font-size:11px; font-weight:650; white-space:nowrap;}
+    .dash-nav svg{flex-shrink:0;}
     .dash-nav.active{background:rgba(255,255,255,.15); color:#fff;}
     .dash-body{padding:20px; background:linear-gradient(180deg,#fff,#fbfdfe);}
     .dash-body h3{margin:0 0 14px; color:var(--blue-900); font-size:18px; letter-spacing:-.025em;}
@@ -142,8 +143,9 @@
     .field-inp{width:100%; height:54px; border:1px solid var(--line); border-radius:13px; background:#fff; padding:0 14px 0 46px; color:var(--text); outline:none; transition:.2s; -webkit-appearance:none;}
     .field-inp:focus{border-color:#86c9cf; box-shadow:0 0 0 4px rgba(37,198,207,.12);}
     .field-inp.error{border-color:var(--danger);}
-    .field-inp.phone-inp{padding-left:82px;}
-    .phone-pre{position:absolute; left:46px; top:50%; transform:translateY(-50%); color:var(--muted); font-size:14px; pointer-events:none; border-right:1px solid var(--line); padding-right:8px; line-height:1;}
+    .field-inp.phone-inp{padding-left:100px;}
+    .phone-pre{position:absolute; left:46px; top:50%; transform:translateY(-50%); display:flex; align-items:center; gap:6px; color:var(--muted); font-size:14px; pointer-events:none; border-right:1px solid var(--line); padding-right:8px; line-height:1;}
+    .uz-flag{width:18px; height:12px; border-radius:2px; flex-shrink:0; background:linear-gradient(#1eb1e7 0 28%, #fff 28% 34%, #d5262c 34% 40%, #fff 40% 46%, #1ba845 46% 100%); box-shadow:0 0 0 1px rgba(0,0,0,.08) inset;}
     select.field-inp{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236c7c86' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 13px center; padding-right:36px;}
     .err-msg{display:none; font-size:11px; color:var(--danger); margin-top:-6px;}
     .err-msg.show{display:block;}
@@ -236,7 +238,7 @@
       .auth-column{padding-top:22px;}
       .auth-card{padding:24px 16px;}
       .auth-card h2{font-size:24px;}
-      .dashboard{grid-template-columns:56px 1fr;}
+      .dashboard{grid-template-columns:100px 1fr;}
       .metric-grid{grid-template-columns:repeat(2,1fr);}
       .dash-row{grid-template-columns:1fr;}
       .value-row{grid-template-columns:1fr;}
@@ -465,7 +467,7 @@
           <div id="form-login" class="form active">
             <div class="field-wrap">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.35 1.9.67 2.8a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.28-1.28a2 2 0 0 1 2.11-.45c.9.32 1.84.54 2.8.67A2 2 0 0 1 22 16.92z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              <span class="phone-pre">+998</span>
+              <span class="phone-pre"><span class="uz-flag" aria-hidden="true"></span>+998</span>
               <input class="field-inp phone-inp" id="login-phone" type="tel" placeholder="90 123 45 67" maxlength="12" inputmode="numeric">
             </div>
             <div class="err-msg" id="err-login-phone">Неверный формат номера</div>
@@ -498,7 +500,7 @@
             </div>
             <div class="field-wrap">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-              <span class="phone-pre">+998</span>
+              <span class="phone-pre"><span class="uz-flag" aria-hidden="true"></span>+998</span>
               <input class="field-inp phone-inp" id="reg-phone" type="tel" placeholder="90 123 45 67" maxlength="12" inputmode="numeric">
             </div>
             <div class="err-msg" id="err-reg-phone">Неверный формат номера</div>
@@ -570,10 +572,10 @@
           <article class="dashboard">
             <aside class="dash-sidebar">
               <div class="dash-mark"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 12h5l2-5 4 10 2-5h5" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-              <div class="dash-nav active"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M4 11l8-7 8 7v9H4v-9z" stroke="currentColor" stroke-width="2"/></svg></div>
-              <div class="dash-nav"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
-              <div class="dash-nav"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M5 19V9m7 10V5m7 14v-8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
-              <div class="dash-nav"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0" stroke="currentColor" stroke-width="2"/></svg></div>
+              <div class="dash-nav active"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M4 11l8-7 8 7v9H4v-9z" stroke="currentColor" stroke-width="2"/></svg><span data-key="dnav_overview">Обзор</span></div>
+              <div class="dash-nav"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span data-key="dnav_cases">Кейсы</span></div>
+              <div class="dash-nav"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M5 19V9m7 10V5m7 14v-8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span data-key="dnav_progress">Прогресс</span></div>
+              <div class="dash-nav"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0" stroke="currentColor" stroke-width="2"/></svg><span data-key="dnav_profile">Профиль</span></div>
             </aside>
             <div class="dash-body">
               <h3 data-key="dash_title">Личный кабинет</h3>
@@ -777,7 +779,7 @@ const T = {
     platform_title:'Единая платформа для клинического обучения',
     badge1_t:'Безопасная среда', badge1_d:'Можно ошибаться и учиться',
     badge2_t:'Доказательный подход', badge2_d:'Клинические рекомендации',
-    m1t:'Обучение', m1d:'Интерактивные кейсы\nКлинические сценарии',
+    m1t:'Обучение', m1d:'Интерактивные кейсы\nКлинические сценарии', dnav_overview:'Обзор', dnav_cases:'Кейсы', dnav_progress:'Прогресс', dnav_profile:'Профиль',
     m2t:'Практика', m2d:'Симуляторы пациентов\nРешение клинических ситуаций',
     m3t:'Оценка', m3d:'Объективные результаты\nАвтоматический разбор',
     m4t:'Аналитика', m4d:'Индивидуальный прогресс\nАналитика для преподавателей',
@@ -818,7 +820,7 @@ const T = {
     platform_title:"Klinik ta'lim uchun yagona platforma",
     badge1_t:"Xavfsiz muhit", badge1_d:"Xato qilish va o'rganish mumkin",
     badge2_t:"Dalillarga asoslangan", badge2_d:"Klinik tavsiyalar",
-    m1t:"Ta'lim", m1d:"Interaktiv keyslar\nKlinik stsenariylar",
+    m1t:"Ta'lim", m1d:"Interaktiv keyslar\nKlinik stsenariylar", dnav_overview:"Obzor", dnav_cases:"Keyslar", dnav_progress:"Taraqqiyot", dnav_profile:"Profil",
     m2t:"Amaliyot", m2d:"Bemor simulyatorlari\nKlinik vaziyatlarni hal qilish",
     m3t:"Baholash", m3d:"Ob'ektiv natijalar\nAvtomatik tahlil",
     m4t:"Analitika", m4d:"Individual taraqqiyot\nO'qituvchilar uchun analitika",
@@ -859,7 +861,7 @@ const T = {
     platform_title:'One Platform for Clinical Training',
     badge1_t:'Safe Environment', badge1_d:'It\'s okay to make mistakes and learn',
     badge2_t:'Evidence-Based', badge2_d:'Clinical guidelines',
-    m1t:'Learning', m1d:'Interactive cases\nClinical scenarios',
+    m1t:'Learning', m1d:'Interactive cases\nClinical scenarios', dnav_overview:'Overview', dnav_cases:'Cases', dnav_progress:'Progress', dnav_profile:'Profile',
     m2t:'Practice', m2d:'Patient simulators\nSolving clinical situations',
     m3t:'Evaluation', m3d:'Objective results\nAutomatic review',
     m4t:'Analytics', m4d:'Individual progress\nAnalytics for instructors',
