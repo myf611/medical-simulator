@@ -175,8 +175,6 @@
     .resume-btn.no{background:#fff; border:1px solid var(--line); color:var(--muted);}
 
     /* STUDENT CARD */
-    .student-card{display:none; margin-top:16px; padding:18px; border:1px solid var(--line); border-radius:20px; background:linear-gradient(180deg,#fff,#f8fcfd);}
-    .student-card.active{display:block;}
     .student-mini{display:grid; grid-template-columns:46px 1fr; gap:12px; align-items:center; margin-bottom:14px;}
     .student-avatar{width:46px; height:46px; border-radius:14px; background:linear-gradient(135deg,var(--mint),#d0eef6); color:var(--blue); display:grid; place-items:center;}
     .student-name{margin:0 0 3px; color:var(--blue-900); font-weight:850; font-size:16px;}
@@ -541,18 +539,6 @@
             </div>
             <div class="err-msg" id="err-work">Введите место работы</div>
             <button class="primary-btn green" id="reg-btn" onclick="register()" data-key="reg_btn">Зарегистрироваться</button>
-          </div>
-
-          <!-- STUDENT CARD -->
-          <div class="student-card" id="student-card">
-            <div class="student-mini">
-              <div class="student-avatar"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M20 21a8 8 0 0 0-16 0M12 13a5 5 0 1 0 0-10 5 5 0 0 0 0 10z" stroke="#1a5276" stroke-width="1.8"/></svg></div>
-              <div>
-                <p class="student-name" id="student-name-display"></p>
-                <p class="student-status"><span class="dot"></span><span data-key="online">Онлайн</span></p>
-              </div>
-            </div>
-            <button class="primary-btn green" onclick="startCase()" data-key="start_btn">Начать кейс →</button>
           </div>
 
           <p class="policy" data-key="policy">Продолжая, вы соглашаетесь с <a href="#">Условиями использования</a></p>
@@ -976,14 +962,6 @@ function switchTab(tab) {
     document.getElementById(`tab-${t}`).classList.toggle('active', t===tab);
     document.getElementById(`form-${t}`).classList.toggle('active', t===tab);
   });
-  document.getElementById('student-card').classList.remove('active');
-}
-
-function showStudentCard(name) {
-  document.getElementById('student-name-display').textContent = name;
-  document.getElementById('student-card').classList.add('active');
-  document.getElementById('form-login').classList.remove('active');
-  document.getElementById('form-register').classList.remove('active');
 }
 
 function startCase() { const s=getSession(); if(s) goToExam(s); }
