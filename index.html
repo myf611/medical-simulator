@@ -82,8 +82,7 @@
     .education-panel{background:rgba(255,255,255,.9); border:1px solid var(--line); border-radius:28px; box-shadow:var(--shadow-soft); padding:24px 28px 28px; position:relative; overflow:hidden; min-width:0; margin-top:32px;}
     .education-panel::before{content:""; position:absolute; inset:-80px auto auto 48%; width:360px; height:360px; background:radial-gradient(circle, rgba(37,198,207,.10), transparent 67%); pointer-events:none;}
     .section-title{position:relative; margin:0 0 16px; text-align:center; color:var(--blue-900); font-size:24px; letter-spacing:-.03em; font-weight:850;}
-    .platform-map{display:grid; grid-template-columns:180px minmax(0,1fr) 180px; gap:16px; align-items:stretch; min-width:0;}
-    .side-modules{display:flex; flex-direction:column; gap:14px; min-width:0;}
+    .feature-row{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:16px; margin-top:16px;}
     .module-card{border:1px solid var(--line); border-radius:18px; background:#fff; padding:18px 20px; box-shadow:0 8px 20px rgba(26,82,118,.06); flex:1; min-width:0;}
     .module-icon{width:52px; height:52px; display:grid; place-items:center; border-radius:16px; background:linear-gradient(135deg, var(--mint), rgba(238,247,250,.95)); color:var(--green); margin-bottom:14px;}
     .module-card h3{margin:0 0 8px; color:var(--blue-900); font-size:18px; letter-spacing:-.025em;}
@@ -94,7 +93,12 @@
 
     /* DASHBOARD */
     .dashboard{background:#fff; border:1px solid var(--line); border-radius:24px; box-shadow:0 20px 42px rgba(26,82,118,.10); display:grid; grid-template-columns:112px 1fr; overflow:hidden; flex:1; min-width:0;}
-    .dash-sidebar{background:linear-gradient(180deg, var(--blue), #0b4268); padding:16px 10px; display:flex; flex-direction:column; gap:6px; align-items:stretch;}
+    .dash-sidebar{background:linear-gradient(180deg, var(--blue), #0b4268); padding:16px 10px; display:flex; flex-direction:column; justify-content:space-between; gap:12px; align-items:stretch;}
+    .dash-nav-list{display:flex; flex-direction:column; gap:6px;}
+    .dash-student-mini{display:flex; align-items:center; gap:8px; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.14); border-radius:12px; padding:8px;}
+    .dsm-avatar{width:26px; height:26px; border-radius:50%; background:rgba(255,255,255,.18); display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+    .dash-student-mini b{display:block; font-size:11px; color:#fff; line-height:1.2;}
+    .dash-student-mini span{display:block; font-size:9.5px; color:rgba(255,255,255,.7);}
     .dash-mark{width:38px; height:38px; border-radius:12px; background:linear-gradient(135deg,#15d0c8,#0e87a8); display:grid; place-items:center; color:#fff; margin-bottom:4px; box-shadow:0 9px 18px rgba(0,0,0,.16);}
     .dash-nav{width:100%; height:32px; border-radius:10px; display:flex; align-items:center; gap:8px; padding:0 8px; color:rgba(255,255,255,.7); font-size:11px; font-weight:650; white-space:nowrap;}
     .dash-nav svg{flex-shrink:0;}
@@ -210,7 +214,6 @@
       .content{padding:32px 40px 40px;}
       .layout{grid-template-columns:minmax(0,1fr) 390px; gap:30px;}
       .hero h1{font-size:clamp(46px,5vw,70px);}
-      .platform-map{grid-template-columns:160px minmax(0,1fr) 160px;}
     }
     @media(max-width:1180px){
       .layout{grid-template-columns:minmax(0,1fr) 330px; gap:24px;}
@@ -220,12 +223,7 @@
       .hero-grid{grid-template-columns:1fr;}
       .hero-visual{height:220px;}
       .badges-row{justify-content:flex-start;}
-      .platform-map{grid-template-columns:1fr;}
-      .side-modules{flex-direction:row;}
-      .side-modules.left-group{order:1;}
-      .dashboard{order:2;}
-      .side-modules.right-group{order:3;}
-      .connector{display:none;}
+      .feature-row{grid-template-columns:repeat(2, minmax(0,1fr));}
       .value-row{gap:14px;}
       .bottom-banner strong{font-size:20px;}
     }
@@ -248,7 +246,7 @@
       .auth-column{position:relative; top:auto; padding-top:0;}
       .hero-visual{display:none;}
     }
-    @media(max-width:640px){.hero h1{font-size:40px;} .hero p{font-size:16px;} .side-modules{flex-direction:column;} .dashboard{grid-template-columns:1fr;} .dash-sidebar{display:none;} .form-row{grid-template-columns:1fr;} .auth-card{padding:24px 18px;} .bottom-banner strong{font-size:18px;}}
+    @media(max-width:640px){.hero h1{font-size:40px;} .hero p{font-size:16px;} .feature-row{grid-template-columns:1fr;} .dashboard{grid-template-columns:1fr;} .dash-sidebar{display:none;} .form-row{grid-template-columns:1fr;} .auth-card{padding:24px 18px;} .bottom-banner strong{font-size:18px;}}
   .panel-footnote{margin:20px 0 0; padding-top:16px; border-top:1px solid var(--line); display:flex; align-items:center; justify-content:center; gap:10px; color:var(--muted); font-size:13px; text-align:center;}
   
     /* CABINET SCREEN */
@@ -553,29 +551,19 @@
       <!-- FULL WIDTH: PLATFORM SHOWCASE -->
       <section class="education-panel main-column">
         <h2 class="section-title" data-key="platform_title">Единая платформа для клинического обучения</h2>
-        <div class="platform-map">
-          <!-- LEFT: Обучение + Практика -->
-          <div class="side-modules left-group">
-            <article class="module-card">
-              <div class="module-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H7a3 3 0 0 0-3 3V5.5z" stroke="#0f6e56" stroke-width="2"/><path d="M7 7h9M7 11h7" stroke="#0f6e56" stroke-width="2" stroke-linecap="round"/></svg></div>
-              <h3 data-key="m1t">Обучение</h3>
-              <p data-key="m1d">Интерактивные кейсы<br>Клинические сценарии</p>
-            </article>
-            <article class="module-card">
-              <div class="module-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" stroke="#0f6e56" stroke-width="2"/><path d="M4 21a8 8 0 0 1 16 0" stroke="#0f6e56" stroke-width="2" stroke-linecap="round"/></svg></div>
-              <h3 data-key="m2t">Практика</h3>
-              <p data-key="m2d">Симуляторы пациентов<br>Решение клинических ситуаций</p>
-            </article>
-          </div>
-
-          <!-- CENTER: Dashboard -->
-          <article class="dashboard">
+        <article class="dashboard">
             <aside class="dash-sidebar">
-              <div class="dash-mark"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 12h5l2-5 4 10 2-5h5" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-              <div class="dash-nav active"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M4 11l8-7 8 7v9H4v-9z" stroke="currentColor" stroke-width="2"/></svg><span data-key="dnav_overview">Обзор</span></div>
-              <div class="dash-nav"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span data-key="dnav_cases">Кейсы</span></div>
-              <div class="dash-nav"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M5 19V9m7 10V5m7 14v-8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span data-key="dnav_progress">Прогресс</span></div>
-              <div class="dash-nav"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0" stroke="currentColor" stroke-width="2"/></svg><span data-key="dnav_profile">Профиль</span></div>
+              <div class="dash-nav-list">
+                <div class="dash-mark"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 12h5l2-5 4 10 2-5h5" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                <div class="dash-nav active"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M4 11l8-7 8 7v9H4v-9z" stroke="currentColor" stroke-width="2"/></svg><span data-key="dnav_overview">Обзор</span></div>
+                <div class="dash-nav"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span data-key="dnav_cases">Кейсы</span></div>
+                <div class="dash-nav"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M5 19V9m7 10V5m7 14v-8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span data-key="dnav_progress">Прогресс</span></div>
+                <div class="dash-nav"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0" stroke="currentColor" stroke-width="2"/></svg><span data-key="dnav_profile">Профиль</span></div>
+              </div>
+              <div class="dash-student-mini">
+                <div class="dsm-avatar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M20 21a8 8 0 0 0-16 0M12 13a5 5 0 1 0 0-10 5 5 0 0 0 0 10z" stroke="#fff" stroke-width="1.8"/></svg></div>
+                <div><b data-key="dsm_name">Студент</b><span data-key="dsm_role">Аккаунт</span></div>
+              </div>
             </aside>
             <div class="dash-body">
               <h3 data-key="dash_title">Личный кабинет</h3>
@@ -607,8 +595,17 @@
             </div>
           </article>
 
-          <!-- RIGHT: Оценка + Аналитика -->
-          <div class="side-modules right-group">
+          <div class="feature-row">
+            <article class="module-card">
+              <div class="module-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H7a3 3 0 0 0-3 3V5.5z" stroke="#0f6e56" stroke-width="2"/><path d="M7 7h9M7 11h7" stroke="#0f6e56" stroke-width="2" stroke-linecap="round"/></svg></div>
+              <h3 data-key="m1t">Обучение</h3>
+              <p data-key="m1d">Интерактивные кейсы<br>Клинические сценарии</p>
+            </article>
+            <article class="module-card">
+              <div class="module-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" stroke="#0f6e56" stroke-width="2"/><path d="M4 21a8 8 0 0 1 16 0" stroke="#0f6e56" stroke-width="2" stroke-linecap="round"/></svg></div>
+              <h3 data-key="m2t">Практика</h3>
+              <p data-key="m2d">Симуляторы пациентов<br>Решение клинических ситуаций</p>
+            </article>
             <article class="module-card">
               <div class="module-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M9 12l2 2 4-5" stroke="#0f6e56" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="#0f6e56" stroke-width="2"/></svg></div>
               <h3 data-key="m3t">Оценка</h3>
@@ -620,7 +617,6 @@
               <p data-key="m4d">Индивидуальный прогресс<br>Аналитика для преподавателей</p>
             </article>
           </div>
-        </div>
 
         <div class="value-row">
           <article class="module-card">
@@ -779,7 +775,7 @@ const T = {
     platform_title:'Единая платформа для клинического обучения',
     badge1_t:'Безопасная среда', badge1_d:'Можно ошибаться и учиться',
     badge2_t:'Доказательный подход', badge2_d:'Клинические рекомендации',
-    m1t:'Обучение', m1d:'Интерактивные кейсы\nКлинические сценарии', dnav_overview:'Обзор', dnav_cases:'Кейсы', dnav_progress:'Прогресс', dnav_profile:'Профиль',
+    m1t:'Обучение', m1d:'Интерактивные кейсы\nКлинические сценарии', dnav_overview:'Обзор', dnav_cases:'Кейсы', dnav_progress:'Прогресс', dnav_profile:'Профиль', dsm_name:'Студент', dsm_role:'Аккаунт',
     m2t:'Практика', m2d:'Симуляторы пациентов\nРешение клинических ситуаций',
     m3t:'Оценка', m3d:'Объективные результаты\nАвтоматический разбор',
     m4t:'Аналитика', m4d:'Индивидуальный прогресс\nАналитика для преподавателей',
@@ -820,7 +816,7 @@ const T = {
     platform_title:"Klinik ta'lim uchun yagona platforma",
     badge1_t:"Xavfsiz muhit", badge1_d:"Xato qilish va o'rganish mumkin",
     badge2_t:"Dalillarga asoslangan", badge2_d:"Klinik tavsiyalar",
-    m1t:"Ta'lim", m1d:"Interaktiv keyslar\nKlinik stsenariylar", dnav_overview:"Obzor", dnav_cases:"Keyslar", dnav_progress:"Taraqqiyot", dnav_profile:"Profil",
+    m1t:"Ta'lim", m1d:"Interaktiv keyslar\nKlinik stsenariylar", dnav_overview:"Obzor", dnav_cases:"Keyslar", dnav_progress:"Taraqqiyot", dnav_profile:"Profil", dsm_name:"Talaba", dsm_role:"Akkaunt",
     m2t:"Amaliyot", m2d:"Bemor simulyatorlari\nKlinik vaziyatlarni hal qilish",
     m3t:"Baholash", m3d:"Ob'ektiv natijalar\nAvtomatik tahlil",
     m4t:"Analitika", m4d:"Individual taraqqiyot\nO'qituvchilar uchun analitika",
@@ -861,7 +857,7 @@ const T = {
     platform_title:'One Platform for Clinical Training',
     badge1_t:'Safe Environment', badge1_d:'It\'s okay to make mistakes and learn',
     badge2_t:'Evidence-Based', badge2_d:'Clinical guidelines',
-    m1t:'Learning', m1d:'Interactive cases\nClinical scenarios', dnav_overview:'Overview', dnav_cases:'Cases', dnav_progress:'Progress', dnav_profile:'Profile',
+    m1t:'Learning', m1d:'Interactive cases\nClinical scenarios', dnav_overview:'Overview', dnav_cases:'Cases', dnav_progress:'Progress', dnav_profile:'Profile', dsm_name:'Student', dsm_role:'Account',
     m2t:'Practice', m2d:'Patient simulators\nSolving clinical situations',
     m3t:'Evaluation', m3d:'Objective results\nAutomatic review',
     m4t:'Analytics', m4d:'Individual progress\nAnalytics for instructors',
