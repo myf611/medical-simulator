@@ -298,6 +298,16 @@ en: {
 let currentAdminLang = localStorage.getItem('preferred_lang') === 'en' ? 'en' : 'ru';
 let UI_T = UI_T_DATA[currentAdminLang];
 
+function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 function setAdminLang(lang){
   currentAdminLang = lang;
   UI_T = UI_T_DATA[lang];
@@ -443,11 +453,11 @@ async function loadFeedback(){
     listEl.innerHTML = items.map(i => `
       <div class="fb-item ${i.status !== 'resolved' ? 'new' : ''}">
         <div class="fb-item-head">
-          <span class="fb-item-phone">${i.phone || UI_T.no_phone}</span>
+          <span class="fb-item-phone">${escapeHtml(i.phone) || UI_T.no_phone}</span>
           <span class="fb-item-date">${new Date(i.created_at).toLocaleString(UI_T.date_locale)}</span>
         </div>
         ${i.page ? `<span class="fb-item-page">${i.page}</span>` : ''}
-        <div class="fb-item-msg">${i.message}</div>
+        <div class="fb-item-msg">${escapeHtml(i.message)}</div>
         <button class="fb-resolve-btn ${i.status==='resolved' ? 'done' : ''}" onclick="toggleFeedbackStatus('${i.id}','${i.status==='resolved'?'new':'resolved'}')">${i.status==='resolved' ? UI_T.resolved : UI_T.mark_resolved}</button>
       </div>
     `).join('');
@@ -498,10 +508,10 @@ async function enterDashboard(admin){
       return;
     }
     listEl.innerHTML = students.map(s => `
-      <div class="student-row" onclick="openStudent('${s.id}','${(s.name||UI_T.no_name).replace(/'/g,"\\\\'")}')">
+      <div class="student-row" onclick="openStudent('${s.id}','${escapeHtml(s.name||UI_T.no_name).replace(/'/g,"\\\\'")}')">
         <div class="student-avatar">${(s.name||'?').trim().charAt(0).toUpperCase() || '?'}</div>
         <div class="student-info">
-          <div class="student-name">${s.name || UI_T.no_name}</div>
+          <div class="student-name">${escapeHtml(s.name) || UI_T.no_name}</div>
           <div class="student-meta">${s.workplace || s.phone || ''}</div>
         </div>
         <div class="student-grade ${gradeClass(s.average_grade)}">${s.average_grade !== null ? s.average_grade+'%' : '—'} · ${s.cases_completed}</div>
@@ -532,7 +542,7 @@ async function openStudent(studentId, name){
     listEl.innerHTML = attempts.map(a => `
       <div class="attempt-row" onclick="openAttempt('${a.id}')">
         <div>
-          <div class="attempt-title">${a.case_title || UI_T.case_default}</div>
+          <div class="attempt-title">${escapeHtml(a.case_title) || UI_T.case_default}</div>
           <div class="attempt-date">${new Date(a.finished_at).toLocaleDateString(UI_T.date_locale)}</div>
         </div>
         <div class="student-grade ${gradeClass(a.grade)}">${a.grade !== null && a.grade !== undefined ? a.grade+'%' : '—'}</div>
@@ -597,17 +607,17 @@ function renderAttempt(a){
   const labs = blocks.labs || {};
   const final = blocks.final || {};
 
-  const chatHtml = (t) => (!t || !t.length) ? `<div class="rv-empty">${UI_T.empty_stage}</div>` : t.map(m=>`<div class="rv-chat-line"><b>${m.role==='student'?UI_T.chat_student:UI_T.chat_patient}:</b> ${m.text}</div>`).join('');
-  const listHtml = (items) => (!items || !items.length) ? `<div class="rv-empty">${UI_T.nothing_ordered}</div>` : items.map(i=>`<div class="rv-chat-line">• ${i}</div>`).join('');
+  const chatHtml = (t) => (!t || !t.length) ? `<div class="rv-empty">${UI_T.empty_stage}</div>` : t.map(m=>`<div class="rv-chat-line"><b>${m.role==='student'?UI_T.chat_student:UI_T.chat_patient}:</b> ${escapeHtml(m.text)}</div>`).join('');
+  const listHtml = (items) => (!items || !items.length) ? `<div class="rv-empty">${UI_T.nothing_ordered}</div>` : items.map(i=>`<div class="rv-chat-line">• ${escapeHtml(i)}</div>`).join('');
 
   document.getElementById('at-details').innerHTML = `
     <div class="rv-detail-block"><h4>${UI_T.detail_anamnesis} (${anamnesis.duration_seconds||0} ${UI_T.sec})</h4>${chatHtml(anamnesis.transcript)}</div>
     <div class="rv-detail-block"><h4>${UI_T.detail_exam} (${exam.duration_seconds||0} ${UI_T.sec})</h4>${listHtml(exam.ordered)}</div>
-    <div class="rv-detail-block"><h4>${UI_T.detail_prelim} (${prelim.duration_seconds||0} ${UI_T.sec})</h4>${prelim.text ? `<div class="rv-chat-line">${prelim.text}</div>` : `<div class="rv-empty">${UI_T.not_specified}</div>`}</div>
+    <div class="rv-detail-block"><h4>${UI_T.detail_prelim} (${prelim.duration_seconds||0} ${UI_T.sec})</h4>${prelim.text ? `<div class="rv-chat-line">${escapeHtml(prelim.text)}</div>` : `<div class="rv-empty">${UI_T.not_specified}</div>`}</div>
     <div class="rv-detail-block"><h4>${UI_T.detail_labs} (${labs.duration_seconds||0} ${UI_T.sec})</h4>${listHtml(labs.ordered)}</div>
     <div class="rv-detail-block"><h4>${UI_T.detail_final} (${final.duration_seconds||0} ${UI_T.sec})</h4>
-      <div class="rv-chat-line"><b>${UI_T.diagnosis_lbl}</b> ${final.diagnosis || `(${UI_T.not_specified})`}</div>
-      <div class="rv-chat-line"><b>${UI_T.treatment_lbl}</b> ${final.treatment_plan || `(${UI_T.not_specified})`}</div>
+      <div class="rv-chat-line"><b>${UI_T.diagnosis_lbl}</b> ${escapeHtml(final.diagnosis) || `(${UI_T.not_specified})`}</div>
+      <div class="rv-chat-line"><b>${UI_T.treatment_lbl}</b> ${escapeHtml(final.treatment_plan) || `(${UI_T.not_specified})`}</div>
     </div>
   `;
 }
