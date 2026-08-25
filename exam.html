@@ -897,6 +897,16 @@ let activeInterval = null;
 let conversationHistory = []; // Groq context for anamnesis chat
 let isLoading = false;
 
+function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 function getStudentFromUrl() {
   const params = new URLSearchParams(window.location.search);
   return { student_id: params.get('student_id'), name: params.get('name') || (typeof L !== 'undefined' ? L.student_default : 'Student'), phone: params.get('phone') || '' };
@@ -945,16 +955,16 @@ function viewBlockModal(blockId) {
 
   if (blockId === 'anamnesis') {
     bodyHtml = (data.transcript || []).length
-      ? data.transcript.map(m => `<div class="rv-chat-line"><b>${m.role === 'student' ? L.chat_you : L.chat_patient}:</b> ${m.text}</div>`).join('')
+      ? data.transcript.map(m => `<div class="rv-chat-line"><b>${m.role === 'student' ? L.chat_you : L.chat_patient}:</b> ${escapeHtml(m.text)}</div>`).join('')
       : `<div class="rv-empty">${L.rv_empty}</div>`;
   } else if (blockId === 'exam' || blockId === 'labs') {
     bodyHtml = (data.ordered || []).length
-      ? data.ordered.map(i => `<div class="rv-chat-line">• ${i}</div>`).join('')
+      ? data.ordered.map(i => `<div class="rv-chat-line">• ${escapeHtml(i)}</div>`).join('')
       : `<div class="rv-empty">${L.rv_none_ordered}</div>`;
   } else if (blockId === 'preliminary_diagnosis') {
-    bodyHtml = data.text ? `<div class="rv-chat-line">${data.text}</div>` : `<div class="rv-empty">${L.rv_not_specified}</div>`;
+    bodyHtml = data.text ? `<div class="rv-chat-line">${escapeHtml(data.text)}</div>` : `<div class="rv-empty">${L.rv_not_specified}</div>`;
   } else if (blockId === 'final') {
-    bodyHtml = `<div class="rv-chat-line"><b>${L.rv_diagnosis_label}</b> ${data.diagnosis || `(${L.rv_not_specified})`}</div><div class="rv-chat-line"><b>${L.rv_treatment_label}</b> ${data.treatment_plan || `(${L.rv_not_specified})`}</div>`;
+    bodyHtml = `<div class="rv-chat-line"><b>${L.rv_diagnosis_label}</b> ${escapeHtml(data.diagnosis) || `(${L.rv_not_specified})`}</div><div class="rv-chat-line"><b>${L.rv_treatment_label}</b> ${escapeHtml(data.treatment_plan) || `(${L.rv_not_specified})`}</div>`;
   }
 
   document.getElementById('modal-title').textContent = `${block.icon} ${block.title} ${L.modal_view_suffix}`;
@@ -1091,12 +1101,13 @@ function addChatMessage(blockId, role, text) {
   const body = document.getElementById(`chatbody-${blockId}`);
   const d = document.createElement('div');
   d.className = `msg ${role === 'student' ? 'student' : role === 'patient' ? 'patient' : 'system'}`;
+  const safeText = escapeHtml(text);
   if (role === 'patient') {
-    d.innerHTML = `<div class="avatar p">${L.avatar_patient}</div><div class="bubble">${text}</div>`;
+    d.innerHTML = `<div class="avatar p">${L.avatar_patient}</div><div class="bubble">${safeText}</div>`;
   } else if (role === 'student') {
-    d.innerHTML = `<div class="avatar s">${L.chat_you}</div><div class="bubble">${text}</div>`;
+    d.innerHTML = `<div class="avatar s">${L.chat_you}</div><div class="bubble">${safeText}</div>`;
   } else {
-    d.innerHTML = `<div class="bubble">${text}</div>`;
+    d.innerHTML = `<div class="bubble">${safeText}</div>`;
   }
   body.appendChild(d);
   body.scrollTop = body.scrollHeight;
