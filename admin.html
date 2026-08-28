@@ -439,7 +439,7 @@ async function loadFeedback(){
   const listEl = document.getElementById('feedback-list');
   listEl.innerHTML = `<div class="loading">${UI_T.loading}</div>`;
   try{
-    const res = await fetch(`${BACKEND_URL}/api/feedback`);
+    const res = await fetch(`${BACKEND_URL}/api/feedback`, {headers:{'Authorization':`Bearer ${currentAdmin.token}`}});
     const items = await res.json();
 
     const newCount = items.filter(i => i.status !== 'resolved').length;
@@ -469,7 +469,7 @@ async function loadFeedback(){
 async function toggleFeedbackStatus(id, newStatus){
   try{
     await fetch(`${BACKEND_URL}/api/feedback/${id}/status`, {
-      method:'PUT', headers:{'Content-Type':'application/json'},
+      method:'PUT', headers:{'Content-Type':'application/json', 'Authorization':`Bearer ${currentAdmin.token}`},
       body: JSON.stringify({status:newStatus})
     });
     loadFeedback();
@@ -481,7 +481,7 @@ async function enterDashboard(admin){
   document.getElementById('screen-login').style.display = 'none';
   document.getElementById('screen-dash').style.display = 'block';
   document.getElementById('dash-who').textContent = admin.full_name || admin.phone;
-  fetch(`${BACKEND_URL}/api/feedback`).then(r=>r.json()).then(items=>{
+  fetch(`${BACKEND_URL}/api/feedback`, {headers:{'Authorization':`Bearer ${admin.token}`}}).then(r=>r.json()).then(items=>{
     const n = items.filter(i=>i.status!=='resolved').length;
     const badge = document.getElementById('fb-badge');
     if(n>0){ badge.style.display='inline-block'; badge.textContent=n; }
@@ -490,7 +490,7 @@ async function enterDashboard(admin){
   const listEl = document.getElementById('students-list');
   listEl.innerHTML = `<div class="loading">${UI_T.loading}</div>`;
   try{
-    const res = await fetch(`${BACKEND_URL}/api/admin/students?organization_id=${admin.organization_id}`);
+    const res = await fetch(`${BACKEND_URL}/api/admin/students?organization_id=${admin.organization_id}`, {headers:{'Authorization':`Bearer ${admin.token}`}});
     const students = await res.json();
 
     const totalCases = students.reduce((s,x)=>s+x.cases_completed,0);
@@ -533,7 +533,7 @@ async function openStudent(studentId, name){
   const listEl = document.getElementById('student-attempts-list');
   listEl.innerHTML = `<div class="loading">${UI_T.loading}</div>`;
   try{
-    const res = await fetch(`${BACKEND_URL}/api/admin/student-attempts?student_id=${studentId}`);
+    const res = await fetch(`${BACKEND_URL}/api/admin/student-attempts?student_id=${studentId}`, {headers:{'Authorization':`Bearer ${currentAdmin.token}`}});
     const attempts = await res.json();
     if(!attempts.length){
       listEl.innerHTML = `<div class="empty-msg">${UI_T.no_attempts}</div>`;
