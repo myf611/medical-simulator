@@ -57,11 +57,7 @@
   .student-info{flex:1; min-width:0;}
   .student-name{font-weight:700; font-size:14px; color:var(--blue-900);}
   .student-meta{font-size:11.5px; color:var(--muted); margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
-  .student-grade{font-weight:800; font-size:16px; padding:6px 12px; border-radius:10px; flex-shrink:0;}
-  .student-grade.high{background:var(--mint-2); color:var(--green-2);}
-  .student-grade.mid{background:#fff3df; color:#a06a1a;}
-  .student-grade.low{background:#fdeaea; color:var(--danger);}
-  .student-grade.none{background:var(--line-soft); color:var(--muted); font-size:12px;}
+  .student-count{font-weight:800; font-size:16px; padding:6px 14px; border-radius:10px; flex-shrink:0; background:var(--mint-2); color:var(--green-2);}
   .empty-msg{text-align:center; color:var(--muted); font-size:13px; padding:30px 10px;}
 
   /* STUDENT DETAIL / ATTEMPTS */
@@ -78,10 +74,6 @@
   .results-grade{text-align:center; margin-bottom:18px;}
   .results-grade .num{font-size:38px; font-weight:800; color:var(--blue); line-height:1;}
   .results-grade .lbl{font-size:12px; color:var(--muted); margin-top:4px;}
-  .block-grades-row{display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-bottom:22px;}
-  .block-grade-chip{flex:1; min-width:85px; text-align:center; background:#fff; border:1px solid var(--line); border-radius:10px; padding:8px 6px;}
-  .block-grade-chip .bg-num{font-size:15px; font-weight:700; color:var(--blue);}
-  .block-grade-chip .bg-lbl{font-size:9px; color:var(--muted); margin-top:2px;}
   .points-section{margin-bottom:18px;}
   .points-title{display:flex; align-items:center; gap:8px; font-size:13px; font-weight:700; margin-bottom:10px;}
   .points-title.good{color:var(--green);}
@@ -201,8 +193,6 @@
       <h2 style="color:var(--blue-900); margin-bottom:2px;" id="at-title">—</h2>
       <div style="color:var(--muted); font-size:13px; margin-bottom:20px;" id="at-date">—</div>
 
-      <div class="results-grade"><div class="num" id="at-grade">—</div><div class="lbl" id="at-grade-lbl"></div></div>
-      <div class="block-grades-row" id="at-block-grades"></div>
 
       <div class="points-section">
         <div class="points-title good" id="at-positive-title"></div>
@@ -238,11 +228,11 @@ ru: {
   nav_students: 'Студенты', nav_feedback: '💬 Обратная связь',
   students_title: 'Студенты', feedback_title: 'Обратная связь',
   back_to_students: '← Ко всем студентам', back_to_attempts: '← К попыткам студента',
-  review_title: 'Разбор попытки', grade_lbl: 'Общая оценка',
+  review_title: 'Разбор попытки',
   positive_title: '✅ Что сделано правильно', negative_title: '⚠️ Что упущено или сделано неверно',
   details_title: 'Детали прохождения',
   loading: 'Загрузка...',
-  stat_students: 'Студентов', stat_cases: 'Кейсов пройдено всего', stat_avg: 'Средний балл по группе',
+  stat_students: 'Студентов', stat_cases: 'Кейсов пройдено всего',
   no_students: 'В организации пока нет студентов', load_students_failed: 'Не удалось загрузить студентов',
   no_name: 'Без имени', history_label: 'История прохождений',
   no_attempts: 'У этого студента пока нет попыток', load_attempts_failed: 'Не удалось загрузить попытки',
@@ -271,11 +261,11 @@ en: {
   nav_students: 'Students', nav_feedback: '💬 Feedback',
   students_title: 'Students', feedback_title: 'Feedback',
   back_to_students: '← Back to all students', back_to_attempts: '← Back to student attempts',
-  review_title: 'Attempt Review', grade_lbl: 'Overall grade',
+  review_title: 'Attempt Review',
   positive_title: '✅ What was done correctly', negative_title: '⚠️ What was missed or done incorrectly',
   details_title: 'Attempt details',
   loading: 'Loading...',
-  stat_students: 'Students', stat_cases: 'Total cases completed', stat_avg: 'Group average grade',
+  stat_students: 'Students', stat_cases: 'Total cases completed',
   no_students: 'No students in this organization yet', load_students_failed: 'Failed to load students',
   no_name: 'No name', history_label: 'Attempt history',
   no_attempts: 'This student has no attempts yet', load_attempts_failed: 'Failed to load attempts',
@@ -341,7 +331,6 @@ function translateAdminPage(){
   document.getElementById('at-back-students').textContent = UI_T.back_to_students;
   document.getElementById('at-review-title').textContent = UI_T.review_title;
   document.getElementById('at-back-attempts').textContent = UI_T.back_to_attempts;
-  document.getElementById('at-grade-lbl').textContent = UI_T.grade_lbl;
   document.getElementById('at-positive-title').textContent = UI_T.positive_title;
   document.getElementById('at-negative-title').textContent = UI_T.negative_title;
   document.getElementById('at-details-title').textContent = UI_T.details_title;
@@ -419,13 +408,6 @@ function adminLogout(){
   document.getElementById('screen-login').style.display = 'flex';
 }
 
-function gradeClass(g){
-  if(g === null || g === undefined) return 'none';
-  if(g >= 75) return 'high';
-  if(g >= 50) return 'mid';
-  return 'low';
-}
-
 
 // ── DASHBOARD TABS ────────────────────────────────────
 function switchDashTab(tab){
@@ -495,13 +477,9 @@ async function enterDashboard(admin){
     const students = await res.json();
 
     const totalCases = students.reduce((s,x)=>s+x.cases_completed,0);
-    const gradedStudents = students.filter(x=>x.average_grade !== null);
-    const avgAll = gradedStudents.length ? Math.round(gradedStudents.reduce((s,x)=>s+x.average_grade,0)/gradedStudents.length) : null;
-
     document.getElementById('dash-stats').innerHTML = `
       <div class="dash-stat"><b>${students.length}</b><span>${UI_T.stat_students}</span></div>
       <div class="dash-stat"><b>${totalCases}</b><span>${UI_T.stat_cases}</span></div>
-      <div class="dash-stat"><b>${avgAll !== null ? avgAll+'%' : '—'}</b><span>${UI_T.stat_avg}</span></div>
     `;
 
     if(!students.length){
@@ -515,7 +493,7 @@ async function enterDashboard(admin){
           <div class="student-name">${escapeHtml(s.name) || UI_T.no_name}</div>
           <div class="student-meta">${s.workplace || s.phone || ''}</div>
         </div>
-        <div class="student-grade ${gradeClass(s.average_grade)}">${s.average_grade !== null ? s.average_grade+'%' : '—'} · ${s.cases_completed}</div>
+        <div class="student-count">${s.cases_completed}</div>
       </div>
     `).join('');
   }catch(e){
@@ -546,7 +524,7 @@ async function openStudent(studentId, name){
           <div class="attempt-title">${escapeHtml(a.case_title) || UI_T.case_default}</div>
           <div class="attempt-date">${new Date(a.finished_at).toLocaleDateString(UI_T.date_locale)}</div>
         </div>
-        <div class="student-grade ${gradeClass(a.grade)}">${a.grade !== null && a.grade !== undefined ? a.grade+'%' : '—'}</div>
+
       </div>
     `).join('');
   }catch(e){
@@ -586,13 +564,6 @@ function renderAttempt(a){
   document.getElementById('at-date').textContent = new Date(a.finished_at).toLocaleDateString(UI_T.date_locale);
 
   const ev = a.evaluation || {};
-  document.getElementById('at-grade').textContent = (ev.overall_grade !== null && ev.overall_grade !== undefined) ? ev.overall_grade+'%' : (a.grade !== null && a.grade !== undefined ? a.grade+'%' : '—');
-
-  const blockLabels = UI_T.block_labels;
-  const bg = ev.block_grades || {};
-  document.getElementById('at-block-grades').innerHTML = Object.keys(blockLabels).map(k => `
-    <div class="block-grade-chip"><div class="bg-num">${bg[k] !== undefined ? bg[k]+'%' : '—'}</div><div class="bg-lbl">${blockLabels[k]}</div></div>
-  `).join('');
 
   document.getElementById('at-positive').innerHTML = (ev.positive_points||[]).length
     ? ev.positive_points.map(p=>`<div class="point-item good">✅ ${p}</div>`).join('')
