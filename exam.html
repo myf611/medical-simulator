@@ -152,10 +152,9 @@
   .results-grade { text-align: center; margin-bottom: 24px; }
   .results-grade .num { font-size: 44px; font-weight: 800; color: var(--accent); line-height: 1; }
   .results-grade .lbl { font-size: 13px; color: var(--text2); margin-top: 4px; }
-  .block-grades-row { display: flex; gap: 8px; margin-bottom: 26px; flex-wrap: wrap; justify-content: center; }
-  .block-grade-chip { flex: 1; min-width: 90px; text-align: center; background: var(--surface2); border-radius: 10px; padding: 8px 6px; }
-  .block-grade-chip .bg-num { font-size: 16px; font-weight: 700; color: var(--accent); }
-  .block-grade-chip .bg-lbl { font-size: 9.5px; color: var(--text3); margin-top: 2px; }
+  .results-header { text-align: center; margin-bottom: 26px; }
+  .results-icon { font-size: 34px; margin-bottom: 8px; }
+  .results-title { font-size: 19px; font-weight: 700; color: var(--text); }
   .points-section { margin-bottom: 20px; }
   .points-title { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; margin-bottom: 10px; }
   .points-title.good { color: var(--green); }
@@ -287,12 +286,10 @@
 <!-- ═══════════════ SCREEN 3: RESULTS ═══════════════ -->
 <div class="screen" id="screen-results">
   <div class="results-card">
-    <div class="results-grade">
-      <div class="num" id="res-grade">—</div>
-      <div class="lbl" id="res-grade-lbl"></div>
+    <div class="results-header">
+      <div class="results-icon">📋</div>
+      <div class="results-title" id="res-title"></div>
     </div>
-
-    <div class="block-grades-row" id="res-block-grades"></div>
 
     <div class="points-section">
       <div class="points-title good" id="res-positive-title"></div>
@@ -536,14 +533,15 @@ ru: `Ты — Жасур Омонов, 20 лет, узбек. Работаешь
 - Иногда сам добавляешь детали которые кажутся тебе важными.
 - Не используй медицинские термины — ты не врач.
 
-АБСОЛЮТНЫЕ ПРАВИЛА:
-1. Отвечай ТОЛЬКО на основе данных кейса. Ничего не придумывай.
-2. Если спрашивают о чём-то чего нет в кейсе — отвечай естественно как обычный 20-летний.
+АБСОЛЮТНЫЕ ПРАВИЛА (нарушение недопустимо):
+1. Отвечай ИСКЛЮЧИТЕЛЬНО на основе данных кейса ниже. НИКОГДА ничего не выдумывай и не добавляй от себя.
+2. КРИТИЧЕСКИ ВАЖНО: если спрашивают о чём-то, чего НЕТ в данных кейса — ты НЕ ЗНАЕШЬ ответа. Говори "не знаю", "не помню", "не обращал внимания", "не могу сказать". НЕ придумывай подробности: ни про еду, ни про быт, ни про поездки, ни про привычки, ни про что-либо ещё. Любая выдуманная деталь может ввести врача в заблуждение и навредить обучению.
 3. Отвечай коротко — 1-3 предложения. Живым разговорным языком.
 4. На вопрос о диагнозе или лечении — "Я не знаю, вы же доктор, вам виднее".
 5. НЕ комментируй анализы, результаты, назначения.
 6. Раскрывай информацию ТОЛЬКО если врач прямо спросил.
 7. Не повторяй одинаковые фразы в каждом ответе.
+8. Лучше честно сказать "не знаю", чем придумать правдоподобный ответ. Это строгое требование.
 
 ДАННЫЕ КЕЙСА (используй только это):
 Жалобы: ${CASE.history.presenting}
@@ -560,15 +558,16 @@ CHARACTER AND STATE:
 - You sometimes add details yourself that seem important to you.
 - Don't use medical terminology — you are not a doctor.
 
-ABSOLUTE RULES:
-1. Respond ONLY based on the case data. Do not make anything up.
-2. If asked about something not in the case — respond naturally like an ordinary 20-year-old.
+ABSOLUTE RULES (violation is unacceptable):
+1. Respond EXCLUSIVELY based on the case data below. NEVER invent or add anything of your own.
+2. CRITICALLY IMPORTANT: if asked about something NOT in the case data — you DO NOT KNOW the answer. Say "I don't know", "I don't remember", "I didn't pay attention", "I can't say". Do NOT invent details: not about food, daily life, travel, habits, or anything else. Any invented detail could mislead the doctor and harm the training.
 3. Keep answers short — 1-3 sentences. Natural, conversational language.
 4. If asked about diagnosis or treatment — "I don't know, you're the doctor, you'd know better."
 5. Do NOT comment on tests, results, or orders.
 6. Only reveal information if the doctor directly asked.
 7. Don't repeat the same phrases in every response.
-8. IMPORTANT: Respond entirely in English, in character.
+8. It is better to honestly say "I don't know" than to invent a plausible answer. This is a strict requirement.
+9. IMPORTANT: Respond entirely in English, in character.
 
 CASE DATA (use only this):
 Complaint: ${CASE.history.presenting}
@@ -844,7 +843,7 @@ ru: {
   rule3: 'Все 5 этапов видны на экране сразу, но работать можно только с активным (подсвечен рамкой).',
   rule4: 'В осмотре и анализах — большой общий список, не только то что относится к этому кейсу. Выбирайте осознанно.',
   instr_start_btn: 'Начать кейс →',
-  results_grade_lbl: 'Общая оценка за кейс',
+  results_title: 'Разбор прохождения кейса',
   positive_title: '✅ Что сделано правильно', negative_title: '⚠️ Что упущено или сделано неверно',
   back_to_cabinet: '← Вернуться в кабинет',
   timeup_title: 'Время кейса истекло', timeup_desc: 'Формируем итоговую оценку по тому, что успели сделать...',
@@ -901,7 +900,7 @@ en: {
   rule3: 'All 5 stages are visible on screen at once, but you can only work in the active one (highlighted with a border).',
   rule4: 'The examination and labs stages show a large general list, not only what applies to this case. Choose thoughtfully.',
   instr_start_btn: 'Start Case →',
-  results_grade_lbl: 'Overall grade for the case',
+  results_title: 'Case review',
   positive_title: '✅ What was done correctly', negative_title: '⚠️ What was missed or done incorrectly',
   back_to_cabinet: '← Back to dashboard',
   timeup_title: 'Case time is up', timeup_desc: 'Generating the final evaluation based on what you managed to complete...',
@@ -1170,7 +1169,7 @@ async function sendChatMsg(blockId) {
       body: JSON.stringify({
         model: 'openai/gpt-oss-120b',
         messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...conversationHistory],
-        temperature: 0.8
+        temperature: 0.4
       })
     });
     const data = await res.json();
@@ -1378,19 +1377,11 @@ async function finishAllBlocks() {
     showResults(data.evaluation);
   } catch (e) {
     document.getElementById('timeup-overlay').classList.remove('show');
-    showResults({ overall_grade: null, positive_points: [], negative_points: [L.eval_failed], block_grades: {} });
+    showResults({ positive_points: [], negative_points: [L.eval_failed] });
   }
 }
 
 function showResults(ev) {
-  document.getElementById('res-grade').textContent = (ev.overall_grade !== null && ev.overall_grade !== undefined) ? ev.overall_grade + '%' : '—';
-
-  const blockLabels = L.block_labels;
-  const bg = ev.block_grades || {};
-  document.getElementById('res-block-grades').innerHTML = Object.keys(blockLabels).map(k => `
-    <div class="block-grade-chip"><div class="bg-num">${bg[k] !== undefined ? bg[k] + '%' : '—'}</div><div class="bg-lbl">${blockLabels[k]}</div></div>
-  `).join('');
-
   document.getElementById('res-positive').innerHTML = (ev.positive_points || []).length
     ? ev.positive_points.map(p => `<div class="point-item good">✅ ${p}</div>`).join('')
     : `<div class="point-item good">${L.no_positive}</div>`;
@@ -1493,7 +1484,7 @@ function translateInstructionScreen() {
   document.getElementById('instr-rules-list').innerHTML = rules.map(r => `<div class="instr-rule"><b>—</b> ${r}</div>`).join('');
 
   // Results screen
-  document.getElementById('res-grade-lbl').textContent = L.results_grade_lbl;
+  document.getElementById('res-title').textContent = L.results_title;
   document.getElementById('res-positive-title').textContent = L.positive_title;
   document.getElementById('res-negative-title').textContent = L.negative_title;
   document.getElementById('res-back-btn').textContent = L.back_to_cabinet;
