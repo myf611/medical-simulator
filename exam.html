@@ -320,6 +320,34 @@
   </div>
 </div>
 
+<div class="catalog-modal-overlay" id="catalog-modal">
+  <div class="catalog-modal">
+    <div class="catalog-modal-head">
+      <h3 id="modal-title">Назначить</h3>
+      <button class="catalog-modal-close" onclick="closeCatalogModal()">✕</button>
+    </div>
+    <div class="catalog-modal-body" id="modal-body"></div>
+    <div class="catalog-modal-footer">
+      <button class="primary-btn green-btn" style="width:100%;" onclick="confirmCatalogModal()">Назначить выбранное</button>
+    </div>
+  </div>
+</div>
+
+
+<button class="fb-float-btn" id="fb-float-btn" onclick="openFeedbackModal()">💬</button>
+<div class="fb-modal-overlay" id="fb-modal-overlay">
+  <div class="fb-modal">
+    <h3 id="fb-modal-title-text"></h3>
+    <p id="fb-modal-desc-text"></p>
+    <textarea id="fb-text"></textarea>
+    <div class="fb-sent-msg" id="fb-sent-msg"></div>
+    <div class="fb-modal-btns">
+      <button class="ghost-btn fb-cancel-btn" id="fb-cancel-btn" onclick="closeFeedbackModal()"></button>
+      <button class="primary-btn green-btn" id="fb-submit-btn" onclick="submitFeedback()"></button>
+    </div>
+  </div>
+</div>
+
 <script>
 const BACKEND_URL = 'https://medical-simulator-api.onrender.com';
 
@@ -1495,34 +1523,6 @@ function translateInstructionScreen() {
   checkFeedbackAccess(student.phone);
 })();
 </script>
-
-<div class="catalog-modal-overlay" id="catalog-modal">
-  <div class="catalog-modal">
-    <div class="catalog-modal-head">
-      <h3 id="modal-title">Назначить</h3>
-      <button class="catalog-modal-close" onclick="closeCatalogModal()">✕</button>
-    </div>
-    <div class="catalog-modal-body" id="modal-body"></div>
-    <div class="catalog-modal-footer">
-      <button class="primary-btn green-btn" style="width:100%;" onclick="confirmCatalogModal()">Назначить выбранное</button>
-    </div>
-  </div>
-</div>
-
-
-<button class="fb-float-btn" id="fb-float-btn" onclick="openFeedbackModal()">💬</button>
-<div class="fb-modal-overlay" id="fb-modal-overlay">
-  <div class="fb-modal">
-    <h3 id="fb-modal-title-text"></h3>
-    <p id="fb-modal-desc-text"></p>
-    <textarea id="fb-text"></textarea>
-    <div class="fb-sent-msg" id="fb-sent-msg"></div>
-    <div class="fb-modal-btns">
-      <button class="ghost-btn fb-cancel-btn" id="fb-cancel-btn" onclick="closeFeedbackModal()"></button>
-      <button class="primary-btn green-btn" id="fb-submit-btn" onclick="submitFeedback()"></button>
-    </div>
-  </div>
-</div>
 
 </body>
 </html>
